@@ -1,0 +1,1047 @@
+cargo run --release
+   Compiling egui-player-rs v0.1.0 (/home/abcight/git/egui-player-rs)
+   Compiling sodglumate-rs v0.1.0 (/home/abcight/git/sodglumate-rs)
+    Finished `release` profile [optimized] target(s) in 1m 04s
+     Running `target/release/sodglumate-rs`
+[2026-08-20T19:48:45Z INFO  winit::platform_impl::linux::x11::window] Guessed window scale factor: 1
+[2026-08-20T19:48:46Z INFO  sodglumate_rs::reactor] Initializing all components
+[2026-08-20T19:48:46Z INFO  sodglumate_rs::gateway] Initializing Gateway with rate limiting (2 req/sec)
+[2026-08-20T19:48:46Z INFO  sodglumate_rs::browser] Initializing
+[2026-08-20T19:48:46Z INFO  sodglumate_rs::media] Initializing MediaCache with 4 workers + 1 priority worker
+[2026-08-20T19:48:46Z INFO  sodglumate_rs::media] Media worker [priority] started
+[2026-08-20T19:48:46Z INFO  sodglumate_rs::media] Media worker [general-2] started
+[2026-08-20T19:48:46Z INFO  sodglumate_rs::media] Media worker [general-1] started
+[2026-08-20T19:48:46Z INFO  sodglumate_rs::media] Media worker [general-0] started
+[2026-08-20T19:48:46Z INFO  sodglumate_rs::media] Media worker [general-3] started
+Cannot connect to server socket err = No such file or directory
+Cannot connect to server request channel
+jack server is not running or cannot be started
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+Cannot connect to server socket err = No such file or directory
+Cannot connect to server request channel
+jack server is not running or cannot be started
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+ALSA lib pcm_oss.c:397:(_snd_pcm_oss_open) Cannot open device /dev/dsp
+ALSA lib pcm_oss.c:397:(_snd_pcm_oss_open) Cannot open device /dev/dsp
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:1000:(snd_pcm_dmix_open) unable to open slave
+ALSA lib pcm_dsnoop.c:541:(snd_pcm_dsnoop_open) The dsnoop plugin supports only capture stream
+ALSA lib pcm_dmix.c:1000:(snd_pcm_dmix_open) unable to open slave
+ALSA lib pcm_dmix.c:1000:(snd_pcm_dmix_open) unable to open slave
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dsnoop.c:541:(snd_pcm_dsnoop_open) The dsnoop plugin supports only capture stream
+ALSA lib pcm_dsnoop.c:541:(snd_pcm_dsnoop_open) The dsnoop plugin supports only capture stream
+ALSA lib pcm_dsnoop.c:541:(snd_pcm_dsnoop_open) The dsnoop plugin supports only capture stream
+[2026-08-20T19:48:46Z INFO  sodglumate_rs::beat] Enumerated 21 audio input devices
+Cannot connect to server socket err = No such file or directory
+Cannot connect to server request channel
+jack server is not running or cannot be started
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+Cannot connect to server socket err = No such file or directory
+Cannot connect to server request channel
+jack server is not running or cannot be started
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+ALSA lib pcm_oss.c:397:(_snd_pcm_oss_open) Cannot open device /dev/dsp
+ALSA lib pcm_oss.c:397:(_snd_pcm_oss_open) Cannot open device /dev/dsp
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:973:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib pcm_dmix.c:1000:(snd_pcm_dmix_open) unable to open slave
+ALSA lib pcm_dsnoop.c:541:(snd_pcm_dsnoop_open) The dsnoop plugin supports only capture stream
+[2026-08-20T19:48:46Z INFO  sodglumate_rs::beat] Using audio device: plughw:CARD=Audio,DEV=0
+[2026-08-20T19:48:46Z INFO  sodglumate_rs::beat] Audio config: 2 channels, 44100Hz, F32
+[2026-08-20T19:48:46Z INFO  sodglumate_rs::reactor] Initialization complete
+[2026-08-20T19:48:51Z INFO  sodglumate_rs::reactor] Source search: query='male gay ~hypnosis ~brainwashing ~mind_control forced order:score', page=1
+[2026-08-20T19:48:51Z INFO  sodglumate_rs::gateway] SearchRequest: query='male gay ~hypnosis ~brainwashing ~mind_control forced order:score', page=1, limit=50
+[2026-08-20T19:48:51Z INFO  sodglumate_rs::gateway] Spawning API request: query='male gay ~hypnosis ~brainwashing ~mind_control forced order:score -video', page=1, limit=50
+[2026-08-20T19:48:51Z INFO  sodglumate_rs::api] Searching posts with tags: 'male gay ~hypnosis ~brainwashing ~mind_control forced order:score -video', limit: 50, page: 1
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::api] Search response status: 200 OK
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::api] Found 38 valid posts (out of 50)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::gateway] API response: page=1, received 38 posts
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::gateway] Search complete: page=1, posts=38, is_new=true
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::browser] New search results: page=1, posts=38
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/64/0f/640fd89f3037100c707d2eddbe84fb02.jpg"), full=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") (kind=Playable)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Starting software streaming player: url=https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif
+[VideoPainter] ffmpeg opening input: https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Opening video stream...") has_frames=false frame_size=None playback=true time=0.000
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/preview/64/0f/640fd89f3037100c707d2eddbe84fb02.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/preview/64/0f/640fd89f3037100c707d2eddbe84fb02.jpg (sample=true)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif (sample=false, priority=true)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/preview/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/ea/12/ea120392aee25bd98b30fc5524521066.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/ec/42/ec42feff75ead84166405865b7751f51.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/preview/df/c9/dfc92aacd945de2461ed66c995e149fc.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/9d/cd/9dcdb37ca95b5753e55c223d27449b35.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/9c/7e/9c7e681a56489e4f55da54865c527f1b.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/7d/09/7d097882f325d17f79bd1a58dbdc9538.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/97/2b/972bfd1bd3f89073ce90dec90e1cb5b2.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/92/2b/922ba02e40e29b8c7e128fc1b3b6ab3d.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Worker [priority] loading: https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif (sample=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/50/b2/50b23e0da050bac7d4027c276f22f2b1.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/a4/a2/a4a2704048ebf5e09b855d04dc502a4c.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/65/7f/657fa4f0fc6187e044e87481bd056add.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/preview/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.jpg (sample=true)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/preview/8d/60/8d60e379aad2250108749d1fac9a3367.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/b6/46/b6460a10cb197e414815efea443747ea.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/3f/b7/3fb74901245e29428f51a33d0a0189a2.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/preview/38/ae/38ae74cd701b7af7dee96f6ecf82a9f2.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/13/25/13255e783129d1dca91efd6f00a84070.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/e8/24/e824e7e52ac57a73851b85ca350f4597.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/d1/b4/d1b4b4a0b0a405272831f3a784cdd71f.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/d8/24/d8241caaedb449664d0f2c106cec8d18.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/1e/94/1e94a31312354236d4f8aeb08cf0e022.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/41/4e/414ebdf0a8968c1d1a954b94828c7d45.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/63/6d/636d84a153f4d4536c0bcb5748bd09d2.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/84/02/840255626d4193c92035e247d0baf6e4.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/2e/af/2eaf3d7cef0618903075a6e525f2e6db.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/60/35/6035684e5a3d38c96677496a2ed54244.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/8e/ae/8eae4a26f32719c3e3f73570347dc0e5.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/38/f0/38f07620ca0b4411bff02eb4038b424e.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/d5/08/d508c2e20499a2827bd1b2f5a735b7e4.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/preview/38/d5/38d5251f9254936a5c5616f216790c7f.jpg (sample=true, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/ea/12/ea120392aee25bd98b30fc5524521066.jpg (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/ec/42/ec42feff75ead84166405865b7751f51.png (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/9d/cd/9dcdb37ca95b5753e55c223d27449b35.jpg (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/9c/7e/9c7e681a56489e4f55da54865c527f1b.png (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/7d/09/7d097882f325d17f79bd1a58dbdc9538.png (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/97/2b/972bfd1bd3f89073ce90dec90e1cb5b2.png (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/sample/ea/12/ea120392aee25bd98b30fc5524521066.jpg (sample=true)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/92/2b/922ba02e40e29b8c7e128fc1b3b6ab3d.jpg (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/50/b2/50b23e0da050bac7d4027c276f22f2b1.png (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/a4/a2/a4a2704048ebf5e09b855d04dc502a4c.png (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/65/7f/657fa4f0fc6187e044e87481bd056add.jpg (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/8d/60/8d60e379aad2250108749d1fac9a3367.png (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/b6/46/b6460a10cb197e414815efea443747ea.jpg (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/3f/b7/3fb74901245e29428f51a33d0a0189a2.png (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/13/25/13255e783129d1dca91efd6f00a84070.png (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/e8/24/e824e7e52ac57a73851b85ca350f4597.jpg (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/d1/b4/d1b4b4a0b0a405272831f3a784cdd71f.png (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/d8/24/d8241caaedb449664d0f2c106cec8d18.png (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/1e/94/1e94a31312354236d4f8aeb08cf0e022.png (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/41/4e/414ebdf0a8968c1d1a954b94828c7d45.jpg (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/63/6d/636d84a153f4d4536c0bcb5748bd09d2.png (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/84/02/840255626d4193c92035e247d0baf6e4.jpg (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/2e/af/2eaf3d7cef0618903075a6e525f2e6db.jpg (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/60/35/6035684e5a3d38c96677496a2ed54244.png (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/8e/ae/8eae4a26f32719c3e3f73570347dc0e5.png (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/38/f0/38f07620ca0b4411bff02eb4038b424e.png (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/d5/08/d508c2e20499a2827bd1b2f5a735b7e4.png (sample=false, priority=false)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/sample/ec/42/ec42feff75ead84166405865b7751f51.jpg (sample=true)
+[2026-08-20T19:48:52Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[2026-08-20T19:48:53Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/preview/df/c9/dfc92aacd945de2461ed66c995e149fc.jpg (sample=true)
+[2026-08-20T19:48:53Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/preview/64/0f/640fd89f3037100c707d2eddbe84fb02.jpg (sample=true)
+[2026-08-20T19:48:53Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/sample/9d/cd/9dcdb37ca95b5753e55c223d27449b35.jpg (sample=true)
+[2026-08-20T19:48:53Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/preview/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.jpg (sample=true)
+[2026-08-20T19:48:53Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/sample/9c/7e/9c7e681a56489e4f55da54865c527f1b.jpg (sample=true)
+[2026-08-20T19:48:53Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/preview/df/c9/dfc92aacd945de2461ed66c995e149fc.jpg (sample=true)
+[2026-08-20T19:48:54Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/sample/7d/09/7d097882f325d17f79bd1a58dbdc9538.jpg (sample=true)
+[2026-08-20T19:48:54Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/ea/12/ea120392aee25bd98b30fc5524521066.jpg (sample=true)
+[2026-08-20T19:48:54Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/sample/97/2b/972bfd1bd3f89073ce90dec90e1cb5b2.jpg (sample=true)
+[2026-08-20T19:48:54Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/9d/cd/9dcdb37ca95b5753e55c223d27449b35.jpg (sample=true)
+[2026-08-20T19:48:54Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/sample/92/2b/922ba02e40e29b8c7e128fc1b3b6ab3d.jpg (sample=true)
+[2026-08-20T19:48:54Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/ec/42/ec42feff75ead84166405865b7751f51.jpg (sample=true)
+[2026-08-20T19:48:54Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/sample/50/b2/50b23e0da050bac7d4027c276f22f2b1.jpg (sample=true)
+[2026-08-20T19:48:54Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/9c/7e/9c7e681a56489e4f55da54865c527f1b.jpg (sample=true)
+[2026-08-20T19:48:55Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/sample/a4/a2/a4a2704048ebf5e09b855d04dc502a4c.jpg (sample=true)
+[2026-08-20T19:48:55Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/7d/09/7d097882f325d17f79bd1a58dbdc9538.jpg (sample=true)
+[2026-08-20T19:48:55Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/sample/65/7f/657fa4f0fc6187e044e87481bd056add.jpg (sample=true)
+[2026-08-20T19:48:55Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/97/2b/972bfd1bd3f89073ce90dec90e1cb5b2.jpg (sample=true)
+[2026-08-20T19:48:55Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/preview/8d/60/8d60e379aad2250108749d1fac9a3367.jpg (sample=true)
+[2026-08-20T19:48:55Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/92/2b/922ba02e40e29b8c7e128fc1b3b6ab3d.jpg (sample=true)
+[2026-08-20T19:48:55Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/sample/b6/46/b6460a10cb197e414815efea443747ea.jpg (sample=true)
+[2026-08-20T19:48:55Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/50/b2/50b23e0da050bac7d4027c276f22f2b1.jpg (sample=true)
+[2026-08-20T19:48:55Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/sample/3f/b7/3fb74901245e29428f51a33d0a0189a2.jpg (sample=true)
+[2026-08-20T19:48:55Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/preview/8d/60/8d60e379aad2250108749d1fac9a3367.jpg (sample=true)
+[2026-08-20T19:48:55Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/preview/38/ae/38ae74cd701b7af7dee96f6ecf82a9f2.jpg (sample=true)
+[2026-08-20T19:48:55Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/a4/a2/a4a2704048ebf5e09b855d04dc502a4c.jpg (sample=true)
+[2026-08-20T19:48:55Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/sample/13/25/13255e783129d1dca91efd6f00a84070.jpg (sample=true)
+[2026-08-20T19:48:55Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/65/7f/657fa4f0fc6187e044e87481bd056add.jpg (sample=true)
+[2026-08-20T19:48:56Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/sample/e8/24/e824e7e52ac57a73851b85ca350f4597.jpg (sample=true)
+[2026-08-20T19:48:56Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/preview/38/ae/38ae74cd701b7af7dee96f6ecf82a9f2.jpg (sample=true)
+[2026-08-20T19:48:56Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/sample/d1/b4/d1b4b4a0b0a405272831f3a784cdd71f.jpg (sample=true)
+[2026-08-20T19:48:56Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/3f/b7/3fb74901245e29428f51a33d0a0189a2.jpg (sample=true)
+[2026-08-20T19:48:56Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/sample/d8/24/d8241caaedb449664d0f2c106cec8d18.jpg (sample=true)
+[2026-08-20T19:48:56Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/e8/24/e824e7e52ac57a73851b85ca350f4597.jpg (sample=true)
+[2026-08-20T19:48:56Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/sample/1e/94/1e94a31312354236d4f8aeb08cf0e022.jpg (sample=true)
+[2026-08-20T19:48:56Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/b6/46/b6460a10cb197e414815efea443747ea.jpg (sample=true)
+[2026-08-20T19:48:57Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/sample/41/4e/414ebdf0a8968c1d1a954b94828c7d45.jpg (sample=true)
+[2026-08-20T19:48:57Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/13/25/13255e783129d1dca91efd6f00a84070.jpg (sample=true)
+[2026-08-20T19:48:57Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/sample/63/6d/636d84a153f4d4536c0bcb5748bd09d2.jpg (sample=true)
+[2026-08-20T19:48:57Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/d1/b4/d1b4b4a0b0a405272831f3a784cdd71f.jpg (sample=true)
+[2026-08-20T19:48:57Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/sample/84/02/840255626d4193c92035e247d0baf6e4.jpg (sample=true)
+[2026-08-20T19:48:57Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/d8/24/d8241caaedb449664d0f2c106cec8d18.jpg (sample=true)
+[2026-08-20T19:48:57Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/sample/2e/af/2eaf3d7cef0618903075a6e525f2e6db.jpg (sample=true)
+[2026-08-20T19:48:57Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/sample/60/35/6035684e5a3d38c96677496a2ed54244.jpg (sample=true)
+[2026-08-20T19:48:57Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/41/4e/414ebdf0a8968c1d1a954b94828c7d45.jpg (sample=true)
+[2026-08-20T19:48:57Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/84/02/840255626d4193c92035e247d0baf6e4.jpg (sample=true)
+[2026-08-20T19:48:57Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/sample/8e/ae/8eae4a26f32719c3e3f73570347dc0e5.jpg (sample=true)
+[2026-08-20T19:48:57Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/63/6d/636d84a153f4d4536c0bcb5748bd09d2.jpg (sample=true)
+[2026-08-20T19:48:57Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/sample/38/f0/38f07620ca0b4411bff02eb4038b424e.jpg (sample=true)
+[2026-08-20T19:48:57Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/1e/94/1e94a31312354236d4f8aeb08cf0e022.jpg (sample=true)
+[2026-08-20T19:48:58Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/sample/d5/08/d508c2e20499a2827bd1b2f5a735b7e4.jpg (sample=true)
+[2026-08-20T19:48:58Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/2e/af/2eaf3d7cef0618903075a6e525f2e6db.jpg (sample=true)
+[2026-08-20T19:48:58Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/preview/38/d5/38d5251f9254936a5c5616f216790c7f.jpg (sample=true)
+[2026-08-20T19:48:58Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/8e/ae/8eae4a26f32719c3e3f73570347dc0e5.jpg (sample=true)
+[2026-08-20T19:48:58Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/ea/12/ea120392aee25bd98b30fc5524521066.jpg (sample=false)
+[2026-08-20T19:48:58Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/preview/38/d5/38d5251f9254936a5c5616f216790c7f.jpg (sample=true)
+[2026-08-20T19:48:58Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/ec/42/ec42feff75ead84166405865b7751f51.png (sample=false)
+[2026-08-20T19:48:58Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/d5/08/d508c2e20499a2827bd1b2f5a735b7e4.jpg (sample=true)
+[2026-08-20T19:48:58Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/9d/cd/9dcdb37ca95b5753e55c223d27449b35.jpg (sample=false)
+[2026-08-20T19:48:58Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/60/35/6035684e5a3d38c96677496a2ed54244.jpg (sample=true)
+[2026-08-20T19:48:58Z INFO  sodglumate_rs::media] Playable media downloaded: url=https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif bytes=2669858 current=true
+[2026-08-20T19:48:58Z INFO  sodglumate_rs::media] Starting staged GIF player: url=https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif bytes=2669858 path=/tmp/sodglumate_media_1787255338605532805.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: file:///tmp/sodglumate_media_1787255338605532805.gif
+[2026-08-20T19:48:58Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Opening video stream...") has_frames=false frame_size=None playback=true time=0.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255338605532805.gif
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=12.500
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255338605532805.gif
+[2026-08-20T19:48:58Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[2026-08-20T19:48:58Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/9c/7e/9c7e681a56489e4f55da54865c527f1b.png (sample=false)
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=12.500
+[2026-08-20T19:48:58Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/38/f0/38f07620ca0b4411bff02eb4038b424e.jpg (sample=true)
+[VideoPainter] ffmpeg decoded first frame: pts=0.000 scaled=1642x1080
+[2026-08-20T19:48:58Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ready") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] audio decode failed: ffmpeg-next found no audio stream
+[2026-08-20T19:48:58Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ended") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.049
+[2026-08-20T19:48:59Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/7d/09/7d097882f325d17f79bd1a58dbdc9538.png (sample=false)
+[2026-08-20T19:48:59Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/9d/cd/9dcdb37ca95b5753e55c223d27449b35.jpg (sample=false)
+[2026-08-20T19:48:59Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ended") has_frames=false frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255338605532805.gif
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=12.500
+[2026-08-20T19:48:59Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Buffering...") has_frames=false frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] ffmpeg decoded first frame: pts=0.000 scaled=1642x1080
+[2026-08-20T19:48:59Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ready") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] audio decode failed: ffmpeg-next found no audio stream
+[2026-08-20T19:48:59Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ended") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.049
+[2026-08-20T19:49:00Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/97/2b/972bfd1bd3f89073ce90dec90e1cb5b2.png (sample=false)
+[2026-08-20T19:49:00Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/ea/12/ea120392aee25bd98b30fc5524521066.jpg (sample=false)
+[2026-08-20T19:49:00Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ended") has_frames=false frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255338605532805.gif
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=12.500
+[2026-08-20T19:49:00Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Buffering...") has_frames=false frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] ffmpeg decoded first frame: pts=0.000 scaled=1642x1080
+[2026-08-20T19:49:00Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ready") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] audio decode failed: ffmpeg-next found no audio stream
+[2026-08-20T19:49:00Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ended") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.041
+[2026-08-20T19:49:01Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ended") has_frames=false frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255338605532805.gif
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=12.500
+[2026-08-20T19:49:01Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Buffering...") has_frames=false frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] ffmpeg decoded first frame: pts=0.000 scaled=1642x1080
+[2026-08-20T19:49:01Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ready") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] audio decode failed: ffmpeg-next found no audio stream
+[2026-08-20T19:49:01Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ended") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.048
+[2026-08-20T19:49:02Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/92/2b/922ba02e40e29b8c7e128fc1b3b6ab3d.jpg (sample=false)
+[2026-08-20T19:49:02Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/7d/09/7d097882f325d17f79bd1a58dbdc9538.png (sample=false)
+[2026-08-20T19:49:02Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ended") has_frames=false frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255338605532805.gif
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=12.500
+[2026-08-20T19:49:02Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Buffering...") has_frames=false frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] ffmpeg decoded first frame: pts=0.000 scaled=1642x1080
+[2026-08-20T19:49:02Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ready") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] audio decode failed: ffmpeg-next found no audio stream
+[2026-08-20T19:49:02Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ended") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.042
+[2026-08-20T19:49:02Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/50/b2/50b23e0da050bac7d4027c276f22f2b1.png (sample=false)
+[2026-08-20T19:49:02Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/ec/42/ec42feff75ead84166405865b7751f51.png (sample=false)
+[2026-08-20T19:49:03Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/a4/a2/a4a2704048ebf5e09b855d04dc502a4c.png (sample=false)
+[2026-08-20T19:49:03Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/92/2b/922ba02e40e29b8c7e128fc1b3b6ab3d.jpg (sample=false)
+[2026-08-20T19:49:03Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ended") has_frames=false frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255338605532805.gif
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=12.500
+[2026-08-20T19:49:03Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Buffering...") has_frames=false frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] ffmpeg decoded first frame: pts=0.000 scaled=1642x1080
+[2026-08-20T19:49:03Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ready") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] audio decode failed: ffmpeg-next found no audio stream
+[2026-08-20T19:49:03Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ended") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.048
+[2026-08-20T19:49:04Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/65/7f/657fa4f0fc6187e044e87481bd056add.jpg (sample=false)
+[2026-08-20T19:49:04Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/50/b2/50b23e0da050bac7d4027c276f22f2b1.png (sample=false)
+[2026-08-20T19:49:04Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/8d/60/8d60e379aad2250108749d1fac9a3367.png (sample=false)
+[2026-08-20T19:49:04Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/a4/a2/a4a2704048ebf5e09b855d04dc502a4c.png (sample=false)
+[2026-08-20T19:49:04Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/b6/46/b6460a10cb197e414815efea443747ea.jpg (sample=false)
+[2026-08-20T19:49:04Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/65/7f/657fa4f0fc6187e044e87481bd056add.jpg (sample=false)
+[2026-08-20T19:49:04Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/3f/b7/3fb74901245e29428f51a33d0a0189a2.png (sample=false)
+[2026-08-20T19:49:04Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/8d/60/8d60e379aad2250108749d1fac9a3367.png (sample=false)
+[2026-08-20T19:49:04Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ended") has_frames=false frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255338605532805.gif
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=12.500
+[2026-08-20T19:49:04Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Buffering...") has_frames=false frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] ffmpeg decoded first frame: pts=0.000 scaled=1642x1080
+[2026-08-20T19:49:04Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ready") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] audio decode failed: ffmpeg-next found no audio stream
+[2026-08-20T19:49:04Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ended") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.049
+[2026-08-20T19:49:04Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/13/25/13255e783129d1dca91efd6f00a84070.png (sample=false)
+[2026-08-20T19:49:04Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/97/2b/972bfd1bd3f89073ce90dec90e1cb5b2.png (sample=false)
+[2026-08-20T19:49:05Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/e8/24/e824e7e52ac57a73851b85ca350f4597.jpg (sample=false)
+[2026-08-20T19:49:05Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/3f/b7/3fb74901245e29428f51a33d0a0189a2.png (sample=false)
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=12.500
+[2026-08-20T19:49:05Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ended") has_frames=false frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255338605532805.gif
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=12.500
+[2026-08-20T19:49:05Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Buffering...") has_frames=false frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] ffmpeg decoded first frame: pts=0.000 scaled=1642x1080
+[2026-08-20T19:49:05Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ready") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] audio decode failed: ffmpeg-next found no audio stream
+[2026-08-20T19:49:05Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ended") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.049
+[2026-08-20T19:49:06Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/d1/b4/d1b4b4a0b0a405272831f3a784cdd71f.png (sample=false)
+[2026-08-20T19:49:06Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/e8/24/e824e7e52ac57a73851b85ca350f4597.jpg (sample=false)
+[2026-08-20T19:49:06Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ended") has_frames=false frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255338605532805.gif
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=12.500
+[2026-08-20T19:49:06Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Buffering...") has_frames=false frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] ffmpeg decoded first frame: pts=0.000 scaled=1642x1080
+[2026-08-20T19:49:06Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ready") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] audio decode failed: ffmpeg-next found no audio stream
+[2026-08-20T19:49:06Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ended") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.049
+[2026-08-20T19:49:07Z INFO  sodglumate_rs::browser] Navigate Next: 0 -> 1 (of 38)
+[2026-08-20T19:49:07Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.jpg"), full=Some("https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif") (kind=Playable)
+[2026-08-20T19:49:07Z INFO  sodglumate_rs::media] Starting software streaming player: url=https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif
+[VideoPainter] ffmpeg opening input: https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif
+[2026-08-20T19:49:07Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif (sample=false, priority=true)
+[2026-08-20T19:49:07Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/af/1f/af1fbaa91a7d88bda4960e4daf27512d.jpg (sample=true, priority=false)
+[2026-08-20T19:49:07Z INFO  sodglumate_rs::media] Worker [priority] loading: https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif (sample=false)
+[2026-08-20T19:49:07Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/af/1f/af1fbaa91a7d88bda4960e4daf27512d.jpg (sample=false, priority=false)
+[2026-08-20T19:49:07Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[2026-08-20T19:49:07Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/d8/24/d8241caaedb449664d0f2c106cec8d18.png (sample=false)
+[2026-08-20T19:49:07Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/b6/46/b6460a10cb197e414815efea443747ea.jpg (sample=false)
+[2026-08-20T19:49:07Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/1e/94/1e94a31312354236d4f8aeb08cf0e022.png (sample=false)
+[2026-08-20T19:49:07Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/9c/7e/9c7e681a56489e4f55da54865c527f1b.png (sample=false)
+[2026-08-20T19:49:08Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/41/4e/414ebdf0a8968c1d1a954b94828c7d45.jpg (sample=false)
+[2026-08-20T19:49:08Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/d1/b4/d1b4b4a0b0a405272831f3a784cdd71f.png (sample=false)
+[2026-08-20T19:49:08Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/63/6d/636d84a153f4d4536c0bcb5748bd09d2.png (sample=false)
+[2026-08-20T19:49:08Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/41/4e/414ebdf0a8968c1d1a954b94828c7d45.jpg (sample=false)
+[2026-08-20T19:49:08Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/84/02/840255626d4193c92035e247d0baf6e4.jpg (sample=false)
+[2026-08-20T19:49:08Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/d8/24/d8241caaedb449664d0f2c106cec8d18.png (sample=false)
+[2026-08-20T19:49:08Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/2e/af/2eaf3d7cef0618903075a6e525f2e6db.jpg (sample=false)
+[2026-08-20T19:49:08Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/84/02/840255626d4193c92035e247d0baf6e4.jpg (sample=false)
+[2026-08-20T19:49:09Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/60/35/6035684e5a3d38c96677496a2ed54244.png (sample=false)
+[2026-08-20T19:49:09Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/2e/af/2eaf3d7cef0618903075a6e525f2e6db.jpg (sample=false)
+[2026-08-20T19:49:09Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/8e/ae/8eae4a26f32719c3e3f73570347dc0e5.png (sample=false)
+[2026-08-20T19:49:09Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/13/25/13255e783129d1dca91efd6f00a84070.png (sample=false)
+[2026-08-20T19:49:09Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/38/f0/38f07620ca0b4411bff02eb4038b424e.png (sample=false)
+[2026-08-20T19:49:09Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/1e/94/1e94a31312354236d4f8aeb08cf0e022.png (sample=false)
+[2026-08-20T19:49:09Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/d5/08/d508c2e20499a2827bd1b2f5a735b7e4.png (sample=false)
+[2026-08-20T19:49:09Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/63/6d/636d84a153f4d4536c0bcb5748bd09d2.png (sample=false)
+[2026-08-20T19:49:09Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/sample/af/1f/af1fbaa91a7d88bda4960e4daf27512d.jpg (sample=true)
+[2026-08-20T19:49:09Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/38/f0/38f07620ca0b4411bff02eb4038b424e.png (sample=false)
+[2026-08-20T19:49:09Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/af/1f/af1fbaa91a7d88bda4960e4daf27512d.jpg (sample=false)
+[2026-08-20T19:49:09Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/af/1f/af1fbaa91a7d88bda4960e4daf27512d.jpg (sample=true)
+[2026-08-20T19:49:09Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/d5/08/d508c2e20499a2827bd1b2f5a735b7e4.png (sample=false)
+[2026-08-20T19:49:10Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/af/1f/af1fbaa91a7d88bda4960e4daf27512d.jpg (sample=false)
+[2026-08-20T19:49:11Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/8e/ae/8eae4a26f32719c3e3f73570347dc0e5.png (sample=false)
+[2026-08-20T19:49:11Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/60/35/6035684e5a3d38c96677496a2ed54244.png (sample=false)
+[2026-08-20T19:49:14Z INFO  sodglumate_rs::media] Playable media downloaded: url=https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif bytes=9518792 current=true
+[2026-08-20T19:49:14Z INFO  sodglumate_rs::media] Starting staged GIF player: url=https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif bytes=9518792 path=/tmp/sodglumate_media_1787255354177891378.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: file:///tmp/sodglumate_media_1787255354177891378.gif
+[2026-08-20T19:49:14Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif") status=Some("Opening video stream...") has_frames=false frame_size=None playback=true time=0.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255354177891378.gif
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=10.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255354177891378.gif
+[2026-08-20T19:49:14Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=10.000
+[VideoPainter] ffmpeg decoded first frame: pts=0.000 scaled=1350x1080
+[2026-08-20T19:49:14Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif") status=Some("Ready") has_frames=true frame_size=Some((1350, 1080)) playback=true time=0.000
+[VideoPainter] audio decode failed: ffmpeg-next found no audio stream
+[2026-08-20T19:49:16Z INFO  sodglumate_rs::browser] Navigate Next: 1 -> 2 (of 38)
+[2026-08-20T19:49:16Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/ea/12/ea120392aee25bd98b30fc5524521066.jpg"), full=Some("https://static1.e621.net/data/ea/12/ea120392aee25bd98b30fc5524521066.jpg") (kind=Image)
+[2026-08-20T19:49:16Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/preview/26/05/2605a960960d2c7526a8ed8cca8722cb.jpg (sample=true, priority=false)
+[2026-08-20T19:49:16Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/preview/26/05/2605a960960d2c7526a8ed8cca8722cb.jpg (sample=true)
+[2026-08-20T19:49:16Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/26/05/2605a960960d2c7526a8ed8cca8722cb.png (sample=false, priority=false)
+[2026-08-20T19:49:16Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/26/05/2605a960960d2c7526a8ed8cca8722cb.png (sample=false)
+[2026-08-20T19:49:16Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/preview/26/05/2605a960960d2c7526a8ed8cca8722cb.jpg (sample=true)
+[2026-08-20T19:49:17Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/26/05/2605a960960d2c7526a8ed8cca8722cb.png (sample=false)
+[2026-08-20T19:49:18Z INFO  sodglumate_rs::browser] Navigate Prev: 2 -> 1 (of 38)
+[2026-08-20T19:49:18Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.jpg"), full=Some("https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif") (kind=Playable)
+[2026-08-20T19:49:18Z INFO  sodglumate_rs::media] Starting software streaming player: url=https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif
+[VideoPainter] ffmpeg opening input: https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif
+[2026-08-20T19:49:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif (sample=false, priority=true)
+[2026-08-20T19:49:18Z INFO  sodglumate_rs::media] Worker [priority] loading: https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif (sample=false)
+[2026-08-20T19:49:19Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=10.000
+[2026-08-20T19:49:20Z INFO  sodglumate_rs::media] Playable media downloaded: url=https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif bytes=9518792 current=true
+[2026-08-20T19:49:20Z INFO  sodglumate_rs::media] Starting staged GIF player: url=https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif bytes=9518792 path=/tmp/sodglumate_media_1787255360654910516.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: file:///tmp/sodglumate_media_1787255360654910516.gif
+[2026-08-20T19:49:20Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif") status=Some("Opening video stream...") has_frames=false frame_size=None playback=true time=0.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255360654910516.gif
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=10.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255360654910516.gif
+[2026-08-20T19:49:20Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=10.000
+[VideoPainter] ffmpeg decoded first frame: pts=0.000 scaled=1350x1080
+[2026-08-20T19:49:20Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif") status=Some("Ready") has_frames=true frame_size=Some((1350, 1080)) playback=true time=0.000
+[VideoPainter] audio decode failed: ffmpeg-next found no audio stream
+[2026-08-20T19:49:21Z INFO  sodglumate_rs::browser] Navigate Prev: 1 -> 0 (of 38)
+[2026-08-20T19:49:21Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/64/0f/640fd89f3037100c707d2eddbe84fb02.jpg"), full=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") (kind=Playable)
+[2026-08-20T19:49:21Z INFO  sodglumate_rs::media] Starting software streaming player: url=https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif
+[VideoPainter] ffmpeg opening input: https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif
+[2026-08-20T19:49:21Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif (sample=false, priority=true)
+[2026-08-20T19:49:21Z INFO  sodglumate_rs::media] Worker [priority] loading: https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif (sample=false)
+[2026-08-20T19:49:21Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[2026-08-20T19:49:22Z INFO  sodglumate_rs::media] Playable media downloaded: url=https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif bytes=2669858 current=true
+[2026-08-20T19:49:22Z INFO  sodglumate_rs::media] Starting staged GIF player: url=https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif bytes=2669858 path=/tmp/sodglumate_media_1787255362037245764.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: file:///tmp/sodglumate_media_1787255362037245764.gif
+[2026-08-20T19:49:22Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Opening video stream...") has_frames=false frame_size=None playback=true time=0.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255362037245764.gif
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=12.500
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255362037245764.gif
+[2026-08-20T19:49:22Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=12.500
+[VideoPainter] ffmpeg decoded first frame: pts=0.000 scaled=1642x1080
+[2026-08-20T19:49:22Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ready") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] audio decode failed: ffmpeg-next found no audio stream
+[2026-08-20T19:49:22Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ended") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.049
+[2026-08-20T19:49:23Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ended") has_frames=false frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255362037245764.gif
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=12.500
+[2026-08-20T19:49:23Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Buffering...") has_frames=false frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] ffmpeg decoded first frame: pts=0.000 scaled=1642x1080
+[2026-08-20T19:49:23Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ready") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] audio decode failed: ffmpeg-next found no audio stream
+[2026-08-20T19:49:23Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ended") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.049
+[2026-08-20T19:49:23Z INFO  sodglumate_rs::browser] Navigate Next: 0 -> 1 (of 38)
+[2026-08-20T19:49:23Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.jpg"), full=Some("https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif") (kind=Playable)
+[2026-08-20T19:49:23Z INFO  sodglumate_rs::media] Starting software streaming player: url=https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif
+[VideoPainter] ffmpeg opening input: https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif
+[2026-08-20T19:49:23Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif (sample=false, priority=true)
+[2026-08-20T19:49:23Z INFO  sodglumate_rs::media] Worker [priority] loading: https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif (sample=false)
+[2026-08-20T19:49:23Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[2026-08-20T19:49:25Z INFO  sodglumate_rs::media] Playable media downloaded: url=https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif bytes=9518792 current=true
+[2026-08-20T19:49:25Z INFO  sodglumate_rs::media] Starting staged GIF player: url=https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif bytes=9518792 path=/tmp/sodglumate_media_1787255365386941171.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: file:///tmp/sodglumate_media_1787255365386941171.gif
+[2026-08-20T19:49:25Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif") status=Some("Opening video stream...") has_frames=false frame_size=None playback=true time=0.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255365386941171.gif
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=10.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255365386941171.gif
+[2026-08-20T19:49:25Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=10.000
+[VideoPainter] ffmpeg decoded first frame: pts=0.000 scaled=1350x1080
+[2026-08-20T19:49:25Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif") status=Some("Ready") has_frames=true frame_size=Some((1350, 1080)) playback=true time=0.000
+[VideoPainter] audio decode failed: ffmpeg-next found no audio stream
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=12.500
+[2026-08-20T19:49:37Z INFO  sodglumate_rs::browser] Navigate Prev: 1 -> 0 (of 38)
+[2026-08-20T19:49:37Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/64/0f/640fd89f3037100c707d2eddbe84fb02.jpg"), full=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") (kind=Playable)
+[2026-08-20T19:49:37Z INFO  sodglumate_rs::media] Starting software streaming player: url=https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif
+[VideoPainter] ffmpeg opening input: https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif
+[2026-08-20T19:49:37Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif (sample=false, priority=true)
+[2026-08-20T19:49:37Z INFO  sodglumate_rs::media] Worker [priority] loading: https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif (sample=false)
+[2026-08-20T19:49:38Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[2026-08-20T19:49:39Z INFO  sodglumate_rs::media] Playable media downloaded: url=https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif bytes=2669858 current=true
+[2026-08-20T19:49:39Z INFO  sodglumate_rs::media] Starting staged GIF player: url=https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif bytes=2669858 path=/tmp/sodglumate_media_1787255379646830888.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: file:///tmp/sodglumate_media_1787255379646830888.gif
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255379646830888.gif
+[2026-08-20T19:49:39Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=12.500
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255379646830888.gif
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=12.500
+[VideoPainter] ffmpeg decoded first frame: pts=0.000 scaled=1642x1080
+[2026-08-20T19:49:39Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ready") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] audio decode failed: ffmpeg-next found no audio stream
+[2026-08-20T19:49:39Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ended") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.049
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=10.000
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=10.000
+[2026-08-20T19:49:40Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ended") has_frames=false frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255379646830888.gif
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=12.500
+[2026-08-20T19:49:40Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Buffering...") has_frames=false frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] ffmpeg decoded first frame: pts=0.000 scaled=1642x1080
+[2026-08-20T19:49:40Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ready") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] audio decode failed: ffmpeg-next found no audio stream
+[2026-08-20T19:49:40Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ended") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.049
+[2026-08-20T19:49:41Z INFO  sodglumate_rs::browser] Navigate Next: 0 -> 1 (of 38)
+[2026-08-20T19:49:41Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.jpg"), full=Some("https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif") (kind=Playable)
+[2026-08-20T19:49:41Z INFO  sodglumate_rs::media] Starting software streaming player: url=https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif
+[VideoPainter] ffmpeg opening input: https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif
+[2026-08-20T19:49:41Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif (sample=false, priority=true)
+[2026-08-20T19:49:41Z INFO  sodglumate_rs::media] Worker [priority] loading: https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif (sample=false)
+[2026-08-20T19:49:41Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[2026-08-20T19:49:41Z INFO  sodglumate_rs::browser] Navigate Prev: 1 -> 0 (of 38)
+[2026-08-20T19:49:41Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/64/0f/640fd89f3037100c707d2eddbe84fb02.jpg"), full=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") (kind=Playable)
+[2026-08-20T19:49:41Z INFO  sodglumate_rs::media] Starting software streaming player: url=https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif
+[VideoPainter] ffmpeg opening input: https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif
+[2026-08-20T19:49:41Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif (sample=false, priority=true)
+[2026-08-20T19:49:42Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[2026-08-20T19:49:42Z INFO  sodglumate_rs::media] Worker [priority] loading: https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif (sample=false)
+[2026-08-20T19:49:42Z INFO  sodglumate_rs::media] Playable media downloaded: url=https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif bytes=9518792 current=false
+[2026-08-20T19:49:42Z INFO  sodglumate_rs::media] Playable media downloaded: url=https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif bytes=2669858 current=true
+[2026-08-20T19:49:42Z INFO  sodglumate_rs::media] Starting staged GIF player: url=https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif bytes=2669858 path=/tmp/sodglumate_media_1787255382905096632.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: file:///tmp/sodglumate_media_1787255382905096632.gif
+[2026-08-20T19:49:42Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Opening video stream...") has_frames=false frame_size=None playback=true time=0.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255382905096632.gif
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=12.500
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255382905096632.gif
+[2026-08-20T19:49:42Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=12.500
+[VideoPainter] ffmpeg decoded first frame: pts=0.000 scaled=1642x1080
+[2026-08-20T19:49:42Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ready") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.000
+[VideoPainter] audio decode failed: ffmpeg-next found no audio stream
+[2026-08-20T19:49:42Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/64/0f/640fd89f3037100c707d2eddbe84fb02.gif") status=Some("Ended") has_frames=true frame_size=Some((1642, 1080)) playback=true time=0.048
+[2026-08-20T19:49:43Z INFO  sodglumate_rs::browser] Navigate Next: 0 -> 1 (of 38)
+[2026-08-20T19:49:43Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.jpg"), full=Some("https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif") (kind=Playable)
+[2026-08-20T19:49:43Z INFO  sodglumate_rs::media] Starting software streaming player: url=https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif
+[VideoPainter] ffmpeg opening input: https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif
+[2026-08-20T19:49:43Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif (sample=false, priority=true)
+[2026-08-20T19:49:43Z INFO  sodglumate_rs::media] Worker [priority] loading: https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif (sample=false)
+[2026-08-20T19:49:43Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[2026-08-20T19:49:43Z INFO  sodglumate_rs::browser] Navigate Next: 1 -> 2 (of 38)
+[2026-08-20T19:49:43Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/ea/12/ea120392aee25bd98b30fc5524521066.jpg"), full=Some("https://static1.e621.net/data/ea/12/ea120392aee25bd98b30fc5524521066.jpg") (kind=Image)
+[2026-08-20T19:49:44Z INFO  sodglumate_rs::browser] Navigate Next: 2 -> 3 (of 38)
+[2026-08-20T19:49:44Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/ec/42/ec42feff75ead84166405865b7751f51.jpg"), full=Some("https://static1.e621.net/data/ec/42/ec42feff75ead84166405865b7751f51.png") (kind=Image)
+[2026-08-20T19:49:44Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/11/b5/11b55d7b63ae80eec3bb9236671d87d5.jpg (sample=true, priority=false)
+[2026-08-20T19:49:44Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/11/b5/11b55d7b63ae80eec3bb9236671d87d5.png (sample=false, priority=false)
+[2026-08-20T19:49:44Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/sample/11/b5/11b55d7b63ae80eec3bb9236671d87d5.jpg (sample=true)
+[2026-08-20T19:49:44Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/11/b5/11b55d7b63ae80eec3bb9236671d87d5.png (sample=false)
+[2026-08-20T19:49:44Z INFO  sodglumate_rs::browser] Navigate Next: 3 -> 4 (of 38)
+[2026-08-20T19:49:44Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/df/c9/dfc92aacd945de2461ed66c995e149fc.jpg"), full=Some("https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif") (kind=Playable)
+[2026-08-20T19:49:44Z INFO  sodglumate_rs::media] Starting software streaming player: url=https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif
+[VideoPainter] ffmpeg opening input: https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif
+[2026-08-20T19:49:44Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif (sample=false, priority=true)
+[2026-08-20T19:49:44Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/51/d0/51d0df42d7ffe90719ef857b36fff627.jpg (sample=true, priority=false)
+[2026-08-20T19:49:44Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/51/d0/51d0df42d7ffe90719ef857b36fff627.jpg (sample=false, priority=false)
+[2026-08-20T19:49:44Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/sample/51/d0/51d0df42d7ffe90719ef857b36fff627.jpg (sample=true)
+[2026-08-20T19:49:44Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/51/d0/51d0df42d7ffe90719ef857b36fff627.jpg (sample=false)
+[2026-08-20T19:49:45Z INFO  sodglumate_rs::media] Worker [priority] loading: https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif (sample=false)
+[2026-08-20T19:49:45Z INFO  sodglumate_rs::media] Playable media downloaded: url=https://static1.e621.net/data/ad/a7/ada702fd653e8b9ec08d91608a25dfbd.gif bytes=9518792 current=false
+[2026-08-20T19:49:45Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[2026-08-20T19:49:45Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/11/b5/11b55d7b63ae80eec3bb9236671d87d5.jpg (sample=true)
+[2026-08-20T19:49:46Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/51/d0/51d0df42d7ffe90719ef857b36fff627.jpg (sample=false)
+[2026-08-20T19:49:46Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/51/d0/51d0df42d7ffe90719ef857b36fff627.jpg (sample=true)
+[2026-08-20T19:49:46Z INFO  sodglumate_rs::media] Playable media downloaded: url=https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif bytes=13764324 current=true
+[2026-08-20T19:49:46Z INFO  sodglumate_rs::media] Starting staged GIF player: url=https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif bytes=13764324 path=/tmp/sodglumate_media_1787255386838736290.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: file:///tmp/sodglumate_media_1787255386838736290.gif
+[2026-08-20T19:49:46Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif") status=Some("Opening video stream...") has_frames=false frame_size=None playback=true time=0.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255386838736290.gif
+[2026-08-20T19:49:46Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=16.667
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255386838736290.gif
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=16.667
+[VideoPainter] ffmpeg decoded first frame: pts=0.000 scaled=1440x1080
+[2026-08-20T19:49:46Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif") status=Some("Ready") has_frames=true frame_size=Some((1440, 1080)) playback=true time=0.000
+[2026-08-20T19:49:46Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/11/b5/11b55d7b63ae80eec3bb9236671d87d5.png (sample=false)
+[VideoPainter] audio decode failed: ffmpeg-next found no audio stream
+[2026-08-20T19:49:48Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif") status=Some("Ended") has_frames=true frame_size=Some((1440, 1080)) playback=true time=1.772
+[2026-08-20T19:49:49Z INFO  sodglumate_rs::browser] Navigate Next: 4 -> 5 (of 38)
+[2026-08-20T19:49:49Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/9d/cd/9dcdb37ca95b5753e55c223d27449b35.jpg"), full=Some("https://static1.e621.net/data/9d/cd/9dcdb37ca95b5753e55c223d27449b35.jpg") (kind=Image)
+[2026-08-20T19:49:49Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/62/13/62137dc0e285355a2df4bb90ba474266.jpg (sample=true, priority=false)
+[2026-08-20T19:49:49Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/62/13/62137dc0e285355a2df4bb90ba474266.png (sample=false, priority=false)
+[2026-08-20T19:49:49Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/sample/62/13/62137dc0e285355a2df4bb90ba474266.jpg (sample=true)
+[2026-08-20T19:49:49Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/62/13/62137dc0e285355a2df4bb90ba474266.png (sample=false)
+[2026-08-20T19:49:49Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/62/13/62137dc0e285355a2df4bb90ba474266.jpg (sample=true)
+[2026-08-20T19:49:50Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/62/13/62137dc0e285355a2df4bb90ba474266.png (sample=false)
+[2026-08-20T19:49:50Z INFO  sodglumate_rs::browser] Navigate Prev: 5 -> 4 (of 38)
+[2026-08-20T19:49:50Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/df/c9/dfc92aacd945de2461ed66c995e149fc.jpg"), full=Some("https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif") (kind=Playable)
+[2026-08-20T19:49:50Z INFO  sodglumate_rs::media] Starting software streaming player: url=https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif
+[VideoPainter] ffmpeg opening input: https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif
+[2026-08-20T19:49:50Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif (sample=false, priority=true)
+[2026-08-20T19:49:50Z INFO  sodglumate_rs::media] Worker [priority] loading: https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif (sample=false)
+[2026-08-20T19:49:50Z INFO  sodglumate_rs::browser] Navigate Prev: 4 -> 3 (of 38)
+[2026-08-20T19:49:50Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/ec/42/ec42feff75ead84166405865b7751f51.jpg"), full=Some("https://static1.e621.net/data/ec/42/ec42feff75ead84166405865b7751f51.png") (kind=Image)
+[2026-08-20T19:49:51Z INFO  sodglumate_rs::browser] Navigate Next: 3 -> 4 (of 38)
+[2026-08-20T19:49:51Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/df/c9/dfc92aacd945de2461ed66c995e149fc.jpg"), full=Some("https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif") (kind=Playable)
+[2026-08-20T19:49:51Z INFO  sodglumate_rs::media] Starting software streaming player: url=https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif
+[VideoPainter] ffmpeg opening input: https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif
+[2026-08-20T19:49:51Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[2026-08-20T19:49:52Z INFO  sodglumate_rs::browser] Navigate Next: 4 -> 5 (of 38)
+[2026-08-20T19:49:52Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/9d/cd/9dcdb37ca95b5753e55c223d27449b35.jpg"), full=Some("https://static1.e621.net/data/9d/cd/9dcdb37ca95b5753e55c223d27449b35.jpg") (kind=Image)
+[2026-08-20T19:49:52Z INFO  sodglumate_rs::media] Playable media downloaded: url=https://static1.e621.net/data/df/c9/dfc92aacd945de2461ed66c995e149fc.gif bytes=13764324 current=false
+[2026-08-20T19:49:52Z INFO  sodglumate_rs::browser] Navigate Next: 5 -> 6 (of 38)
+[2026-08-20T19:49:52Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/9c/7e/9c7e681a56489e4f55da54865c527f1b.jpg"), full=Some("https://static1.e621.net/data/9c/7e/9c7e681a56489e4f55da54865c527f1b.png") (kind=Image)
+[2026-08-20T19:49:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/57/66/5766e8f436e0ef87ed667b61e1de411e.jpg (sample=true, priority=false)
+[2026-08-20T19:49:52Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/57/66/5766e8f436e0ef87ed667b61e1de411e.jpg (sample=false, priority=false)
+[2026-08-20T19:49:52Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/sample/57/66/5766e8f436e0ef87ed667b61e1de411e.jpg (sample=true)
+[2026-08-20T19:49:52Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/57/66/5766e8f436e0ef87ed667b61e1de411e.jpg (sample=false)
+[2026-08-20T19:49:53Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/57/66/5766e8f436e0ef87ed667b61e1de411e.jpg (sample=true)
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=12.500
+[2026-08-20T19:49:53Z INFO  sodglumate_rs::browser] Navigate Next: 6 -> 7 (of 38)
+[2026-08-20T19:49:53Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/7d/09/7d097882f325d17f79bd1a58dbdc9538.jpg"), full=Some("https://static1.e621.net/data/7d/09/7d097882f325d17f79bd1a58dbdc9538.png") (kind=Image)
+[2026-08-20T19:49:53Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/36/1d/361db36e2222636d0d9402109abd47cd.jpg (sample=true, priority=false)
+[2026-08-20T19:49:53Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/36/1d/361db36e2222636d0d9402109abd47cd.png (sample=false, priority=false)
+[2026-08-20T19:49:53Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/sample/36/1d/361db36e2222636d0d9402109abd47cd.jpg (sample=true)
+[2026-08-20T19:49:53Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/36/1d/361db36e2222636d0d9402109abd47cd.png (sample=false)
+[2026-08-20T19:49:53Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/36/1d/361db36e2222636d0d9402109abd47cd.jpg (sample=true)
+[2026-08-20T19:49:53Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/57/66/5766e8f436e0ef87ed667b61e1de411e.jpg (sample=false)
+[2026-08-20T19:49:53Z INFO  sodglumate_rs::browser] Navigate Next: 7 -> 8 (of 38)
+[2026-08-20T19:49:53Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/97/2b/972bfd1bd3f89073ce90dec90e1cb5b2.jpg"), full=Some("https://static1.e621.net/data/97/2b/972bfd1bd3f89073ce90dec90e1cb5b2.png") (kind=Image)
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=12.500
+[2026-08-20T19:49:54Z INFO  sodglumate_rs::browser] Navigate Next: 8 -> 9 (of 38)
+[2026-08-20T19:49:54Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/92/2b/922ba02e40e29b8c7e128fc1b3b6ab3d.jpg"), full=Some("https://static1.e621.net/data/92/2b/922ba02e40e29b8c7e128fc1b3b6ab3d.jpg") (kind=Image)
+[2026-08-20T19:49:55Z INFO  sodglumate_rs::browser] Navigate Next: 9 -> 10 (of 38)
+[2026-08-20T19:49:55Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/50/b2/50b23e0da050bac7d4027c276f22f2b1.jpg"), full=Some("https://static1.e621.net/data/50/b2/50b23e0da050bac7d4027c276f22f2b1.png") (kind=Image)
+[2026-08-20T19:49:55Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/36/1d/361db36e2222636d0d9402109abd47cd.png (sample=false)
+[2026-08-20T19:49:56Z INFO  sodglumate_rs::browser] Navigate Next: 10 -> 11 (of 38)
+[2026-08-20T19:49:56Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/a4/a2/a4a2704048ebf5e09b855d04dc502a4c.jpg"), full=Some("https://static1.e621.net/data/a4/a2/a4a2704048ebf5e09b855d04dc502a4c.png") (kind=Image)
+[2026-08-20T19:49:56Z INFO  sodglumate_rs::browser] Navigate Next: 11 -> 12 (of 38)
+[2026-08-20T19:49:56Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/65/7f/657fa4f0fc6187e044e87481bd056add.jpg"), full=Some("https://static1.e621.net/data/65/7f/657fa4f0fc6187e044e87481bd056add.jpg") (kind=Image)
+[2026-08-20T19:49:57Z INFO  sodglumate_rs::browser] Navigate Next: 12 -> 13 (of 38)
+[2026-08-20T19:49:57Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/8d/60/8d60e379aad2250108749d1fac9a3367.jpg"), full=Some("https://static1.e621.net/data/8d/60/8d60e379aad2250108749d1fac9a3367.png") (kind=Image)
+[2026-08-20T19:49:57Z INFO  sodglumate_rs::browser] Navigate Next: 13 -> 14 (of 38)
+[2026-08-20T19:49:57Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/b6/46/b6460a10cb197e414815efea443747ea.jpg"), full=Some("https://static1.e621.net/data/b6/46/b6460a10cb197e414815efea443747ea.jpg") (kind=Image)
+[2026-08-20T19:49:57Z INFO  sodglumate_rs::browser] Navigate Next: 14 -> 15 (of 38)
+[2026-08-20T19:49:57Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/3f/b7/3fb74901245e29428f51a33d0a0189a2.jpg"), full=Some("https://static1.e621.net/data/3f/b7/3fb74901245e29428f51a33d0a0189a2.png") (kind=Image)
+[2026-08-20T19:49:58Z INFO  sodglumate_rs::browser] Navigate Next: 15 -> 16 (of 38)
+[2026-08-20T19:49:58Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/38/ae/38ae74cd701b7af7dee96f6ecf82a9f2.jpg"), full=Some("https://static1.e621.net/data/38/ae/38ae74cd701b7af7dee96f6ecf82a9f2.gif") (kind=Playable)
+[2026-08-20T19:49:58Z INFO  sodglumate_rs::media] Starting software streaming player: url=https://static1.e621.net/data/38/ae/38ae74cd701b7af7dee96f6ecf82a9f2.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: https://static1.e621.net/data/38/ae/38ae74cd701b7af7dee96f6ecf82a9f2.gif
+[VideoPainter] ffmpeg opening input: https://static1.e621.net/data/38/ae/38ae74cd701b7af7dee96f6ecf82a9f2.gif
+[2026-08-20T19:49:58Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/38/ae/38ae74cd701b7af7dee96f6ecf82a9f2.gif (sample=false, priority=true)
+[2026-08-20T19:49:58Z INFO  sodglumate_rs::media] Worker [priority] loading: https://static1.e621.net/data/38/ae/38ae74cd701b7af7dee96f6ecf82a9f2.gif (sample=false)
+[2026-08-20T19:49:58Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/38/ae/38ae74cd701b7af7dee96f6ecf82a9f2.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[2026-08-20T19:49:59Z INFO  sodglumate_rs::browser] Navigate Prev: 16 -> 15 (of 38)
+[2026-08-20T19:49:59Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/3f/b7/3fb74901245e29428f51a33d0a0189a2.jpg"), full=Some("https://static1.e621.net/data/3f/b7/3fb74901245e29428f51a33d0a0189a2.png") (kind=Image)
+[2026-08-20T19:50:00Z INFO  sodglumate_rs::browser] Navigate Next: 15 -> 16 (of 38)
+[2026-08-20T19:50:00Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/38/ae/38ae74cd701b7af7dee96f6ecf82a9f2.jpg"), full=Some("https://static1.e621.net/data/38/ae/38ae74cd701b7af7dee96f6ecf82a9f2.gif") (kind=Playable)
+[2026-08-20T19:50:00Z INFO  sodglumate_rs::media] Starting software streaming player: url=https://static1.e621.net/data/38/ae/38ae74cd701b7af7dee96f6ecf82a9f2.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: https://static1.e621.net/data/38/ae/38ae74cd701b7af7dee96f6ecf82a9f2.gif
+[VideoPainter] ffmpeg opening input: https://static1.e621.net/data/38/ae/38ae74cd701b7af7dee96f6ecf82a9f2.gif
+[2026-08-20T19:50:00Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/38/ae/38ae74cd701b7af7dee96f6ecf82a9f2.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=10.000
+[2026-08-20T19:50:06Z INFO  sodglumate_rs::media] Playable media downloaded: url=https://static1.e621.net/data/38/ae/38ae74cd701b7af7dee96f6ecf82a9f2.gif bytes=18158104 current=true
+[2026-08-20T19:50:06Z INFO  sodglumate_rs::media] Starting staged GIF player: url=https://static1.e621.net/data/38/ae/38ae74cd701b7af7dee96f6ecf82a9f2.gif bytes=18158104 path=/tmp/sodglumate_media_1787255406435343973.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: file:///tmp/sodglumate_media_1787255406435343973.gif
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255406435343973.gif
+[2026-08-20T19:50:06Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/38/ae/38ae74cd701b7af7dee96f6ecf82a9f2.gif") status=Some("Opening video stream...") has_frames=false frame_size=None playback=true time=0.000
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=10.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255406435343973.gif
+[2026-08-20T19:50:06Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/38/ae/38ae74cd701b7af7dee96f6ecf82a9f2.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=10.000
+[VideoPainter] ffmpeg decoded first frame: pts=0.000 scaled=1296x1080
+[2026-08-20T19:50:06Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/38/ae/38ae74cd701b7af7dee96f6ecf82a9f2.gif") status=Some("Ready") has_frames=true frame_size=Some((1296, 1080)) playback=true time=0.000
+[VideoPainter] audio decode failed: ffmpeg-next found no audio stream
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=10.000
+[2026-08-20T19:50:09Z INFO  sodglumate_rs::browser] Navigate Next: 16 -> 17 (of 38)
+[2026-08-20T19:50:09Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/13/25/13255e783129d1dca91efd6f00a84070.jpg"), full=Some("https://static1.e621.net/data/13/25/13255e783129d1dca91efd6f00a84070.png") (kind=Image)
+[2026-08-20T19:50:10Z INFO  sodglumate_rs::browser] Navigate Next: 17 -> 18 (of 38)
+[2026-08-20T19:50:10Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/e8/24/e824e7e52ac57a73851b85ca350f4597.jpg"), full=Some("https://static1.e621.net/data/e8/24/e824e7e52ac57a73851b85ca350f4597.jpg") (kind=Image)
+[2026-08-20T19:50:11Z INFO  sodglumate_rs::browser] Navigate Next: 18 -> 19 (of 38)
+[2026-08-20T19:50:11Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/d1/b4/d1b4b4a0b0a405272831f3a784cdd71f.jpg"), full=Some("https://static1.e621.net/data/d1/b4/d1b4b4a0b0a405272831f3a784cdd71f.png") (kind=Image)
+[2026-08-20T19:50:11Z INFO  sodglumate_rs::browser] Navigate Next: 19 -> 20 (of 38)
+[2026-08-20T19:50:11Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/d8/24/d8241caaedb449664d0f2c106cec8d18.jpg"), full=Some("https://static1.e621.net/data/d8/24/d8241caaedb449664d0f2c106cec8d18.png") (kind=Image)
+[2026-08-20T19:50:12Z INFO  sodglumate_rs::browser] Navigate Next: 20 -> 21 (of 38)
+[2026-08-20T19:50:12Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/1e/94/1e94a31312354236d4f8aeb08cf0e022.jpg"), full=Some("https://static1.e621.net/data/1e/94/1e94a31312354236d4f8aeb08cf0e022.png") (kind=Image)
+[2026-08-20T19:50:12Z INFO  sodglumate_rs::browser] Navigate Next: 21 -> 22 (of 38)
+[2026-08-20T19:50:12Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/41/4e/414ebdf0a8968c1d1a954b94828c7d45.jpg"), full=Some("https://static1.e621.net/data/41/4e/414ebdf0a8968c1d1a954b94828c7d45.jpg") (kind=Image)
+[2026-08-20T19:50:13Z INFO  sodglumate_rs::browser] Navigate Next: 22 -> 23 (of 38)
+[2026-08-20T19:50:13Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/63/6d/636d84a153f4d4536c0bcb5748bd09d2.jpg"), full=Some("https://static1.e621.net/data/63/6d/636d84a153f4d4536c0bcb5748bd09d2.png") (kind=Image)
+[2026-08-20T19:50:13Z INFO  sodglumate_rs::browser] Navigate Next: 23 -> 24 (of 38)
+[2026-08-20T19:50:13Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/84/02/840255626d4193c92035e247d0baf6e4.jpg"), full=Some("https://static1.e621.net/data/84/02/840255626d4193c92035e247d0baf6e4.jpg") (kind=Image)
+[2026-08-20T19:50:14Z INFO  sodglumate_rs::browser] Navigate Next: 24 -> 25 (of 38)
+[2026-08-20T19:50:14Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/2e/af/2eaf3d7cef0618903075a6e525f2e6db.jpg"), full=Some("https://static1.e621.net/data/2e/af/2eaf3d7cef0618903075a6e525f2e6db.jpg") (kind=Image)
+[2026-08-20T19:50:14Z INFO  sodglumate_rs::browser] Navigate Next: 25 -> 26 (of 38)
+[2026-08-20T19:50:14Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/60/35/6035684e5a3d38c96677496a2ed54244.jpg"), full=Some("https://static1.e621.net/data/60/35/6035684e5a3d38c96677496a2ed54244.png") (kind=Image)
+[2026-08-20T19:50:15Z INFO  sodglumate_rs::browser] Navigate Next: 26 -> 27 (of 38)
+[2026-08-20T19:50:15Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/8e/ae/8eae4a26f32719c3e3f73570347dc0e5.jpg"), full=Some("https://static1.e621.net/data/8e/ae/8eae4a26f32719c3e3f73570347dc0e5.png") (kind=Image)
+[2026-08-20T19:50:15Z INFO  sodglumate_rs::browser] Navigate Next: 27 -> 28 (of 38)
+[2026-08-20T19:50:15Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/38/f0/38f07620ca0b4411bff02eb4038b424e.jpg"), full=Some("https://static1.e621.net/data/38/f0/38f07620ca0b4411bff02eb4038b424e.png") (kind=Image)
+[2026-08-20T19:50:16Z INFO  sodglumate_rs::browser] Navigate Next: 28 -> 29 (of 38)
+[2026-08-20T19:50:16Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/d5/08/d508c2e20499a2827bd1b2f5a735b7e4.jpg"), full=Some("https://static1.e621.net/data/d5/08/d508c2e20499a2827bd1b2f5a735b7e4.png") (kind=Image)
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=16.667
+[2026-08-20T19:50:16Z INFO  sodglumate_rs::browser] Navigate Next: 29 -> 30 (of 38)
+[2026-08-20T19:50:16Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/38/d5/38d5251f9254936a5c5616f216790c7f.jpg"), full=Some("https://static1.e621.net/data/38/d5/38d5251f9254936a5c5616f216790c7f.gif") (kind=Playable)
+[2026-08-20T19:50:16Z INFO  sodglumate_rs::media] Starting software streaming player: url=https://static1.e621.net/data/38/d5/38d5251f9254936a5c5616f216790c7f.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: https://static1.e621.net/data/38/d5/38d5251f9254936a5c5616f216790c7f.gif
+[VideoPainter] ffmpeg opening input: https://static1.e621.net/data/38/d5/38d5251f9254936a5c5616f216790c7f.gif
+[2026-08-20T19:50:16Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/38/d5/38d5251f9254936a5c5616f216790c7f.gif (sample=false, priority=true)
+[2026-08-20T19:50:16Z INFO  sodglumate_rs::media] Worker [priority] loading: https://static1.e621.net/data/38/d5/38d5251f9254936a5c5616f216790c7f.gif (sample=false)
+[2026-08-20T19:50:16Z INFO  sodglumate_rs::browser] Navigate Next: 30 -> 31 (of 38)
+[2026-08-20T19:50:16Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/af/1f/af1fbaa91a7d88bda4960e4daf27512d.jpg"), full=Some("https://static1.e621.net/data/af/1f/af1fbaa91a7d88bda4960e4daf27512d.jpg") (kind=Image)
+[2026-08-20T19:50:16Z INFO  sodglumate_rs::browser] Navigate Next: 31 -> 32 (of 38)
+[2026-08-20T19:50:16Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/26/05/2605a960960d2c7526a8ed8cca8722cb.jpg"), full=Some("https://static1.e621.net/data/26/05/2605a960960d2c7526a8ed8cca8722cb.png") (kind=Image)
+[2026-08-20T19:50:17Z INFO  sodglumate_rs::browser] Navigate Next: 32 -> 33 (of 38)
+[2026-08-20T19:50:17Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/11/b5/11b55d7b63ae80eec3bb9236671d87d5.jpg"), full=Some("https://static1.e621.net/data/11/b5/11b55d7b63ae80eec3bb9236671d87d5.png") (kind=Image)
+[2026-08-20T19:50:17Z INFO  sodglumate_rs::gateway] FetchNextPage: query='male gay ~hypnosis ~brainwashing ~mind_control forced order:score', page=2
+[2026-08-20T19:50:17Z INFO  sodglumate_rs::gateway] Spawning API request: query='male gay ~hypnosis ~brainwashing ~mind_control forced order:score -video', page=2, limit=50
+[2026-08-20T19:50:17Z INFO  sodglumate_rs::api] Searching posts with tags: 'male gay ~hypnosis ~brainwashing ~mind_control forced order:score -video', limit: 50, page: 2
+[2026-08-20T19:50:17Z INFO  sodglumate_rs::browser] Navigate Next: 33 -> 34 (of 38)
+[2026-08-20T19:50:17Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/51/d0/51d0df42d7ffe90719ef857b36fff627.jpg"), full=Some("https://static1.e621.net/data/51/d0/51d0df42d7ffe90719ef857b36fff627.jpg") (kind=Image)
+[2026-08-20T19:50:17Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/51/d0/51d0df42d7ffe90719ef857b36fff627.jpg (sample=false, priority=true)
+[2026-08-20T19:50:17Z INFO  sodglumate_rs::browser] Navigate Next: 34 -> 35 (of 38)
+[2026-08-20T19:50:17Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/62/13/62137dc0e285355a2df4bb90ba474266.jpg"), full=Some("https://static1.e621.net/data/62/13/62137dc0e285355a2df4bb90ba474266.png") (kind=Image)
+[2026-08-20T19:50:17Z INFO  sodglumate_rs::api] Search response status: 200 OK
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=16.667
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::browser] Navigate Next: 35 -> 36 (of 38)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/57/66/5766e8f436e0ef87ed667b61e1de411e.jpg"), full=Some("https://static1.e621.net/data/57/66/5766e8f436e0ef87ed667b61e1de411e.jpg") (kind=Image)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::api] Found 43 valid posts (out of 50)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::gateway] API response: page=2, received 43 posts
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::gateway] Search complete: page=2, posts=43, is_new=false
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::browser] Appended results: page=2, new_posts=43
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/57/66/5766e8f436e0ef87ed667b61e1de411e.jpg"), full=Some("https://static1.e621.net/data/57/66/5766e8f436e0ef87ed667b61e1de411e.jpg") (kind=Image)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/preview/41/27/4127968199ea066c0de03cf978187b33.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/75/24/7524f0a20186afff73fe0a88285c191e.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/preview/41/27/4127968199ea066c0de03cf978187b33.jpg (sample=true)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/preview/88/87/888742751a1d891273aa91e5264ab8f4.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/preview/80/dd/80ddf4faf8d648beb33f748fe437c1ca.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/71/db/71dbd7177a9c054d605fec1fe6fa691a.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/1d/e2/1de2fa31d4b09a850f25a9993c2de648.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/65/c7/65c769cffcfd0a8650c05f7e65d18f59.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/7f/6b/7f6b38ae119cfaccb216249f32d2a032.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/c2/96/c296e1b05f701a90ac6aff232dc236d8.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/preview/90/d9/90d9d1da148c7916f5a8af68e8d4ffb7.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/7a/f9/7af99f57166ffb4f1f9df8b249527a04.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/2e/e8/2ee8537348956d5706e67b744e2778cc.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/59/2a/592a8a4cf92af6f0f85f87cb4cb92569.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/preview/51/d8/51d82c1f88f0794c9939b76f34de353e.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/43/da/43dae1cabbb94092e7b52f2c2f1a2f06.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/93/75/937502f47191edac5c5f77cd249a8488.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/preview/ee/fe/eefe2e7a86f6a0498263e887de298c71.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/preview/81/6d/816dab5937a5a9f4c0e5fc8e30f2b092.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/6f/83/6f83081469978fcb03aef0a2a339ac41.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/7a/7f/7a7fe0da24f3eaa2678b36c8eb59761c.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/sample/75/24/7524f0a20186afff73fe0a88285c191e.jpg (sample=true)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/e8/bb/e8bbb0340b5506a1c7a7cc194ea06069.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/6b/ee/6bee42d9445b6814a4b157eaac8f1e69.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/preview/29/e1/29e10ff6554810d7582a18b60eebb27b.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/8c/0e/8c0e39c3eba40ed4c5d5455ef4d3a005.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/76/68/7668cd94caca64c8121ff776672a678a.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/4f/19/4f195484011dea99e5822f5c237da6b3.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/preview/eb/76/eb76557bae8b23dba758a07f69616c0b.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/e9/c0/e9c0ec0d93aada70ef3fc59d8fa57f6e.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/dd/81/dd81102f8a42ff7ae38435e00557461a.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/preview/88/87/888742751a1d891273aa91e5264ab8f4.jpg (sample=true)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/41/27/4127968199ea066c0de03cf978187b33.png (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/75/24/7524f0a20186afff73fe0a88285c191e.png (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/80/dd/80ddf4faf8d648beb33f748fe437c1ca.jpg (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/preview/80/dd/80ddf4faf8d648beb33f748fe437c1ca.jpg (sample=true)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/71/db/71dbd7177a9c054d605fec1fe6fa691a.png (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/1d/e2/1de2fa31d4b09a850f25a9993c2de648.png (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/65/c7/65c769cffcfd0a8650c05f7e65d18f59.png (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/7f/6b/7f6b38ae119cfaccb216249f32d2a032.png (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/c2/96/c296e1b05f701a90ac6aff232dc236d8.jpg (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/90/d9/90d9d1da148c7916f5a8af68e8d4ffb7.png (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/7a/f9/7af99f57166ffb4f1f9df8b249527a04.jpg (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/2e/e8/2ee8537348956d5706e67b744e2778cc.jpg (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/59/2a/592a8a4cf92af6f0f85f87cb4cb92569.png (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/51/d8/51d82c1f88f0794c9939b76f34de353e.png (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/43/da/43dae1cabbb94092e7b52f2c2f1a2f06.jpg (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/93/75/937502f47191edac5c5f77cd249a8488.jpg (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/ee/fe/eefe2e7a86f6a0498263e887de298c71.jpg (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/6f/83/6f83081469978fcb03aef0a2a339ac41.png (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/7a/7f/7a7fe0da24f3eaa2678b36c8eb59761c.png (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/e8/bb/e8bbb0340b5506a1c7a7cc194ea06069.jpg (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/6b/ee/6bee42d9445b6814a4b157eaac8f1e69.png (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/8c/0e/8c0e39c3eba40ed4c5d5455ef4d3a005.png (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/76/68/7668cd94caca64c8121ff776672a678a.png (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/4f/19/4f195484011dea99e5822f5c237da6b3.jpg (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/eb/76/eb76557bae8b23dba758a07f69616c0b.jpg (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/e9/c0/e9c0ec0d93aada70ef3fc59d8fa57f6e.jpg (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/dd/81/dd81102f8a42ff7ae38435e00557461a.jpg (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::browser] Navigate Next: 36 -> 37 (of 81)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/36/1d/361db36e2222636d0d9402109abd47cd.jpg"), full=Some("https://static1.e621.net/data/36/1d/361db36e2222636d0d9402109abd47cd.png") (kind=Image)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/ed/37/ed37d5748927b40c0f6a1e94d151c940.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/ed/37/ed37d5748927b40c0f6a1e94d151c940.png (sample=false, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::browser] Navigate Next: 37 -> 38 (of 81)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/41/27/4127968199ea066c0de03cf978187b33.jpg"), full=Some("https://static1.e621.net/data/41/27/4127968199ea066c0de03cf978187b33.png") (kind=Image)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/ed/a6/eda67031ba2184d1dfee4ce40a609998.jpg (sample=true, priority=false)
+[2026-08-20T19:50:18Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/ed/a6/eda67031ba2184d1dfee4ce40a609998.png (sample=false, priority=false)
+[2026-08-20T19:50:19Z INFO  sodglumate_rs::browser] Navigate Next: 38 -> 39 (of 81)
+[2026-08-20T19:50:19Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/75/24/7524f0a20186afff73fe0a88285c191e.jpg"), full=Some("https://static1.e621.net/data/75/24/7524f0a20186afff73fe0a88285c191e.png") (kind=Image)
+[2026-08-20T19:50:19Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/e0/07/e007c9aee9f20af689685e11ad8d6f76.jpg (sample=true, priority=false)
+[2026-08-20T19:50:19Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/e0/07/e007c9aee9f20af689685e11ad8d6f76.jpg (sample=false, priority=false)
+[2026-08-20T19:50:19Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/sample/71/db/71dbd7177a9c054d605fec1fe6fa691a.jpg (sample=true)
+[2026-08-20T19:50:19Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/preview/88/87/888742751a1d891273aa91e5264ab8f4.jpg (sample=true)
+[2026-08-20T19:50:19Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/sample/1d/e2/1de2fa31d4b09a850f25a9993c2de648.jpg (sample=true)
+[2026-08-20T19:50:19Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/preview/41/27/4127968199ea066c0de03cf978187b33.jpg (sample=true)
+[2026-08-20T19:50:19Z INFO  sodglumate_rs::browser] Navigate Prev: 39 -> 38 (of 81)
+[2026-08-20T19:50:19Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/41/27/4127968199ea066c0de03cf978187b33.jpg"), full=Some("https://static1.e621.net/data/41/27/4127968199ea066c0de03cf978187b33.png") (kind=Image)
+[2026-08-20T19:50:20Z INFO  sodglumate_rs::media] Worker [priority] loading: https://static1.e621.net/data/51/d0/51d0df42d7ffe90719ef857b36fff627.jpg (sample=false)
+[2026-08-20T19:50:20Z INFO  sodglumate_rs::media] Playable media downloaded: url=https://static1.e621.net/data/38/d5/38d5251f9254936a5c5616f216790c7f.gif bytes=2761406 current=false
+[2026-08-20T19:50:20Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/sample/65/c7/65c769cffcfd0a8650c05f7e65d18f59.jpg (sample=true)
+[2026-08-20T19:50:20Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/preview/80/dd/80ddf4faf8d648beb33f748fe437c1ca.jpg (sample=true)
+[2026-08-20T19:50:20Z INFO  sodglumate_rs::browser] Navigate Next: 38 -> 39 (of 81)
+[2026-08-20T19:50:20Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/75/24/7524f0a20186afff73fe0a88285c191e.jpg"), full=Some("https://static1.e621.net/data/75/24/7524f0a20186afff73fe0a88285c191e.png") (kind=Image)
+[2026-08-20T19:50:20Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/51/d0/51d0df42d7ffe90719ef857b36fff627.jpg (sample=false)
+[2026-08-20T19:50:21Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/sample/7f/6b/7f6b38ae119cfaccb216249f32d2a032.jpg (sample=true)
+[2026-08-20T19:50:21Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/75/24/7524f0a20186afff73fe0a88285c191e.jpg (sample=true)
+[2026-08-20T19:50:21Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/sample/c2/96/c296e1b05f701a90ac6aff232dc236d8.jpg (sample=true)
+[2026-08-20T19:50:21Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/1d/e2/1de2fa31d4b09a850f25a9993c2de648.jpg (sample=true)
+[2026-08-20T19:50:21Z INFO  sodglumate_rs::browser] Navigate Next: 39 -> 40 (of 81)
+[2026-08-20T19:50:21Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/88/87/888742751a1d891273aa91e5264ab8f4.jpg"), full=Some("https://static1.e621.net/data/88/87/888742751a1d891273aa91e5264ab8f4.gif") (kind=Playable)
+[2026-08-20T19:50:21Z INFO  sodglumate_rs::media] Starting software streaming player: url=https://static1.e621.net/data/88/87/888742751a1d891273aa91e5264ab8f4.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: https://static1.e621.net/data/88/87/888742751a1d891273aa91e5264ab8f4.gif
+[VideoPainter] ffmpeg opening input: https://static1.e621.net/data/88/87/888742751a1d891273aa91e5264ab8f4.gif
+[2026-08-20T19:50:21Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/88/87/888742751a1d891273aa91e5264ab8f4.gif (sample=false, priority=true)
+[2026-08-20T19:50:21Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/7c/71/7c7128ba958adef8445218a31387bca3.jpg (sample=true, priority=false)
+[2026-08-20T19:50:21Z INFO  sodglumate_rs::media] Worker [priority] loading: https://static1.e621.net/data/88/87/888742751a1d891273aa91e5264ab8f4.gif (sample=false)
+[2026-08-20T19:50:21Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/7c/71/7c7128ba958adef8445218a31387bca3.png (sample=false, priority=false)
+[2026-08-20T19:50:21Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/preview/90/d9/90d9d1da148c7916f5a8af68e8d4ffb7.jpg (sample=true)
+[2026-08-20T19:50:21Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/65/c7/65c769cffcfd0a8650c05f7e65d18f59.jpg (sample=true)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/sample/7a/f9/7af99f57166ffb4f1f9df8b249527a04.jpg (sample=true)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/sample/2e/e8/2ee8537348956d5706e67b744e2778cc.jpg (sample=true)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/71/db/71dbd7177a9c054d605fec1fe6fa691a.jpg (sample=true)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/7f/6b/7f6b38ae119cfaccb216249f32d2a032.jpg (sample=true)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/sample/59/2a/592a8a4cf92af6f0f85f87cb4cb92569.jpg (sample=true)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/c2/96/c296e1b05f701a90ac6aff232dc236d8.jpg (sample=true)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/88/87/888742751a1d891273aa91e5264ab8f4.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::browser] Navigate Next: 40 -> 41 (of 81)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/80/dd/80ddf4faf8d648beb33f748fe437c1ca.jpg"), full=Some("https://static1.e621.net/data/80/dd/80ddf4faf8d648beb33f748fe437c1ca.jpg") (kind=Image)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/03/4f/034fe32e3548031bcf17c8b49ddf895a.jpg (sample=true, priority=false)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/03/4f/034fe32e3548031bcf17c8b49ddf895a.png (sample=false, priority=false)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/preview/51/d8/51d82c1f88f0794c9939b76f34de353e.jpg (sample=true)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/preview/90/d9/90d9d1da148c7916f5a8af68e8d4ffb7.jpg (sample=true)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/sample/43/da/43dae1cabbb94092e7b52f2c2f1a2f06.jpg (sample=true)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/7a/f9/7af99f57166ffb4f1f9df8b249527a04.jpg (sample=true)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/sample/93/75/937502f47191edac5c5f77cd249a8488.jpg (sample=true)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/2e/e8/2ee8537348956d5706e67b744e2778cc.jpg (sample=true)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/preview/ee/fe/eefe2e7a86f6a0498263e887de298c71.jpg (sample=true)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/59/2a/592a8a4cf92af6f0f85f87cb4cb92569.jpg (sample=true)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::browser] Navigate Next: 41 -> 42 (of 81)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/71/db/71dbd7177a9c054d605fec1fe6fa691a.jpg"), full=Some("https://static1.e621.net/data/71/db/71dbd7177a9c054d605fec1fe6fa691a.png") (kind=Image)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/5a/3f/5a3fd427f129e690ebe7037c257304e2.jpg (sample=true, priority=false)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/5a/3f/5a3fd427f129e690ebe7037c257304e2.png (sample=false, priority=false)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Playable media downloaded: url=https://static1.e621.net/data/88/87/888742751a1d891273aa91e5264ab8f4.gif bytes=2179008 current=false
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/preview/81/6d/816dab5937a5a9f4c0e5fc8e30f2b092.jpg (sample=true)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/preview/51/d8/51d82c1f88f0794c9939b76f34de353e.jpg (sample=true)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/sample/6f/83/6f83081469978fcb03aef0a2a339ac41.jpg (sample=true)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/sample/7a/7f/7a7fe0da24f3eaa2678b36c8eb59761c.jpg (sample=true)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/preview/ee/fe/eefe2e7a86f6a0498263e887de298c71.jpg (sample=true)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/43/da/43dae1cabbb94092e7b52f2c2f1a2f06.jpg (sample=true)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/sample/e8/bb/e8bbb0340b5506a1c7a7cc194ea06069.jpg (sample=true)
+[2026-08-20T19:50:22Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/93/75/937502f47191edac5c5f77cd249a8488.jpg (sample=true)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::browser] Navigate Next: 42 -> 43 (of 81)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/1d/e2/1de2fa31d4b09a850f25a9993c2de648.jpg"), full=Some("https://static1.e621.net/data/1d/e2/1de2fa31d4b09a850f25a9993c2de648.png") (kind=Image)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/a6/2b/a62b501163409e11f417d7e8345108fa.jpg (sample=true, priority=false)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/a6/2b/a62b501163409e11f417d7e8345108fa.png (sample=false, priority=false)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/sample/6b/ee/6bee42d9445b6814a4b157eaac8f1e69.jpg (sample=true)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/preview/81/6d/816dab5937a5a9f4c0e5fc8e30f2b092.jpg (sample=true)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/preview/29/e1/29e10ff6554810d7582a18b60eebb27b.jpg (sample=true)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/6f/83/6f83081469978fcb03aef0a2a339ac41.jpg (sample=true)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/sample/8c/0e/8c0e39c3eba40ed4c5d5455ef4d3a005.jpg (sample=true)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/7a/7f/7a7fe0da24f3eaa2678b36c8eb59761c.jpg (sample=true)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::browser] Navigate Next: 43 -> 44 (of 81)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/65/c7/65c769cffcfd0a8650c05f7e65d18f59.jpg"), full=Some("https://static1.e621.net/data/65/c7/65c769cffcfd0a8650c05f7e65d18f59.png") (kind=Image)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/sample/76/68/7668cd94caca64c8121ff776672a678a.jpg (sample=true)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/e8/bb/e8bbb0340b5506a1c7a7cc194ea06069.jpg (sample=true)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/a5/c3/a5c31bba98f02022489aa5af22665d8c.jpg (sample=true, priority=false)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/a5/c3/a5c31bba98f02022489aa5af22665d8c.png (sample=false, priority=false)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/sample/4f/19/4f195484011dea99e5822f5c237da6b3.jpg (sample=true)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/6b/ee/6bee42d9445b6814a4b157eaac8f1e69.jpg (sample=true)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/preview/eb/76/eb76557bae8b23dba758a07f69616c0b.jpg (sample=true)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/preview/29/e1/29e10ff6554810d7582a18b60eebb27b.jpg (sample=true)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/sample/e9/c0/e9c0ec0d93aada70ef3fc59d8fa57f6e.jpg (sample=true)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/8c/0e/8c0e39c3eba40ed4c5d5455ef4d3a005.jpg (sample=true)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/sample/dd/81/dd81102f8a42ff7ae38435e00557461a.jpg (sample=true)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/76/68/7668cd94caca64c8121ff776672a678a.jpg (sample=true)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/41/27/4127968199ea066c0de03cf978187b33.png (sample=false)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/4f/19/4f195484011dea99e5822f5c237da6b3.jpg (sample=true)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::browser] Navigate Next: 44 -> 45 (of 81)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/7f/6b/7f6b38ae119cfaccb216249f32d2a032.jpg"), full=Some("https://static1.e621.net/data/7f/6b/7f6b38ae119cfaccb216249f32d2a032.png") (kind=Image)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/ff/78/ff78256e33dab7fee2d5dc76d2feb25d.jpg (sample=true, priority=false)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/ff/78/ff78256e33dab7fee2d5dc76d2feb25d.png (sample=false, priority=false)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/75/24/7524f0a20186afff73fe0a88285c191e.png (sample=false)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/preview/eb/76/eb76557bae8b23dba758a07f69616c0b.jpg (sample=true)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/80/dd/80ddf4faf8d648beb33f748fe437c1ca.jpg (sample=false)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/e9/c0/e9c0ec0d93aada70ef3fc59d8fa57f6e.jpg (sample=true)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/71/db/71dbd7177a9c054d605fec1fe6fa691a.png (sample=false)
+[2026-08-20T19:50:23Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/sample/dd/81/dd81102f8a42ff7ae38435e00557461a.jpg (sample=true)
+[2026-08-20T19:50:24Z INFO  sodglumate_rs::browser] Navigate Next: 45 -> 46 (of 81)
+[2026-08-20T19:50:24Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/c2/96/c296e1b05f701a90ac6aff232dc236d8.jpg"), full=Some("https://static1.e621.net/data/c2/96/c296e1b05f701a90ac6aff232dc236d8.jpg") (kind=Image)
+[2026-08-20T19:50:24Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/a1/31/a13140602022add21c9810d1c0fccdc9.jpg (sample=true, priority=false)
+[2026-08-20T19:50:24Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/a1/31/a13140602022add21c9810d1c0fccdc9.png (sample=false, priority=false)
+[2026-08-20T19:50:24Z INFO  sodglumate_rs::media] Worker [general-1] loading: https://static1.e621.net/data/1d/e2/1de2fa31d4b09a850f25a9993c2de648.png (sample=false)
+[2026-08-20T19:50:24Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/80/dd/80ddf4faf8d648beb33f748fe437c1ca.jpg (sample=false)
+[2026-08-20T19:50:24Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/65/c7/65c769cffcfd0a8650c05f7e65d18f59.png (sample=false)
+[2026-08-20T19:50:24Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/41/27/4127968199ea066c0de03cf978187b33.png (sample=false)
+[2026-08-20T19:50:24Z INFO  sodglumate_rs::browser] Navigate Next: 46 -> 47 (of 81)
+[2026-08-20T19:50:24Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/90/d9/90d9d1da148c7916f5a8af68e8d4ffb7.jpg"), full=Some("https://static1.e621.net/data/90/d9/90d9d1da148c7916f5a8af68e8d4ffb7.png") (kind=Image)
+[2026-08-20T19:50:24Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/7a/cd/7acd1bd2eb4cf5e955755e418e54f020.jpg (sample=true, priority=false)
+[2026-08-20T19:50:24Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/7a/cd/7acd1bd2eb4cf5e955755e418e54f020.png (sample=false, priority=false)
+[2026-08-20T19:50:24Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/7f/6b/7f6b38ae119cfaccb216249f32d2a032.png (sample=false)
+[2026-08-20T19:50:24Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/65/c7/65c769cffcfd0a8650c05f7e65d18f59.png (sample=false)
+[2026-08-20T19:50:24Z INFO  sodglumate_rs::browser] Navigate Next: 47 -> 48 (of 81)
+[2026-08-20T19:50:24Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/7a/f9/7af99f57166ffb4f1f9df8b249527a04.jpg"), full=Some("https://static1.e621.net/data/7a/f9/7af99f57166ffb4f1f9df8b249527a04.jpg") (kind=Image)
+[2026-08-20T19:50:24Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/b6/54/b654181ccbbbb5364461dd858128a08a.jpg (sample=true, priority=false)
+[2026-08-20T19:50:24Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/b6/54/b654181ccbbbb5364461dd858128a08a.png (sample=false, priority=false)
+[2026-08-20T19:50:25Z INFO  sodglumate_rs::browser] Navigate Next: 48 -> 49 (of 81)
+[2026-08-20T19:50:25Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/2e/e8/2ee8537348956d5706e67b744e2778cc.jpg"), full=Some("https://static1.e621.net/data/2e/e8/2ee8537348956d5706e67b744e2778cc.jpg") (kind=Image)
+[2026-08-20T19:50:25Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/cc/2b/cc2b843d2a3fc196f68f523e16c0e2db.jpg (sample=true, priority=false)
+[2026-08-20T19:50:25Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/cc/2b/cc2b843d2a3fc196f68f523e16c0e2db.png (sample=false, priority=false)
+[2026-08-20T19:50:25Z INFO  sodglumate_rs::browser] Navigate Next: 49 -> 50 (of 81)
+[2026-08-20T19:50:25Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/59/2a/592a8a4cf92af6f0f85f87cb4cb92569.jpg"), full=Some("https://static1.e621.net/data/59/2a/592a8a4cf92af6f0f85f87cb4cb92569.png") (kind=Image)
+[2026-08-20T19:50:25Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/sample/bc/78/bc78357e82b99250088446c481cb1a37.jpg (sample=true, priority=false)
+[2026-08-20T19:50:25Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/bc/78/bc78357e82b99250088446c481cb1a37.jpg (sample=false, priority=false)
+[2026-08-20T19:50:25Z INFO  sodglumate_rs::browser] Navigate Next: 50 -> 51 (of 81)
+[2026-08-20T19:50:25Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/51/d8/51d82c1f88f0794c9939b76f34de353e.jpg"), full=Some("https://static1.e621.net/data/51/d8/51d82c1f88f0794c9939b76f34de353e.png") (kind=Image)
+[2026-08-20T19:50:26Z INFO  sodglumate_rs::browser] Navigate Next: 51 -> 52 (of 81)
+[2026-08-20T19:50:26Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/43/da/43dae1cabbb94092e7b52f2c2f1a2f06.jpg"), full=Some("https://static1.e621.net/data/43/da/43dae1cabbb94092e7b52f2c2f1a2f06.jpg") (kind=Image)
+[2026-08-20T19:50:26Z INFO  sodglumate_rs::browser] Navigate Next: 52 -> 53 (of 81)
+[2026-08-20T19:50:26Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/93/75/937502f47191edac5c5f77cd249a8488.jpg"), full=Some("https://static1.e621.net/data/93/75/937502f47191edac5c5f77cd249a8488.jpg") (kind=Image)
+[2026-08-20T19:50:27Z INFO  sodglumate_rs::browser] Navigate Next: 53 -> 54 (of 81)
+[2026-08-20T19:50:27Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/ee/fe/eefe2e7a86f6a0498263e887de298c71.jpg"), full=Some("https://static1.e621.net/data/ee/fe/eefe2e7a86f6a0498263e887de298c71.jpg") (kind=Image)
+[2026-08-20T19:50:27Z INFO  sodglumate_rs::browser] Navigate Next: 54 -> 55 (of 81)
+[2026-08-20T19:50:27Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/81/6d/816dab5937a5a9f4c0e5fc8e30f2b092.jpg"), full=Some("https://static1.e621.net/data/81/6d/816dab5937a5a9f4c0e5fc8e30f2b092.gif") (kind=Playable)
+[2026-08-20T19:50:27Z INFO  sodglumate_rs::media] Starting software streaming player: url=https://static1.e621.net/data/81/6d/816dab5937a5a9f4c0e5fc8e30f2b092.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: https://static1.e621.net/data/81/6d/816dab5937a5a9f4c0e5fc8e30f2b092.gif
+[VideoPainter] ffmpeg opening input: https://static1.e621.net/data/81/6d/816dab5937a5a9f4c0e5fc8e30f2b092.gif
+[2026-08-20T19:50:27Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/81/6d/816dab5937a5a9f4c0e5fc8e30f2b092.gif (sample=false, priority=true)
+[2026-08-20T19:50:27Z INFO  sodglumate_rs::media] Worker [priority] loading: https://static1.e621.net/data/81/6d/816dab5937a5a9f4c0e5fc8e30f2b092.gif (sample=false)
+[2026-08-20T19:50:27Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/81/6d/816dab5937a5a9f4c0e5fc8e30f2b092.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[2026-08-20T19:50:27Z INFO  sodglumate_rs::browser] Navigate Next: 55 -> 56 (of 81)
+[2026-08-20T19:50:27Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/6f/83/6f83081469978fcb03aef0a2a339ac41.jpg"), full=Some("https://static1.e621.net/data/6f/83/6f83081469978fcb03aef0a2a339ac41.png") (kind=Image)
+[2026-08-20T19:50:28Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/c2/96/c296e1b05f701a90ac6aff232dc236d8.jpg (sample=false)
+[2026-08-20T19:50:28Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/71/db/71dbd7177a9c054d605fec1fe6fa691a.png (sample=false)
+[2026-08-20T19:50:28Z INFO  sodglumate_rs::browser] Navigate Next: 56 -> 57 (of 81)
+[2026-08-20T19:50:28Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/7a/7f/7a7fe0da24f3eaa2678b36c8eb59761c.jpg"), full=Some("https://static1.e621.net/data/7a/7f/7a7fe0da24f3eaa2678b36c8eb59761c.png") (kind=Image)
+[2026-08-20T19:50:28Z INFO  sodglumate_rs::browser] Navigate Next: 57 -> 58 (of 81)
+[2026-08-20T19:50:28Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/e8/bb/e8bbb0340b5506a1c7a7cc194ea06069.jpg"), full=Some("https://static1.e621.net/data/e8/bb/e8bbb0340b5506a1c7a7cc194ea06069.jpg") (kind=Image)
+[2026-08-20T19:50:29Z INFO  sodglumate_rs::browser] Navigate Next: 58 -> 59 (of 81)
+[2026-08-20T19:50:29Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/6b/ee/6bee42d9445b6814a4b157eaac8f1e69.jpg"), full=Some("https://static1.e621.net/data/6b/ee/6bee42d9445b6814a4b157eaac8f1e69.png") (kind=Image)
+[2026-08-20T19:50:29Z INFO  sodglumate_rs::browser] Navigate Next: 59 -> 60 (of 81)
+[2026-08-20T19:50:29Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/29/e1/29e10ff6554810d7582a18b60eebb27b.jpg"), full=Some("https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif") (kind=Playable)
+[2026-08-20T19:50:29Z INFO  sodglumate_rs::media] Starting software streaming player: url=https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif
+[VideoPainter] ffmpeg opening input: https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif
+[2026-08-20T19:50:29Z INFO  sodglumate_rs::media] Enqueued load: https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif (sample=false, priority=true)
+[2026-08-20T19:50:30Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[2026-08-20T19:50:30Z INFO  sodglumate_rs::browser] Navigate Next: 60 -> 61 (of 81)
+[2026-08-20T19:50:30Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/sample/8c/0e/8c0e39c3eba40ed4c5d5455ef4d3a005.jpg"), full=Some("https://static1.e621.net/data/8c/0e/8c0e39c3eba40ed4c5d5455ef4d3a005.png") (kind=Image)
+[2026-08-20T19:50:30Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/90/d9/90d9d1da148c7916f5a8af68e8d4ffb7.png (sample=false)
+[2026-08-20T19:50:30Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/c2/96/c296e1b05f701a90ac6aff232dc236d8.jpg (sample=false)
+[2026-08-20T19:50:31Z INFO  sodglumate_rs::browser] Navigate Prev: 61 -> 60 (of 81)
+[2026-08-20T19:50:31Z INFO  sodglumate_rs::media] LoadRequest: sample=Some("https://static1.e621.net/data/preview/29/e1/29e10ff6554810d7582a18b60eebb27b.jpg"), full=Some("https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif") (kind=Playable)
+[2026-08-20T19:50:31Z INFO  sodglumate_rs::media] Starting software streaming player: url=https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif
+[VideoPainter] ffmpeg opening input: https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif
+[2026-08-20T19:50:31Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/7a/f9/7af99f57166ffb4f1f9df8b249527a04.jpg (sample=false)
+[2026-08-20T19:50:31Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/90/d9/90d9d1da148c7916f5a8af68e8d4ffb7.png (sample=false)
+[2026-08-20T19:50:31Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/2e/e8/2ee8537348956d5706e67b744e2778cc.jpg (sample=false)
+[2026-08-20T19:50:31Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/7f/6b/7f6b38ae119cfaccb216249f32d2a032.png (sample=false)
+[2026-08-20T19:50:31Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif") status=Some("Buffering...") has_frames=false frame_size=None playback=true time=0.000
+[2026-08-20T19:50:32Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/59/2a/592a8a4cf92af6f0f85f87cb4cb92569.png (sample=false)
+[2026-08-20T19:50:32Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/7a/f9/7af99f57166ffb4f1f9df8b249527a04.jpg (sample=false)
+[2026-08-20T19:50:32Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/51/d8/51d82c1f88f0794c9939b76f34de353e.png (sample=false)
+[2026-08-20T19:50:32Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/2e/e8/2ee8537348956d5706e67b744e2778cc.jpg (sample=false)
+[2026-08-20T19:50:32Z INFO  sodglumate_rs::media] Worker [general-0] loading: https://static1.e621.net/data/43/da/43dae1cabbb94092e7b52f2c2f1a2f06.jpg (sample=false)
+[2026-08-20T19:50:32Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/75/24/7524f0a20186afff73fe0a88285c191e.png (sample=false)
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=10.000
+[2026-08-20T19:50:33Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/93/75/937502f47191edac5c5f77cd249a8488.jpg (sample=false)
+[2026-08-20T19:50:33Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/51/d8/51d82c1f88f0794c9939b76f34de353e.png (sample=false)
+[2026-08-20T19:50:34Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/ee/fe/eefe2e7a86f6a0498263e887de298c71.jpg (sample=false)
+[2026-08-20T19:50:34Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/59/2a/592a8a4cf92af6f0f85f87cb4cb92569.png (sample=false)
+[2026-08-20T19:50:34Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/6f/83/6f83081469978fcb03aef0a2a339ac41.png (sample=false)
+[2026-08-20T19:50:34Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/93/75/937502f47191edac5c5f77cd249a8488.jpg (sample=false)
+[2026-08-20T19:50:34Z INFO  sodglumate_rs::media] Worker [priority] loading: https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif (sample=false)
+[2026-08-20T19:50:34Z INFO  sodglumate_rs::media] Playable media downloaded: url=https://static1.e621.net/data/81/6d/816dab5937a5a9f4c0e5fc8e30f2b092.gif bytes=2145052 current=false
+[2026-08-20T19:50:34Z INFO  sodglumate_rs::media] Worker [general-3] loading: https://static1.e621.net/data/7a/7f/7a7fe0da24f3eaa2678b36c8eb59761c.png (sample=false)
+[2026-08-20T19:50:34Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/ee/fe/eefe2e7a86f6a0498263e887de298c71.jpg (sample=false)
+[2026-08-20T19:50:35Z INFO  sodglumate_rs::media] Playable media downloaded: url=https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif bytes=603380 current=true
+[2026-08-20T19:50:35Z INFO  sodglumate_rs::media] Starting staged GIF player: url=https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif bytes=603380 path=/tmp/sodglumate_media_1787255435078316303.gif
+[VideoPainter] selected decoder backend: ffmpeg
+[VideoPainter] set URL source: file:///tmp/sodglumate_media_1787255435078316303.gif
+[2026-08-20T19:50:35Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif") status=Some("Opening video stream...") has_frames=false frame_size=None playback=true time=0.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255435078316303.gif
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=10.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255435078316303.gif
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=10.000
+[VideoPainter] ffmpeg decoded first frame: pts=0.000 scaled=1404x1080
+[2026-08-20T19:50:35Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif") status=Some("Ready") has_frames=true frame_size=Some((1404, 1080)) playback=true time=0.000
+[VideoPainter] audio decode failed: ffmpeg-next found no audio stream
+[2026-08-20T19:50:35Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif") status=Some("Ended") has_frames=true frame_size=Some((1404, 1080)) playback=true time=0.013
+[2026-08-20T19:50:35Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif") status=Some("Ended") has_frames=false frame_size=Some((1404, 1080)) playback=true time=0.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255435078316303.gif
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=10.000
+[VideoPainter] ffmpeg decoded first frame: pts=0.000 scaled=1404x1080
+[2026-08-20T19:50:35Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif") status=Some("Ready") has_frames=true frame_size=Some((1404, 1080)) playback=true time=0.000
+[VideoPainter] audio decode failed: ffmpeg-next found no audio stream
+[2026-08-20T19:50:35Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif") status=Some("Ended") has_frames=true frame_size=Some((1404, 1080)) playback=true time=0.015
+[2026-08-20T19:50:36Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif") status=Some("Ended") has_frames=false frame_size=Some((1404, 1080)) playback=true time=0.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255435078316303.gif
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=10.000
+[VideoPainter] ffmpeg decoded first frame: pts=0.000 scaled=1404x1080
+[2026-08-20T19:50:36Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif") status=Some("Ready") has_frames=true frame_size=Some((1404, 1080)) playback=true time=0.000
+[VideoPainter] audio decode failed: ffmpeg-next found no audio stream
+[2026-08-20T19:50:36Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif") status=Some("Ended") has_frames=true frame_size=Some((1404, 1080)) playback=true time=0.014
+[2026-08-20T19:50:36Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/e8/bb/e8bbb0340b5506a1c7a7cc194ea06069.jpg (sample=false)
+[2026-08-20T19:50:36Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/6f/83/6f83081469978fcb03aef0a2a339ac41.png (sample=false)
+[2026-08-20T19:50:37Z INFO  sodglumate_rs::media] Worker [general-2] loading: https://static1.e621.net/data/6b/ee/6bee42d9445b6814a4b157eaac8f1e69.png (sample=false)
+[2026-08-20T19:50:37Z INFO  sodglumate_rs::media] Image loaded: https://static1.e621.net/data/e8/bb/e8bbb0340b5506a1c7a7cc194ea06069.jpg (sample=false)
+[2026-08-20T19:50:37Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif") status=Some("Ended") has_frames=false frame_size=Some((1404, 1080)) playback=true time=0.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255435078316303.gif
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=10.000
+[VideoPainter] ffmpeg decoded first frame: pts=0.000 scaled=1404x1080
+[2026-08-20T19:50:37Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif") status=Some("Ready") has_frames=true frame_size=Some((1404, 1080)) playback=true time=0.000
+[VideoPainter] audio decode failed: ffmpeg-next found no audio stream
+[2026-08-20T19:50:37Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif") status=Some("Ended") has_frames=true frame_size=Some((1404, 1080)) playback=true time=0.014
+[2026-08-20T19:50:37Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif") status=Some("Ended") has_frames=false frame_size=Some((1404, 1080)) playback=true time=0.000
+[VideoPainter] ffmpeg opening input: file:///tmp/sodglumate_media_1787255435078316303.gif
+[VideoPainter] ffmpeg video stream: index=0 codec=GIF fps=10.000
+[VideoPainter] ffmpeg decoded first frame: pts=0.000 scaled=1404x1080
+[2026-08-20T19:50:37Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif") status=Some("Ready") has_frames=true frame_size=Some((1404, 1080)) playback=true time=0.000
+[VideoPainter] audio decode failed: ffmpeg-next found no audio stream
+[2026-08-20T19:50:37Z INFO  sodglumate_rs::media] Video player state: url=Some("https://static1.e621.net/data/29/e1/29e10ff6554810d7582a18b60eebb27b.gif") status=Some("Ended") has_frames=true frame_size=Some((1404, 1080)) playback=true time=0.015
+[2026-08-20T19:50:37Z INFO  sodglumate_rs::media] Media worker [priority] shutting down
+make: *** No rule to make target '2'.  Stop.
