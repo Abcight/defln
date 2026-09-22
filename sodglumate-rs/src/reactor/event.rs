@@ -1,5 +1,7 @@
 use crate::api::Post;
-use crate::types::{BreathingPhase, BreathingStyle, ImageFillMode, MediaKind, NavDirection};
+use crate::types::{
+	BreathingPhase, BreathingStyle, ImageFillMode, MediaKind, NavDirection,
+};
 use std::time::Duration;
 
 #[derive(Clone, Debug)]

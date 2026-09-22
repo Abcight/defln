@@ -1,5 +1,7 @@
 use crate::api::Post;
-use crate::reactor::{BrowserEvent, ComponentResponse, Event, GatewayEvent, MediaEvent};
+use crate::reactor::{
+	BrowserEvent, ComponentResponse, Event, GatewayEvent, MediaEvent,
+};
 use crate::types::{MediaKind, NavDirection};
 
 pub struct ContentBrowser {
@@ -66,7 +68,8 @@ impl ContentBrowser {
 				let old_index = self.current_index;
 				match direction {
 					NavDirection::Next => {
-						self.current_index = (self.current_index + 1) % self.posts.len();
+						self.current_index =
+							(self.current_index + 1) % self.posts.len();
 					}
 					NavDirection::Prev => {
 						if self.current_index == 0 {
@@ -78,7 +81,8 @@ impl ContentBrowser {
 					NavDirection::Skip(count) => {
 						let count = *count;
 						if count > 0 {
-							self.current_index = (self.current_index + count as usize)
+							self.current_index = (self.current_index
+								+ count as usize)
 								.min(self.posts.len().saturating_sub(1));
 						} else {
 							self.current_index =
@@ -106,7 +110,8 @@ impl ContentBrowser {
 
 		if let Some(post) = post {
 			// Request media load with sample and full URLs
-			let kind = MediaKind::from_extension(&post.file.ext).unwrap_or(MediaKind::Image);
+			let kind =
+				MediaKind::from_extension(&post.file.ext).unwrap_or(MediaKind::Image);
 			let sample_url = preview_url(&post);
 			let full_url = post.file.url.clone();
 
@@ -135,7 +140,8 @@ impl ContentBrowser {
 			}
 
 			// Emit prefetch hints for next 30 posts
-			let prefetch_urls: Vec<(Option<String>, Option<String>, MediaKind)> = (1..=30)
+			let prefetch_urls: Vec<(Option<String>, Option<String>, MediaKind)> = (1
+				..=30)
 				.filter_map(|i| {
 					let idx = (self.current_index + i) % self.posts.len();
 					self.posts.get(idx).and_then(|p| {

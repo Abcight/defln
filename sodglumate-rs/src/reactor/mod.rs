@@ -3,8 +3,8 @@ pub mod queue;
 pub mod scheduler;
 
 pub use event::{
-	BeatEvent, BreathingEvent, BrowserEvent, ComponentResponse, Event, GatewayEvent, MediaEvent,
-	SettingsEvent, SourceEvent, ViewEvent,
+	BeatEvent, BreathingEvent, BrowserEvent, ComponentResponse, Event, GatewayEvent,
+	MediaEvent, SettingsEvent, SourceEvent, ViewEvent,
 };
 pub use queue::EventQueue;
 pub use scheduler::Scheduler;
@@ -122,7 +122,9 @@ impl Reactor {
 				let mut current_line = String::new();
 				let mut is_first_line = true;
 				for word in cleaned_msg.split_whitespace() {
-					if current_line.len() + word.len() + 1 > 45 && !current_line.is_empty() {
+					if current_line.len() + word.len() + 1 > 45
+						&& !current_line.is_empty()
+					{
 						if is_first_line {
 							self.view
 								.coach_logs
@@ -209,8 +211,12 @@ impl Reactor {
 				if let BrowserEvent::Navigate { direction } = b {
 					if let Some(coach) = &self.coach {
 						let coach_event = match direction {
-							crate::types::NavDirection::Next => crate::coach::CoachEvent::NextImage,
-							crate::types::NavDirection::Prev => crate::coach::CoachEvent::PrevImage,
+							crate::types::NavDirection::Next => {
+								crate::coach::CoachEvent::NextImage
+							}
+							crate::types::NavDirection::Prev => {
+								crate::coach::CoachEvent::PrevImage
+							}
 							crate::types::NavDirection::Skip(s) => {
 								if *s > 0 {
 									crate::coach::CoachEvent::NextImage
@@ -241,7 +247,9 @@ impl Reactor {
 				response = self.breathing.handle(event);
 				if let BreathingEvent::PhaseStarted(p) = b {
 					if let Some(coach) = &self.coach {
-						coach.send_event(crate::coach::CoachEvent::PhaseChange(format!("{:?}", p)));
+						coach.send_event(crate::coach::CoachEvent::PhaseChange(
+							format!("{:?}", p),
+						));
 					}
 					// Route PhaseStarted to settings as well
 					let settings_res = self.settings.handle(event, &self.breathing);
@@ -249,13 +257,20 @@ impl Reactor {
 					response.scheduled.extend(settings_res.scheduled);
 				}
 			}
-			Event::Settings(_) => response = self.settings.handle(event, &self.breathing),
+			Event::Settings(_) => {
+				response = self.settings.handle(event, &self.breathing)
+			}
 		}
 
 		response
 	}
 
-	fn configure_coach(&mut self, enabled: bool, model: Option<String>, preset: Option<String>) {
+	fn configure_coach(
+		&mut self,
+		enabled: bool,
+		model: Option<String>,
+		preset: Option<String>,
+	) {
 		self.coach = None;
 		if !enabled {
 			return;

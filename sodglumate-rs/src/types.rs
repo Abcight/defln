@@ -28,11 +28,14 @@ impl LoadedMedia {
 				complete,
 			} => {
 				let elapsed = started_at.elapsed();
-				let total_duration: Duration = frames.iter().map(|frame| frame.duration).sum();
+				let total_duration: Duration =
+					frames.iter().map(|frame| frame.duration).sum();
 				let elapsed = if total_duration.is_zero() {
 					Duration::ZERO
 				} else if *complete {
-					Duration::from_nanos((elapsed.as_nanos() % total_duration.as_nanos()) as u64)
+					Duration::from_nanos(
+						(elapsed.as_nanos() % total_duration.as_nanos()) as u64,
+					)
 				} else {
 					// Do not loop over only the frames received so far. Until the
 					// stream completes, the last available frame is a buffer edge.

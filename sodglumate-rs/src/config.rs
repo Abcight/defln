@@ -70,10 +70,12 @@ impl Default for SavedSettings {
 
 impl SavedSettings {
 	pub fn normalized(mut self) -> Self {
-		self.auto_play_delay_secs = finite_clamped(self.auto_play_delay_secs, 1.0, 60.0, 16.0);
+		self.auto_play_delay_secs =
+			finite_clamped(self.auto_play_delay_secs, 1.0, 60.0, 16.0);
 		self.auto_pan_cycle_duration =
 			finite_clamped(self.auto_pan_cycle_duration, 10.0, 120.0, 10.0);
-		self.beat_pulse_scale = finite_clamped(self.beat_pulse_scale, 0.01, 0.15, 0.03);
+		self.beat_pulse_scale =
+			finite_clamped(self.beat_pulse_scale, 0.01, 0.15, 0.03);
 		self.breathing_prepare_multiplier =
 			finite_clamped(self.breathing_prepare_multiplier, 0.1, 10.0, 1.0);
 		self.breathing_inhale_multiplier =

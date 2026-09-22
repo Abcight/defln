@@ -1,0 +1,20 @@
+                           Contributing to mnouw
+
+Thank you for your interest in contributing.
+
+All contributions require a Signed-off-by line in every commit message:
+
+    feat: add new feature
+
+    Signed-off-by: Your Name <your.email@example.com>
+
+You can add it automatically:
+
+    git commit -s -m "your commit message"
+
+By signing off, you accept the Contributor License Agreement in the file
+"CLA", as certified by the repository DCO. If an employer, client, university,
+or other organization owns the work, an authorized representative must accept
+the agreement before you contribute.
+
+Projects may have additional technical contribution requirements.

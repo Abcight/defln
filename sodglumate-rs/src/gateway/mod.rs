@@ -101,12 +101,16 @@ impl BooruGateway {
 					generation,
 				} => {
 					if generation != self.request_generation {
-						log::debug!("Ignoring stale search error for generation {}", generation);
+						log::debug!(
+							"Ignoring stale search error for generation {}",
+							generation
+						);
 						continue;
 					}
 					log::error!("Search error: {}", message);
 					self.fetch_pending = false;
-					responses.push(Event::Gateway(GatewayEvent::SearchError { message }));
+					responses
+						.push(Event::Gateway(GatewayEvent::SearchError { message }));
 				}
 			}
 		}
@@ -136,7 +140,13 @@ impl BooruGateway {
 				self.current_page = *page;
 				self.fetch_pending = true;
 				self.request_generation = self.request_generation.wrapping_add(1);
-				self.spawn_search(query.clone(), *page, *limit, true, self.request_generation);
+				self.spawn_search(
+					query.clone(),
+					*page,
+					*limit,
+					true,
+					self.request_generation,
+				);
 			}
 			Event::Gateway(GatewayEvent::FetchNextPage) => {
 				if !self.can_request() {

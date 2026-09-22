@@ -334,7 +334,9 @@ impl MediaPane {
 		match work.kind {
 			LoadKind::Image => {
 				let result = match result {
-					Ok(bytes) => Self::decode_media(&bytes).map_err(|e| e.to_string()),
+					Ok(bytes) => {
+						Self::decode_media(&bytes).map_err(|e| e.to_string())
+					}
 					Err(error) => Err(error.to_string()),
 				};
 				let _ = result_tx
@@ -375,14 +377,15 @@ impl MediaPane {
 			let send_error = |error: String| {
 				let _ = frame_tx.blocking_send(Err(error));
 			};
-			let decoder =
-				match image::codecs::gif::GifDecoder::new(StreamingGifReader::new(chunk_rx)) {
-					Ok(decoder) => decoder,
-					Err(error) => {
-						send_error(error.to_string());
-						return;
-					}
-				};
+			let decoder = match image::codecs::gif::GifDecoder::new(
+				StreamingGifReader::new(chunk_rx),
+			) {
+				Ok(decoder) => decoder,
+				Err(error) => {
+					send_error(error.to_string());
+					return;
+				}
+			};
 			let mut frame_count = 0;
 			for frame in decoder.into_frames() {
 				if frame_count == MAX_ANIMATION_FRAMES {
@@ -400,13 +403,14 @@ impl MediaPane {
 					}
 				};
 				let duration = Self::frame_duration(frame.delay());
-				let color_image = match Self::color_image_from_rgba(frame.into_buffer()) {
-					Ok(image) => image,
-					Err(error) => {
-						send_error(error.to_string());
-						return;
-					}
-				};
+				let color_image =
+					match Self::color_image_from_rgba(frame.into_buffer()) {
+						Ok(image) => image,
+						Err(error) => {
+							send_error(error.to_string());
+							return;
+						}
+					};
 				let first_frame = frame_count == 0;
 				frame_count += 1;
 				if first_frame {
@@ -636,7 +640,8 @@ impl MediaPane {
 							Duration::from_millis(100)
 						} else {
 							Duration::from_secs_f64(
-								f64::from(numerator) / f64::from(denominator) / 1000.0,
+								f64::from(numerator)
+									/ f64::from(denominator) / 1000.0,
 							)
 						};
 						Self::color_image_from_rgba(frame.into_buffer())
@@ -653,7 +658,9 @@ impl MediaPane {
 		)?))
 	}
 
-	fn color_image_from_rgba(img: image::RgbaImage) -> Result<egui::ColorImage, anyhow::Error> {
+	fn color_image_from_rgba(
+		img: image::RgbaImage,
+	) -> Result<egui::ColorImage, anyhow::Error> {
 		let pixels = u64::from(img.width()) * u64::from(img.height());
 		if pixels > MAX_IMAGE_PIXELS {
 			anyhow::bail!("Image exceeds {} pixels", MAX_IMAGE_PIXELS);
@@ -671,7 +678,9 @@ impl MediaPane {
 		if numerator == 0 {
 			Duration::from_millis(100)
 		} else {
-			Duration::from_secs_f64(f64::from(numerator) / f64::from(denominator) / 1000.0)
+			Duration::from_secs_f64(
+				f64::from(numerator) / f64::from(denominator) / 1000.0,
+			)
 		}
 	}
 
@@ -690,31 +699,43 @@ impl MediaPane {
 					self.loading_set.remove(&url);
 					match result {
 						Ok(decoded_media) => {
-							log::info!("Image loaded: {} (sample={})", url, is_sample);
+							log::info!(
+								"Image loaded: {} (sample={})",
+								url,
+								is_sample
+							);
 							let loaded_media = match decoded_media {
-								DecodedMedia::Image(color_image) => LoadedMedia::Image {
-									texture: self.egui_ctx.load_texture(
-										&url,
-										color_image,
-										egui::TextureOptions::LINEAR,
-									),
-								},
-								DecodedMedia::Animated(frames) => LoadedMedia::AnimatedImage {
-									frames: frames
-										.into_iter()
-										.enumerate()
-										.map(|(index, (color_image, duration))| AnimatedFrame {
+								DecodedMedia::Image(color_image) => {
+									LoadedMedia::Image {
+										texture: self.egui_ctx.load_texture(
+											&url,
+											color_image,
+											egui::TextureOptions::LINEAR,
+										),
+									}
+								}
+								DecodedMedia::Animated(frames) => {
+									LoadedMedia::AnimatedImage {
+										frames: frames
+											.into_iter()
+											.enumerate()
+											.map(
+												|(index, (color_image, duration))| {
+													AnimatedFrame {
 											texture: self.egui_ctx.load_texture(
 												format!("{url}#frame-{index}"),
 												color_image,
 												egui::TextureOptions::LINEAR,
 											),
 											duration,
-										})
-										.collect(),
-									started_at: std::time::Instant::now(),
-									complete: true,
-								},
+										}
+												},
+											)
+											.collect(),
+										started_at: std::time::Instant::now(),
+										complete: true,
+									}
+								}
 							};
 							let state = if is_sample {
 								CacheState::SampleOnly
@@ -722,23 +743,30 @@ impl MediaPane {
 								CacheState::Full
 							};
 							let animated_full_media_already_present = is_sample
-								&& self.cache.get(&full_url).is_some_and(|(media, _)| {
-									matches!(media, LoadedMedia::AnimatedImage { .. })
-								});
+								&& self.cache.get(&full_url).is_some_and(
+									|(media, _)| {
+										matches!(
+											media,
+											LoadedMedia::AnimatedImage { .. }
+										)
+									},
+								);
 							if !animated_full_media_already_present {
-								self.cache.insert(full_url.clone(), (loaded_media, state));
+								self.cache
+									.insert(full_url.clone(), (loaded_media, state));
 							}
 
-							let is_initial_load = if let Some(ref current) = self.current_item {
-								if is_sample {
-									true // Sample is always initial
+							let is_initial_load =
+								if let Some(ref current) = self.current_item {
+									if is_sample {
+										true // Sample is always initial
+									} else {
+										// Full is initial only if there's no sample
+										current.sample_url.is_none()
+									}
 								} else {
-									// Full is initial only if there's no sample
-									current.sample_url.is_none()
-								}
-							} else {
-								false
-							};
+									false
+								};
 
 							if is_initial_load
 								&& let Some(ref current) = self.current_item
@@ -754,10 +782,15 @@ impl MediaPane {
 							let current_item_matches =
 								self.current_item.as_ref().is_some_and(|item| {
 									item.sample_url.as_deref() == Some(url.as_str())
-										|| item.full_url.as_deref() == Some(url.as_str())
+										|| item.full_url.as_deref()
+											== Some(url.as_str())
 								});
-							if current_item_matches && self.get_current_media().is_none() {
-								responses.push(Event::Media(MediaEvent::LoadError { error }));
+							if current_item_matches
+								&& self.get_current_media().is_none()
+							{
+								responses.push(Event::Media(MediaEvent::LoadError {
+									error,
+								}));
 							}
 						}
 					}
@@ -777,7 +810,9 @@ impl MediaPane {
 								.cache
 								.get(&url)
 								.and_then(|(media, _)| match media {
-									LoadedMedia::AnimatedImage { frames, .. } => Some(frames.len()),
+									LoadedMedia::AnimatedImage { frames, .. } => {
+										Some(frames.len())
+									}
 									LoadedMedia::Image { .. } => None,
 								})
 								.unwrap_or(0);
@@ -786,16 +821,17 @@ impl MediaPane {
 								color_image,
 								egui::TextureOptions::LINEAR,
 							);
-							let entry = self.cache.entry(url.clone()).or_insert_with(|| {
-								(
-									LoadedMedia::AnimatedImage {
-										frames: Vec::new(),
-										started_at: std::time::Instant::now(),
-										complete: false,
-									},
-									CacheState::SampleOnly,
-								)
-							});
+							let entry =
+								self.cache.entry(url.clone()).or_insert_with(|| {
+									(
+										LoadedMedia::AnimatedImage {
+											frames: Vec::new(),
+											started_at: std::time::Instant::now(),
+											complete: false,
+										},
+										CacheState::SampleOnly,
+									)
+								});
 							if !matches!(entry.0, LoadedMedia::AnimatedImage { .. }) {
 								entry.0 = LoadedMedia::AnimatedImage {
 									frames: Vec::new(),
@@ -803,19 +839,29 @@ impl MediaPane {
 									complete: false,
 								};
 							}
-							if let LoadedMedia::AnimatedImage { frames, .. } = &mut entry.0 {
+							if let LoadedMedia::AnimatedImage { frames, .. } =
+								&mut entry.0
+							{
 								frames.push(AnimatedFrame { texture, duration });
 							}
 							if finished {
-								if let LoadedMedia::AnimatedImage { complete, .. } = &mut entry.0 {
+								if let LoadedMedia::AnimatedImage {
+									complete, ..
+								} = &mut entry.0
+								{
 									*complete = true;
 								}
 								entry.1 = CacheState::Full;
 							}
 						}
 						Ok(None) => {
-							if finished && let Some((media, state)) = self.cache.get_mut(&url) {
-								if let LoadedMedia::AnimatedImage { complete, .. } = media {
+							if finished
+								&& let Some((media, state)) = self.cache.get_mut(&url)
+							{
+								if let LoadedMedia::AnimatedImage {
+									complete, ..
+								} = media
+								{
 									*complete = true;
 								}
 								*state = CacheState::Full;
@@ -824,13 +870,13 @@ impl MediaPane {
 						Err(error) => {
 							log::error!("GIF load failed: {} - {}", url, error);
 							self.failed_set.insert(url.clone());
-							if self
-								.current_item
-								.as_ref()
-								.is_some_and(|item| item.full_url.as_deref() == Some(url.as_str()))
-								&& self.get_current_media().is_none()
+							if self.current_item.as_ref().is_some_and(|item| {
+								item.full_url.as_deref() == Some(url.as_str())
+							}) && self.get_current_media().is_none()
 							{
-								responses.push(Event::Media(MediaEvent::LoadError { error }));
+								responses.push(Event::Media(MediaEvent::LoadError {
+									error,
+								}));
 							}
 						}
 					}
@@ -846,14 +892,20 @@ impl MediaPane {
 							);
 						}
 						Err(error) => {
-							log::error!("Playable media load failed: {} - {}", url, error);
+							log::error!(
+								"Playable media load failed: {} - {}",
+								url,
+								error
+							);
 							self.failed_set.insert(url.clone());
-							let current_item_matches = self
-								.current_item
-								.as_ref()
-								.is_some_and(|item| item.full_url.as_deref() == Some(url.as_str()));
+							let current_item_matches =
+								self.current_item.as_ref().is_some_and(|item| {
+									item.full_url.as_deref() == Some(url.as_str())
+								});
 							if current_item_matches {
-								responses.push(Event::Media(MediaEvent::LoadError { error }));
+								responses.push(Event::Media(MediaEvent::LoadError {
+									error,
+								}));
 							}
 						}
 					}
@@ -903,14 +955,24 @@ impl MediaPane {
 			if !has_sample {
 				if let Some(ref sample_url) = current.sample_url {
 					if !sample_loading {
-						self.enqueue_load(sample_url.clone(), true, cache_key.clone(), false);
+						self.enqueue_load(
+							sample_url.clone(),
+							true,
+							cache_key.clone(),
+							false,
+						);
 					}
 				} else if !current.kind.is_playable()
 					&& let Some(ref full_url) = current.full_url
 				{
 					// No sample available; treat full as the first-tier load
 					if !full_loading {
-						self.enqueue_load(full_url.clone(), false, cache_key.clone(), true);
+						self.enqueue_load(
+							full_url.clone(),
+							false,
+							cache_key.clone(),
+							true,
+						);
 					}
 				}
 			}
@@ -922,7 +984,12 @@ impl MediaPane {
 					&& let Some(ref full_url) = current.full_url
 					&& !full_loading
 				{
-					self.enqueue_load(full_url.clone(), false, cache_key.clone(), true);
+					self.enqueue_load(
+						full_url.clone(),
+						false,
+						cache_key.clone(),
+						true,
+					);
 				}
 			} else if let Some(ref full_url) = current.full_url
 				&& Self::is_gif_url(full_url)
@@ -1068,16 +1135,22 @@ impl MediaPane {
 
 	pub fn current_is_playable(&self) -> bool {
 		self.current_item.as_ref().is_some_and(|item| {
-			item.kind.is_playable() && !item.full_url.as_deref().is_some_and(Self::is_gif_url)
+			item.kind.is_playable()
+				&& !item.full_url.as_deref().is_some_and(Self::is_gif_url)
 		})
 	}
 
 	pub fn show_current_video(&mut self, ui: &mut egui::Ui) {
 		let available_rect = ui.available_rect_before_wrap();
 		if let Some(player) = &self.video_player {
-			let rect = contained_video_rect(available_rect, player.decoded_frame_size());
+			let rect =
+				contained_video_rect(available_rect, player.decoded_frame_size());
 			ui.allocate_new_ui(egui::UiBuilder::new().max_rect(rect), |ui| {
-				player.in_sized(ui, rect.width().max(16.0), Some(rect.height().max(16.0)));
+				player.in_sized(
+					ui,
+					rect.width().max(16.0),
+					Some(rect.height().max(16.0)),
+				);
 			});
 			let observation = (
 				player.status_message(),
@@ -1100,7 +1173,8 @@ impl MediaPane {
 				self.note_painted(&url, "video");
 			}
 		} else {
-			let (rect, _) = ui.allocate_exact_size(available_rect.size(), egui::Sense::hover());
+			let (rect, _) =
+				ui.allocate_exact_size(available_rect.size(), egui::Sense::hover());
 			ui.painter().text(
 				rect.center(),
 				egui::Align2::CENTER_CENTER,
@@ -1111,10 +1185,18 @@ impl MediaPane {
 		}
 	}
 
-	pub fn show_current_video_in_rect(&mut self, ui: &mut egui::Ui, rect: egui::Rect) {
+	pub fn show_current_video_in_rect(
+		&mut self,
+		ui: &mut egui::Ui,
+		rect: egui::Rect,
+	) {
 		if let Some(player) = &self.video_player {
 			ui.allocate_new_ui(egui::UiBuilder::new().max_rect(rect), |ui| {
-				player.in_sized(ui, rect.width().max(16.0), Some(rect.height().max(16.0)));
+				player.in_sized(
+					ui,
+					rect.width().max(16.0),
+					Some(rect.height().max(16.0)),
+				);
 			});
 			let observation = (
 				player.status_message(),
@@ -1164,7 +1246,13 @@ impl MediaPane {
 	}
 
 	/// Enqueue a load to either the priority or general work channel.
-	fn enqueue_load(&mut self, url: String, is_sample: bool, cache_key: String, priority: bool) {
+	fn enqueue_load(
+		&mut self,
+		url: String,
+		is_sample: bool,
+		cache_key: String,
+		priority: bool,
+	) {
 		self.enqueue_work(url, is_sample, cache_key, LoadKind::Image, priority);
 	}
 
@@ -1311,7 +1399,8 @@ impl MediaPane {
 	fn prune_cache(&mut self) {
 		const MAX_CACHE_SIZE: usize = 100;
 		if self.cache.len() > MAX_CACHE_SIZE {
-			let current_key = self.current_item.as_ref().map(|i| self.get_cache_key(i));
+			let current_key =
+				self.current_item.as_ref().map(|i| self.get_cache_key(i));
 			let to_remove: Vec<String> = self
 				.cache
 				.keys()
@@ -1381,7 +1470,10 @@ impl MediaPane {
 	}
 }
 
-fn contained_video_rect(available: egui::Rect, frame_size: Option<(u32, u32)>) -> egui::Rect {
+fn contained_video_rect(
+	available: egui::Rect,
+	frame_size: Option<(u32, u32)>,
+) -> egui::Rect {
 	let (width, height) = frame_size.unwrap_or((16, 9));
 	let aspect = width as f32 / height.max(1) as f32;
 	let available_aspect = available.width() / available.height().max(1.0);
@@ -1410,8 +1502,9 @@ mod tests {
 	#[tokio::test]
 	async fn decodes_first_gif_frame_before_stream_finishes() {
 		let gif = [
-			b'G', b'I', b'F', b'8', b'9', b'a', 1, 0, 1, 0, 128, 0, 0, 0, 0, 0, 255, 255, 255, 33,
-			249, 4, 1, 0, 0, 0, 0, 44, 0, 0, 0, 0, 1, 0, 1, 0, 0, 2, 2, 68, 1, 0, 59,
+			b'G', b'I', b'F', b'8', b'9', b'a', 1, 0, 1, 0, 128, 0, 0, 0, 0, 0, 255,
+			255, 255, 33, 249, 4, 1, 0, 0, 0, 0, 44, 0, 0, 0, 0, 1, 0, 1, 0, 0, 2, 2,
+			68, 1, 0, 59,
 		];
 		let (chunk_tx, mut frame_rx) =
 			MediaPane::spawn_gif_decoder("https://cdn.example/stream.gif");
@@ -1422,11 +1515,12 @@ mod tests {
 			.send(Ok(gif[..gif.len() - 1].to_vec()))
 			.await
 			.expect("decoder should still be receiving data");
-		let first_frame = tokio::time::timeout(Duration::from_secs(1), frame_rx.recv())
-			.await
-			.expect("first frame should not wait for the trailer")
-			.expect("decoder should emit a frame")
-			.expect("GIF should decode successfully");
+		let first_frame =
+			tokio::time::timeout(Duration::from_secs(1), frame_rx.recv())
+				.await
+				.expect("first frame should not wait for the trailer")
+				.expect("decoder should emit a frame")
+				.expect("GIF should decode successfully");
 		assert!(first_frame.0.is_some());
 		assert!(!first_frame.1);
 

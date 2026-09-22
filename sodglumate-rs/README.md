@@ -95,8 +95,8 @@ See [e621 cheatsheet](https://e621.net/wiki_pages/help:cheatsheet) for full synt
 
 ## Contributing
 
-See [CONTRIBUTING](CONTRIBUTING) for guidelines. All contributions require
-sign-off per the [Developer Certificate of Origin](DCO).
+See the repository-wide [contribution guidelines](../CONTRIBUTING). All
+contributions require a signed-off commit under the repository DCO and CLA.
 
 ## License
 
