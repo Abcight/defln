@@ -5,8 +5,8 @@ use crate::coach::CoachValue;
 use crate::gateway::BooruGateway;
 use crate::media::MediaPane;
 use crate::reactor::{
-	BeatEvent, BreathingEvent, ComponentResponse, Event, GatewayEvent, MediaEvent, SettingsEvent,
-	SourceEvent, ViewEvent,
+	BeatEvent, BreathingEvent, ComponentResponse, Event, GatewayEvent, MediaEvent,
+	SettingsEvent, SourceEvent, ViewEvent,
 };
 use crate::settings::SettingsManager;
 use crate::types::{BreathingPhase, BreathingStyle, ImageFillMode, NavDirection};
@@ -96,7 +96,8 @@ impl ViewManager {
 		coach_model: Option<String>,
 		coach_preset: Option<String>,
 	) -> Self {
-		let search_query_presets = normalize_search_query_presets(search_query_presets);
+		let search_query_presets =
+			normalize_search_query_presets(search_query_presets);
 		let selected_search_query_preset = search_query_presets
 			.iter()
 			.find(|preset| **preset == search_query)
@@ -169,8 +170,12 @@ impl ViewManager {
 			Event::View(ViewEvent::ToggleImageFillMode) => {
 				match self.image_fill_mode {
 					ImageFillMode::Cover => self.image_fill_mode = ImageFillMode::Fit,
-					ImageFillMode::Fit => self.image_fill_mode = ImageFillMode::FitToGallery,
-					ImageFillMode::FitToGallery => self.image_fill_mode = ImageFillMode::Cover,
+					ImageFillMode::Fit => {
+						self.image_fill_mode = ImageFillMode::FitToGallery
+					}
+					ImageFillMode::FitToGallery => {
+						self.image_fill_mode = ImageFillMode::Cover
+					}
 				}
 				ComponentResponse::none()
 			}
@@ -272,7 +277,9 @@ impl ViewManager {
 
 		if space_pressed {
 			if ctrl_pressed {
-				events.push(Event::Source(SourceEvent::Navigate(NavDirection::Skip(10))));
+				events.push(Event::Source(SourceEvent::Navigate(
+					NavDirection::Skip(10),
+				)));
 			} else {
 				events.push(Event::Source(SourceEvent::Navigate(NavDirection::Next)));
 			}
@@ -330,7 +337,8 @@ impl ViewManager {
 
 				ui.label("Page:");
 				let page_response = ui.add(
-					egui::TextEdit::singleline(&mut self.search_page_input).desired_width(40.0),
+					egui::TextEdit::singleline(&mut self.search_page_input)
+						.desired_width(40.0),
 				);
 
 				if ui.button("Search").clicked()
@@ -339,7 +347,8 @@ impl ViewManager {
 					|| (page_response.lost_focus()
 						&& ctx.input(|i| i.key_pressed(egui::Key::Enter)))
 				{
-					let page = self.search_page_input.parse::<u32>().unwrap_or(1).max(1);
+					let page =
+						self.search_page_input.parse::<u32>().unwrap_or(1).max(1);
 					events.push(Event::Source(SourceEvent::Search {
 						query: self.search_query.clone(),
 						page,
@@ -409,10 +418,12 @@ impl ViewManager {
 							)
 							.changed()
 						{
-							events.push(Event::Breathing(BreathingEvent::SetPhaseMultiplier {
-								phase,
-								value: multiplier,
-							}));
+							events.push(Event::Breathing(
+								BreathingEvent::SetPhaseMultiplier {
+									phase,
+									value: multiplier,
+								},
+							));
 						}
 					}
 
@@ -431,9 +442,11 @@ impl ViewManager {
 								)
 								.clicked()
 							{
-								events.push(Event::Breathing(BreathingEvent::SetStyle {
-									style: BreathingStyle::Classic,
-								}));
+								events.push(Event::Breathing(
+									BreathingEvent::SetStyle {
+										style: BreathingStyle::Classic,
+									},
+								));
 							}
 							if ui
 								.selectable_label(
@@ -442,9 +455,11 @@ impl ViewManager {
 								)
 								.clicked()
 							{
-								events.push(Event::Breathing(BreathingEvent::SetStyle {
-									style: BreathingStyle::Immersive,
-								}));
+								events.push(Event::Breathing(
+									BreathingEvent::SetStyle {
+										style: BreathingStyle::Immersive,
+									},
+								));
 							}
 						});
 				}
@@ -475,7 +490,10 @@ impl ViewManager {
 					.selected_text(fill_label)
 					.show_ui(ui, |ui| {
 						if ui
-							.selectable_label(current_fill == ImageFillMode::Cover, "Cover")
+							.selectable_label(
+								current_fill == ImageFillMode::Cover,
+								"Cover",
+							)
 							.clicked()
 						{
 							events.push(Event::View(ViewEvent::SetImageFillMode {
@@ -483,7 +501,10 @@ impl ViewManager {
 							}));
 						}
 						if ui
-							.selectable_label(current_fill == ImageFillMode::Fit, "Fit")
+							.selectable_label(
+								current_fill == ImageFillMode::Fit,
+								"Fit",
+							)
 							.clicked()
 						{
 							events.push(Event::View(ViewEvent::SetImageFillMode {
@@ -511,15 +532,21 @@ impl ViewManager {
 					.selected_text(selected_label)
 					.show_ui(ui, |ui| {
 						if ui
-							.selectable_label(beat.selected_device().is_none(), "Default")
+							.selectable_label(
+								beat.selected_device().is_none(),
+								"Default",
+							)
 							.clicked()
 						{
-							events.push(Event::Beat(BeatEvent::SetDevice { name: None }));
+							events.push(Event::Beat(BeatEvent::SetDevice {
+								name: None,
+							}));
 						}
 						for device_name in beat.device_names() {
-							let is_selected =
-								beat.selected_device().as_deref() == Some(device_name.as_str());
-							if ui.selectable_label(is_selected, device_name).clicked() {
+							let is_selected = beat.selected_device().as_deref()
+								== Some(device_name.as_str());
+							if ui.selectable_label(is_selected, device_name).clicked()
+							{
 								events.push(Event::Beat(BeatEvent::SetDevice {
 									name: Some(device_name.clone()),
 								}));
@@ -567,13 +594,17 @@ impl ViewManager {
 							vec![]
 						};
 
-						let selected_model = self.coach_model.as_deref().unwrap_or("Select Model");
+						let selected_model =
+							self.coach_model.as_deref().unwrap_or("Select Model");
 						egui::ComboBox::from_id_salt("coach_model")
 							.selected_text(selected_model)
 							.show_ui(ui, |ui| {
 								for m in models {
 									if ui
-										.selectable_label(self.coach_model.as_ref() == Some(&m), &m)
+										.selectable_label(
+											self.coach_model.as_ref() == Some(&m),
+											&m,
+										)
 										.clicked()
 									{
 										self.coach_model = Some(m);
@@ -635,22 +666,23 @@ impl ViewManager {
 			.selected_search_query_preset
 			.as_ref()
 			.is_some_and(|preset| {
-				preset != &self.search_query || !self.search_query_presets.contains(preset)
+				preset != &self.search_query
+					|| !self.search_query_presets.contains(preset)
 			}) {
 			self.selected_search_query_preset = None;
 		}
 
-		let selected_text = self
-			.selected_search_query_preset
-			.clone()
-			.unwrap_or_else(|| {
-				let query = self.search_query.trim();
-				if query.is_empty() {
-					"Custom query".to_owned()
-				} else {
-					query.to_owned()
-				}
-			});
+		let selected_text =
+			self.selected_search_query_preset
+				.clone()
+				.unwrap_or_else(|| {
+					let query = self.search_query.trim();
+					if query.is_empty() {
+						"Custom query".to_owned()
+					} else {
+						query.to_owned()
+					}
+				});
 
 		let mut custom_response = None;
 		let mut preset_to_select = None;
@@ -663,7 +695,8 @@ impl ViewManager {
 				ui.horizontal(|ui| {
 					ui.label("Custom");
 					let response = ui.add(
-						egui::TextEdit::singleline(&mut self.search_query).desired_width(280.0),
+						egui::TextEdit::singleline(&mut self.search_query)
+							.desired_width(280.0),
 					);
 					if response.changed() {
 						self.selected_search_query_preset = None;
@@ -677,8 +710,9 @@ impl ViewManager {
 
 				for (index, preset) in presets.iter().enumerate() {
 					ui.horizontal(|ui| {
-						let is_selected =
-							self.selected_search_query_preset.as_deref() == Some(preset.as_str());
+						let is_selected = self
+							.selected_search_query_preset
+							.as_deref() == Some(preset.as_str());
 						if ui.selectable_label(is_selected, preset).clicked() {
 							preset_to_select = Some(preset.clone());
 						}
@@ -695,7 +729,9 @@ impl ViewManager {
 
 		if let Some(index) = preset_to_delete {
 			let deleted_preset = self.search_query_presets.remove(index);
-			if self.selected_search_query_preset.as_deref() == Some(deleted_preset.as_str()) {
+			if self.selected_search_query_preset.as_deref()
+				== Some(deleted_preset.as_str())
+			{
 				self.selected_search_query_preset = None;
 			}
 		}
@@ -769,15 +805,18 @@ impl ViewManager {
 
 					for msg in recent_logs {
 						let text = msg.clone();
-						let galley =
-							ui.painter()
-								.layout_no_wrap(text.clone(), font_id.clone(), text_color);
+						let galley = ui.painter().layout_no_wrap(
+							text.clone(),
+							font_id.clone(),
+							text_color,
+						);
 						let shadow_galley = ui.painter().layout_no_wrap(
 							text.clone(),
 							font_id.clone(),
 							outline_color,
 						);
-						let (rect, _) = ui.allocate_exact_size(galley.size(), egui::Sense::hover());
+						let (rect, _) = ui
+							.allocate_exact_size(galley.size(), egui::Sense::hover());
 
 						for offset in offsets {
 							ui.painter().galley(
@@ -841,19 +880,27 @@ impl ViewManager {
 			let mut scroll_delta = egui::Vec2::ZERO;
 			let speed = 20.0;
 
-			if ui.input(|i| i.key_down(egui::Key::ArrowRight) || i.key_down(egui::Key::D)) {
+			if ui.input(|i| {
+				i.key_down(egui::Key::ArrowRight) || i.key_down(egui::Key::D)
+			}) {
 				scroll_delta.x -= speed;
 				*input_active = true;
 			}
-			if ui.input(|i| i.key_down(egui::Key::ArrowLeft) || i.key_down(egui::Key::A)) {
+			if ui.input(|i| {
+				i.key_down(egui::Key::ArrowLeft) || i.key_down(egui::Key::A)
+			}) {
 				scroll_delta.x += speed;
 				*input_active = true;
 			}
-			if ui.input(|i| i.key_down(egui::Key::ArrowDown) || i.key_down(egui::Key::S)) {
+			if ui.input(|i| {
+				i.key_down(egui::Key::ArrowDown) || i.key_down(egui::Key::S)
+			}) {
 				scroll_delta.y -= speed;
 				*input_active = true;
 			}
-			if ui.input(|i| i.key_down(egui::Key::ArrowUp) || i.key_down(egui::Key::W)) {
+			if ui
+				.input(|i| i.key_down(egui::Key::ArrowUp) || i.key_down(egui::Key::W))
+			{
 				scroll_delta.y += speed;
 				*input_active = true;
 			}
@@ -873,21 +920,24 @@ impl ViewManager {
 			return;
 		}
 
-		let gallery_fallback_media = if matches!(self.image_fill_mode, ImageFillMode::FitToGallery)
-			&& media.get_current_media().is_none()
-		{
-			(1..browser.posts_len() as isize)
-				.chain((1..browser.posts_len() as isize).map(|offset| -offset))
-				.find_map(|offset| {
-					browser
-						.get_post_relative(offset)
-						.and_then(|post| media.get_media_by_post(post))
-				})
-		} else {
-			None
-		};
+		let gallery_fallback_media =
+			if matches!(self.image_fill_mode, ImageFillMode::FitToGallery)
+				&& media.get_current_media().is_none()
+			{
+				(1..browser.posts_len() as isize)
+					.chain((1..browser.posts_len() as isize).map(|offset| -offset))
+					.find_map(|offset| {
+						browser
+							.get_post_relative(offset)
+							.and_then(|post| media.get_media_by_post(post))
+					})
+			} else {
+				None
+			};
 
-		if let Some(loaded_media) = media.get_current_media().or(gallery_fallback_media) {
+		if let Some(loaded_media) =
+			media.get_current_media().or(gallery_fallback_media)
+		{
 			if loaded_media.is_animated() {
 				ctx.request_repaint();
 			}
@@ -915,25 +965,29 @@ impl ViewManager {
 						if self.user_zoom > 1.0 {
 							let speed = 1600.0 * dt;
 							if ctx.input(|i| {
-								i.key_down(egui::Key::ArrowRight) || i.key_down(egui::Key::D)
+								i.key_down(egui::Key::ArrowRight)
+									|| i.key_down(egui::Key::D)
 							}) {
 								self.user_pan_offset.x -= speed;
 								ctx.request_repaint();
 							}
 							if ctx.input(|i| {
-								i.key_down(egui::Key::ArrowLeft) || i.key_down(egui::Key::A)
+								i.key_down(egui::Key::ArrowLeft)
+									|| i.key_down(egui::Key::A)
 							}) {
 								self.user_pan_offset.x += speed;
 								ctx.request_repaint();
 							}
 							if ctx.input(|i| {
-								i.key_down(egui::Key::ArrowDown) || i.key_down(egui::Key::S)
+								i.key_down(egui::Key::ArrowDown)
+									|| i.key_down(egui::Key::S)
 							}) {
 								self.user_pan_offset.y -= speed;
 								ctx.request_repaint();
 							}
 							if ctx.input(|i| {
-								i.key_down(egui::Key::ArrowUp) || i.key_down(egui::Key::W)
+								i.key_down(egui::Key::ArrowUp)
+									|| i.key_down(egui::Key::W)
 							}) {
 								self.user_pan_offset.y += speed;
 								ctx.request_repaint();
@@ -943,10 +997,11 @@ impl ViewManager {
 						}
 					}
 
-					let fit_scale =
-						(available_size.x / img_size.x).min(available_size.y / img_size.y);
+					let fit_scale = (available_size.x / img_size.x)
+						.min(available_size.y / img_size.y);
 					let fit_size = img_size * fit_scale * self.user_zoom;
-					let pan_limit = ((fit_size - available_size) * 0.5).max(egui::Vec2::ZERO);
+					let pan_limit =
+						((fit_size - available_size) * 0.5).max(egui::Vec2::ZERO);
 					self.user_pan_offset.x =
 						self.user_pan_offset.x.clamp(-pan_limit.x, pan_limit.x);
 					self.user_pan_offset.y =
@@ -971,24 +1026,26 @@ impl ViewManager {
 						let scale = width_ratio.max(height_ratio);
 						let base_display_size = img_size * scale;
 
-						let mut scroll_area = egui::ScrollArea::both().scroll_bar_visibility(
-							egui::scroll_area::ScrollBarVisibility::AlwaysHidden,
-						);
+						let mut scroll_area = egui::ScrollArea::both()
+							.scroll_bar_visibility(
+								egui::scroll_area::ScrollBarVisibility::AlwaysHidden,
+							);
 
 						// Auto-pan
 						if !user_panned {
 							let elapsed = load_time.elapsed().as_secs_f32();
-							let cycle = (elapsed * 2.0 * std::f32::consts::PI) / pan_cycle;
+							let cycle =
+								(elapsed * 2.0 * std::f32::consts::PI) / pan_cycle;
 							let factor = (1.0 - cycle.cos()) * 0.5;
 
 							let overflow = base_display_size - available_size;
 							if overflow.x > 0.0 {
-								scroll_area =
-									scroll_area.horizontal_scroll_offset(overflow.x * factor);
+								scroll_area = scroll_area
+									.horizontal_scroll_offset(overflow.x * factor);
 							}
 							if overflow.y > 0.0 {
-								scroll_area =
-									scroll_area.vertical_scroll_offset(overflow.y * factor);
+								scroll_area = scroll_area
+									.vertical_scroll_offset(overflow.y * factor);
 							}
 							ctx.request_repaint();
 						}
@@ -996,19 +1053,26 @@ impl ViewManager {
 						scroll_area.show(ui, |ui| {
 							handle_scroll_input(ui, &mut user_panned);
 
-							let (rect, _response) =
-								ui.allocate_exact_size(base_display_size, egui::Sense::hover());
+							let (rect, _response) = ui.allocate_exact_size(
+								base_display_size,
+								egui::Sense::hover(),
+							);
 
 							let center = rect.center();
 							let pulsed_size = base_display_size * pulse;
-							let pulsed_rect = egui::Rect::from_center_size(center, pulsed_size);
+							let pulsed_rect =
+								egui::Rect::from_center_size(center, pulsed_size);
 							let uv = egui::Rect::from_min_max(
 								egui::pos2(0.0, 0.0),
 								egui::pos2(1.0, 1.0),
 							);
 
-							ui.painter()
-								.image(texture.id(), pulsed_rect, uv, egui::Color32::WHITE);
+							ui.painter().image(
+								texture.id(),
+								pulsed_rect,
+								uv,
+								egui::Color32::WHITE,
+							);
 						});
 					}
 					ImageFillMode::Fit => {
@@ -1018,19 +1082,26 @@ impl ViewManager {
 						let base_display_size = img_size * scale;
 
 						ui.centered_and_justified(|ui| {
-							let (rect, _response) =
-								ui.allocate_exact_size(available_size, egui::Sense::hover());
+							let (rect, _response) = ui.allocate_exact_size(
+								available_size,
+								egui::Sense::hover(),
+							);
 
 							let center = rect.center() + self.user_pan_offset;
 							let pulsed_size = base_display_size * pulse;
-							let pulsed_rect = egui::Rect::from_center_size(center, pulsed_size);
+							let pulsed_rect =
+								egui::Rect::from_center_size(center, pulsed_size);
 							let uv = egui::Rect::from_min_max(
 								egui::pos2(0.0, 0.0),
 								egui::pos2(1.0, 1.0),
 							);
 
-							ui.painter()
-								.image(texture.id(), pulsed_rect, uv, egui::Color32::WHITE);
+							ui.painter().image(
+								texture.id(),
+								pulsed_rect,
+								uv,
+								egui::Color32::WHITE,
+							);
 						});
 					}
 					ImageFillMode::FitToGallery => {
@@ -1038,7 +1109,8 @@ impl ViewManager {
 						if len > 0 {
 							let new_idx = browser.current_index();
 							if new_idx != self.last_gallery_index {
-								let mut delta = new_idx as isize - self.last_gallery_index as isize;
+								let mut delta = new_idx as isize
+									- self.last_gallery_index as isize;
 								let ilen = len as isize;
 								if delta > ilen / 2 {
 									delta -= ilen;
@@ -1050,7 +1122,8 @@ impl ViewManager {
 
 								self.gallery_anim_start_offset =
 									self.gallery_anim_offset + visual_delta;
-								self.gallery_anim_offset = self.gallery_anim_start_offset;
+								self.gallery_anim_offset =
+									self.gallery_anim_start_offset;
 								self.gallery_anim_time = 0.0;
 								self.last_gallery_index = new_idx;
 							}
@@ -1077,18 +1150,21 @@ impl ViewManager {
 							&& self.gallery_anim_offset.abs() < 0.001;
 
 						ui.centered_and_justified(|ui| {
-							let (rect, _response) =
-								ui.allocate_exact_size(available_size, egui::Sense::hover());
+							let (rect, _response) = ui.allocate_exact_size(
+								available_size,
+								egui::Sense::hover(),
+							);
 
-							let center_rect = egui::Rect::from_min_size(rect.min, available_size);
+							let center_rect =
+								egui::Rect::from_min_size(rect.min, available_size);
 
 							let get_fitted_width = |offset: isize| -> f32 {
 								if let Some(post) = browser.get_post_relative(offset)
 									&& let Some(media) = media.get_media_by_post(post)
 								{
 									let size = media.texture().size_vec2();
-									let scale =
-										(available_size.x / size.x).min(available_size.y / size.y);
+									let scale = (available_size.x / size.x)
+										.min(available_size.y / size.y);
 									return size.x * scale;
 								}
 								available_size.x
@@ -1103,63 +1179,69 @@ impl ViewManager {
 							let w2 = get_fitted_width(vc_ceil);
 							let main_w = w1 + (w2 - w1) * vc_fract;
 
-							let gutter_w = ((available_size.x - main_w) / 2.0).max(0.0);
+							let gutter_w =
+								((available_size.x - main_w) / 2.0).max(0.0);
 							let left_gutter = egui::Rect::from_min_size(
 								rect.min,
 								egui::vec2(gutter_w, available_size.y),
 							);
 							let right_gutter = egui::Rect::from_min_size(
-								rect.min + egui::vec2(available_size.x - gutter_w, 0.0),
+								rect.min
+									+ egui::vec2(available_size.x - gutter_w, 0.0),
 								egui::vec2(gutter_w, available_size.y),
 							);
 
-							let off_left =
-								left_gutter.translate(egui::vec2(-gutter_w - 100.0, 0.0));
-							let off_right =
-								right_gutter.translate(egui::vec2(gutter_w + 100.0, 0.0));
+							let off_left = left_gutter
+								.translate(egui::vec2(-gutter_w - 100.0, 0.0));
+							let off_right = right_gutter
+								.translate(egui::vec2(gutter_w + 100.0, 0.0));
 
-							let fit_rect =
-								|img_size: egui::Vec2, space: egui::Rect| -> egui::Rect {
-									if space.width() <= 0.01 || space.height() <= 0.01 {
-										return egui::Rect::from_center_size(
-											space.center(),
-											egui::Vec2::ZERO,
-										);
-									}
-									let width_ratio = space.width() / img_size.x;
-									let height_ratio = space.height() / img_size.y;
-									let scale = width_ratio.min(height_ratio) * self.user_zoom;
-									let size = img_size * scale;
-									egui::Rect::from_center_size(
-										space.center() + self.user_pan_offset,
-										size,
-									)
-								};
-
-							let cover_rect =
-								|img_size: egui::Vec2, space: egui::Rect| -> egui::Rect {
-									if space.width() <= 0.01 || space.height() <= 0.01 {
-										return egui::Rect::from_center_size(
-											space.center(),
-											egui::Vec2::ZERO,
-										);
-									}
-									let width_ratio = space.width() / img_size.x;
-									let height_ratio = space.height() / img_size.y;
-									let scale = width_ratio.max(height_ratio);
-									let size = img_size * scale;
-									egui::Rect::from_center_size(space.center(), size)
-								};
-
-							let get_rect_at = |slot: isize, size: egui::Vec2| -> egui::Rect {
-								match slot {
-									..=-2 => cover_rect(size, off_left),
-									-1 => cover_rect(size, left_gutter),
-									0 => fit_rect(size, center_rect),
-									1 => cover_rect(size, right_gutter),
-									2.. => cover_rect(size, off_right),
+							let fit_rect = |img_size: egui::Vec2,
+							                space: egui::Rect|
+							 -> egui::Rect {
+								if space.width() <= 0.01 || space.height() <= 0.01 {
+									return egui::Rect::from_center_size(
+										space.center(),
+										egui::Vec2::ZERO,
+									);
 								}
+								let width_ratio = space.width() / img_size.x;
+								let height_ratio = space.height() / img_size.y;
+								let scale =
+									width_ratio.min(height_ratio) * self.user_zoom;
+								let size = img_size * scale;
+								egui::Rect::from_center_size(
+									space.center() + self.user_pan_offset,
+									size,
+								)
 							};
+
+							let cover_rect = |img_size: egui::Vec2,
+							                  space: egui::Rect|
+							 -> egui::Rect {
+								if space.width() <= 0.01 || space.height() <= 0.01 {
+									return egui::Rect::from_center_size(
+										space.center(),
+										egui::Vec2::ZERO,
+									);
+								}
+								let width_ratio = space.width() / img_size.x;
+								let height_ratio = space.height() / img_size.y;
+								let scale = width_ratio.max(height_ratio);
+								let size = img_size * scale;
+								egui::Rect::from_center_size(space.center(), size)
+							};
+
+							let get_rect_at =
+								|slot: isize, size: egui::Vec2| -> egui::Rect {
+									match slot {
+										..=-2 => cover_rect(size, off_left),
+										-1 => cover_rect(size, left_gutter),
+										0 => fit_rect(size, center_rect),
+										1 => cover_rect(size, right_gutter),
+										2.. => cover_rect(size, off_right),
+									}
+								};
 
 							let get_clip_at = |slot: isize| -> egui::Rect {
 								match slot {
@@ -1192,8 +1274,8 @@ impl ViewManager {
 									let r1 = get_rect_at(v_floor as isize, img_size);
 									let r2 = get_rect_at(v_ceil as isize, img_size);
 
-									let interpolated_center =
-										r1.center() + (r2.center() - r1.center()) * fract;
+									let interpolated_center = r1.center()
+										+ (r2.center() - r1.center()) * fract;
 									let interpolated_size =
 										r1.size() + (r2.size() - r1.size()) * fract;
 
@@ -1202,13 +1284,16 @@ impl ViewManager {
 
 									let clip_min = c1.min + (c2.min - c1.min) * fract;
 									let clip_max = c1.max + (c2.max - c1.max) * fract;
-									let clip_rect = egui::Rect::from_min_max(clip_min, clip_max);
+									let clip_rect =
+										egui::Rect::from_min_max(clip_min, clip_max);
 
 									// apply pulse to the current focus
 									let dist_from_center = v.abs().min(1.0);
-									let current_pulse =
-										1.0 + (pulse - 1.0) * (1.0 - 0.5 * dist_from_center);
-									let final_size = interpolated_size * current_pulse;
+									let current_pulse = 1.0
+										+ (pulse - 1.0)
+											* (1.0 - 0.5 * dist_from_center);
+									let final_size =
+										interpolated_size * current_pulse;
 
 									let final_rect = egui::Rect::from_center_size(
 										interpolated_center,
@@ -1219,9 +1304,13 @@ impl ViewManager {
 										egui::pos2(1.0, 1.0),
 									);
 
-									if final_rect.width() > 0.1 && final_rect.height() > 0.1 {
+									if final_rect.width() > 0.1
+										&& final_rect.height() > 0.1
+									{
 										let mut painter = ui.painter().clone();
-										painter.set_clip_rect(clip_rect.intersect(ui.clip_rect()));
+										painter.set_clip_rect(
+											clip_rect.intersect(ui.clip_rect()),
+										);
 										painter.image(
 											off_texture.id(),
 											final_rect,
@@ -1233,10 +1322,14 @@ impl ViewManager {
 							}
 
 							if media.current_is_playable() && gallery_settled {
-								let post_aspect = browser.current_post().and_then(|post| {
-									(post.file.width > 0 && post.file.height > 0)
-										.then_some(post.file.width as f32 / post.file.height as f32)
-								});
+								let post_aspect =
+									browser.current_post().and_then(|post| {
+										(post.file.width > 0 && post.file.height > 0)
+											.then_some(
+												post.file.width as f32
+													/ post.file.height as f32,
+											)
+									});
 								let video_rect = media
 									.get_current_media()
 									.map(|preview| {
@@ -1248,16 +1341,22 @@ impl ViewManager {
 									})
 									.or_else(|| {
 										post_aspect.map(|aspect| {
-											Self::contained_aspect_rect(center_rect, aspect)
+											Self::contained_aspect_rect(
+												center_rect,
+												aspect,
+											)
 										})
 									})
 									.or_else(|| {
-										media.current_video_size().map(|(width, height)| {
-											Self::contained_aspect_rect(
-												center_rect,
-												width as f32 / height.max(1) as f32,
-											)
-										})
+										media.current_video_size().map(
+											|(width, height)| {
+												Self::contained_aspect_rect(
+													center_rect,
+													width as f32
+														/ height.max(1) as f32,
+												)
+											},
+										)
 									})
 									.unwrap_or(center_rect);
 								media.show_current_video_in_rect(ui, video_rect);
@@ -1288,7 +1387,11 @@ impl ViewManager {
 		eframe::egui::Rect::from_center_size(space.center(), size)
 	}
 
-	fn render_breathing_overlay(&self, ctx: &egui::Context, breathing: &BreathingOverlay) {
+	fn render_breathing_overlay(
+		&self,
+		ctx: &egui::Context,
+		breathing: &BreathingOverlay,
+	) {
 		if !breathing.is_visible() {
 			return;
 		}
@@ -1305,31 +1408,53 @@ impl ViewManager {
 			.interactable(false)
 			.order(egui::Order::Foreground)
 			.show(ctx, |ui| {
-				ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-					let state = breathing.state();
-					let elapsed = state.start_time.elapsed();
-					let remaining = state.duration.saturating_sub(elapsed).as_secs() + 1;
+				ui.with_layout(
+					egui::Layout::right_to_left(egui::Align::Center),
+					|ui| {
+						let state = breathing.state();
+						let elapsed = state.start_time.elapsed();
+						let remaining =
+							state.duration.saturating_sub(elapsed).as_secs() + 1;
 
-					let (text, color) = match state.phase {
-						BreathingPhase::Prepare => {
-							(format!("PREPARE {}", remaining), egui::Color32::RED)
+						let (text, color) = match state.phase {
+							BreathingPhase::Prepare => {
+								(format!("PREPARE {}", remaining), egui::Color32::RED)
+							}
+							BreathingPhase::Inhale => {
+								("INHALE".to_string(), egui::Color32::YELLOW)
+							}
+							BreathingPhase::Hold => {
+								("HOLD".to_string(), egui::Color32::YELLOW)
+							}
+							BreathingPhase::Release => {
+								("RELEASE".to_string(), egui::Color32::GREEN)
+							}
+							BreathingPhase::Idle => {
+								("".to_string(), egui::Color32::TRANSPARENT)
+							}
+						};
+
+						if !text.is_empty() {
+							let font_id = egui::FontId::monospace(font_size);
+							let stroke_width = (font_size * 0.05).max(1.0);
+							Self::draw_outlined_text(
+								ui,
+								&text,
+								font_id,
+								color,
+								stroke_width,
+							);
 						}
-						BreathingPhase::Inhale => ("INHALE".to_string(), egui::Color32::YELLOW),
-						BreathingPhase::Hold => ("HOLD".to_string(), egui::Color32::YELLOW),
-						BreathingPhase::Release => ("RELEASE".to_string(), egui::Color32::GREEN),
-						BreathingPhase::Idle => ("".to_string(), egui::Color32::TRANSPARENT),
-					};
-
-					if !text.is_empty() {
-						let font_id = egui::FontId::monospace(font_size);
-						let stroke_width = (font_size * 0.05).max(1.0);
-						Self::draw_outlined_text(ui, &text, font_id, color, stroke_width);
-					}
-				});
+					},
+				);
 			});
 	}
 
-	fn render_breathing_pulse(&self, ctx: &egui::Context, breathing: &BreathingOverlay) {
+	fn render_breathing_pulse(
+		&self,
+		ctx: &egui::Context,
+		breathing: &BreathingOverlay,
+	) {
 		if !breathing.is_visible() {
 			return;
 		}
@@ -1365,9 +1490,11 @@ impl ViewManager {
 					let shadow_color = egui::Color32::BLACK.gamma_multiply(opacity);
 					let text_color = color.gamma_multiply(opacity);
 
-					let galley =
-						ui.painter()
-							.layout_no_wrap(text.to_string(), font_id.clone(), text_color);
+					let galley = ui.painter().layout_no_wrap(
+						text.to_string(),
+						font_id.clone(),
+						text_color,
+					);
 
 					let stroke_width = (font_size * 0.02).max(1.0);
 					let offsets = [
@@ -1390,8 +1517,11 @@ impl ViewManager {
 							font_id.clone(),
 							shadow_color,
 						);
-						ui.painter()
-							.galley(draw_pos + offset, shadow_galley, shadow_color);
+						ui.painter().galley(
+							draw_pos + offset,
+							shadow_galley,
+							shadow_color,
+						);
 					}
 					ui.painter().galley(draw_pos, galley, text_color);
 				});
@@ -1419,7 +1549,8 @@ impl ViewManager {
 		let screen_height = screen_rect.height();
 
 		// Calculate visual properties based on phase
-		let (text, text_color, bar_fill, bar_bg_alpha, text_alpha) = match state.phase {
+		let (text, text_color, bar_fill, bar_bg_alpha, text_alpha) = match state.phase
+		{
 			BreathingPhase::Prepare => {
 				// Text fades in fast, background fades in gradually
 				let text_alpha = (progress * 4.0).min(1.0);
@@ -1475,8 +1606,10 @@ impl ViewManager {
 		let bar_y = text_center_y + (font_size * 0.6); // Small gap below text
 		let bar_width = screen_width * 0.4;
 		let bar_x = (screen_width - bar_width) / 2.0;
-		let bar_rect =
-			egui::Rect::from_min_size(egui::pos2(bar_x, bar_y), egui::vec2(bar_width, bar_height));
+		let bar_rect = egui::Rect::from_min_size(
+			egui::pos2(bar_x, bar_y),
+			egui::vec2(bar_width, bar_height),
+		);
 
 		if bar_bg_alpha > 0.001 {
 			egui::Area::new(egui::Id::new("immersive_breathing_bar"))
@@ -1518,7 +1651,13 @@ impl ViewManager {
 					let font_id = egui::FontId::proportional(font_size);
 					let display_color = text_color.gamma_multiply(text_alpha);
 					let stroke_width = (font_size * 0.03).max(1.0);
-					Self::draw_outlined_text(ui, text, font_id, display_color, stroke_width);
+					Self::draw_outlined_text(
+						ui,
+						text,
+						font_id,
+						display_color,
+						stroke_width,
+					);
 				});
 		}
 	}
@@ -1546,33 +1685,34 @@ impl ViewManager {
 				let text_color = egui::Color32::WHITE;
 				let font_id = egui::FontId::proportional(font_size);
 
-				let add_text_line = |ui: &mut egui::Ui, label: &str, content: &str| {
-					if !content.is_empty() {
-						ui.horizontal(|ui| {
-							Self::draw_outlined_text(
-								ui,
-								label,
-								font_id.clone(),
-								egui::Color32::LIGHT_GRAY,
-								stroke_width,
-							);
-							Self::draw_outlined_text(
-								ui,
-								" ",
-								font_id.clone(),
-								egui::Color32::TRANSPARENT,
-								0.0,
-							);
-							Self::draw_outlined_text(
-								ui,
-								content,
-								font_id.clone(),
-								text_color,
-								stroke_width,
-							);
-						});
-					}
-				};
+				let add_text_line =
+					|ui: &mut egui::Ui, label: &str, content: &str| {
+						if !content.is_empty() {
+							ui.horizontal(|ui| {
+								Self::draw_outlined_text(
+									ui,
+									label,
+									font_id.clone(),
+									egui::Color32::LIGHT_GRAY,
+									stroke_width,
+								);
+								Self::draw_outlined_text(
+									ui,
+									" ",
+									font_id.clone(),
+									egui::Color32::TRANSPARENT,
+									0.0,
+								);
+								Self::draw_outlined_text(
+									ui,
+									content,
+									font_id.clone(),
+									text_color,
+									stroke_width,
+								);
+							});
+						}
+					};
 
 				ui.vertical(|ui| {
 					add_text_line(ui, "Post ID:", &post.id.to_string());
@@ -1583,7 +1723,9 @@ impl ViewManager {
 					}
 
 					let copyright_str = post.tags.copyright.join(", ");
-					if !copyright_str.is_empty() && copyright_str != "invalid_copyright" {
+					if !copyright_str.is_empty()
+						&& copyright_str != "invalid_copyright"
+					{
 						add_text_line(ui, "Copyright:", &copyright_str);
 					}
 				});
@@ -1597,9 +1739,9 @@ impl ViewManager {
 		color: egui::Color32,
 		stroke_width: f32,
 	) {
-		let galley = ui
-			.painter()
-			.layout_no_wrap(text.to_string(), font_id.clone(), color);
+		let galley =
+			ui.painter()
+				.layout_no_wrap(text.to_string(), font_id.clone(), color);
 		let (rect, _) = ui.allocate_exact_size(galley.size(), egui::Sense::hover());
 
 		let offsets = [
@@ -1616,12 +1758,15 @@ impl ViewManager {
 		let num_passes = offsets.len() as f32;
 		let base_alpha = color.a() as f32;
 		let per_pass_alpha = (base_alpha / num_passes).max(1.0) as u8;
-		let shadow_color = egui::Color32::from_rgba_unmultiplied(0, 0, 0, per_pass_alpha);
+		let shadow_color =
+			egui::Color32::from_rgba_unmultiplied(0, 0, 0, per_pass_alpha);
 
 		for offset in offsets {
-			let shadow_galley =
-				ui.painter()
-					.layout_no_wrap(text.to_string(), font_id.clone(), shadow_color);
+			let shadow_galley = ui.painter().layout_no_wrap(
+				text.to_string(),
+				font_id.clone(),
+				shadow_color,
+			);
 			ui.painter()
 				.galley(rect.min + offset, shadow_galley, shadow_color);
 		}
@@ -1663,7 +1808,8 @@ impl ViewManager {
 				ui.painter().circle_filled(center, radius, color);
 				// Outer glow ring
 				let glow_alpha = (self.beat_intensity * 100.0) as u8;
-				let glow_color = egui::Color32::from_rgba_unmultiplied(0, 220, 255, glow_alpha);
+				let glow_color =
+					egui::Color32::from_rgba_unmultiplied(0, 220, 255, glow_alpha);
 				ui.painter().circle_stroke(
 					center,
 					radius + 3.0,
@@ -1673,7 +1819,11 @@ impl ViewManager {
 	}
 
 	/// Render island navigation overlay and handle actions
-	fn render_island_overlay(&mut self, ctx: &egui::Context, events: &mut Vec<Event>) {
+	fn render_island_overlay(
+		&mut self,
+		ctx: &egui::Context,
+		events: &mut Vec<Event>,
+	) {
 		if !matches!(self.modal, ModalContent::None) {
 			return;
 		}
@@ -1683,7 +1833,8 @@ impl ViewManager {
 				IslandAction::Emit(factory) => {
 					let event = factory();
 					// Intercept breathing toggle request to check disclaimer
-					if matches!(event, Event::View(ViewEvent::RequestBreathingToggle)) {
+					if matches!(event, Event::View(ViewEvent::RequestBreathingToggle))
+					{
 						if !self.breathing_disclaimer_accepted {
 							self.modal = ModalContent::BreathingDisclaimer;
 						} else {
@@ -1868,7 +2019,8 @@ fn normalize_search_query_presets(presets: Vec<String>) -> Vec<String> {
 	let mut normalized = Vec::new();
 	for preset in presets {
 		let preset = preset.trim();
-		if !preset.is_empty() && !normalized.iter().any(|existing| existing == preset) {
+		if !preset.is_empty() && !normalized.iter().any(|existing| existing == preset)
+		{
 			normalized.push(preset.to_owned());
 		}
 	}

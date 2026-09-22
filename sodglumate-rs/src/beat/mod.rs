@@ -93,7 +93,10 @@ impl SystemBeat {
 	}
 
 	/// Start capture on a named device
-	fn start_stream_named(name: &str, tx: &mpsc::SyncSender<Vec<f32>>) -> Option<cpal::Stream> {
+	fn start_stream_named(
+		name: &str,
+		tx: &mpsc::SyncSender<Vec<f32>>,
+	) -> Option<cpal::Stream> {
 		let host = cpal::default_host();
 		let devices = match host.input_devices() {
 			Ok(d) => d,
@@ -138,36 +141,66 @@ impl SystemBeat {
 		let channels = config.channels() as usize;
 
 		let stream = match config.sample_format() {
-			SampleFormat::I8 => {
-				Self::build_input_stream::<i8>(device, &stream_config, channels, tx.clone())
-			}
-			SampleFormat::I16 => {
-				Self::build_input_stream::<i16>(device, &stream_config, channels, tx.clone())
-			}
-			SampleFormat::I32 => {
-				Self::build_input_stream::<i32>(device, &stream_config, channels, tx.clone())
-			}
-			SampleFormat::I64 => {
-				Self::build_input_stream::<i64>(device, &stream_config, channels, tx.clone())
-			}
-			SampleFormat::U8 => {
-				Self::build_input_stream::<u8>(device, &stream_config, channels, tx.clone())
-			}
-			SampleFormat::U16 => {
-				Self::build_input_stream::<u16>(device, &stream_config, channels, tx.clone())
-			}
-			SampleFormat::U32 => {
-				Self::build_input_stream::<u32>(device, &stream_config, channels, tx.clone())
-			}
-			SampleFormat::U64 => {
-				Self::build_input_stream::<u64>(device, &stream_config, channels, tx.clone())
-			}
-			SampleFormat::F32 => {
-				Self::build_input_stream::<f32>(device, &stream_config, channels, tx.clone())
-			}
-			SampleFormat::F64 => {
-				Self::build_input_stream::<f64>(device, &stream_config, channels, tx.clone())
-			}
+			SampleFormat::I8 => Self::build_input_stream::<i8>(
+				device,
+				&stream_config,
+				channels,
+				tx.clone(),
+			),
+			SampleFormat::I16 => Self::build_input_stream::<i16>(
+				device,
+				&stream_config,
+				channels,
+				tx.clone(),
+			),
+			SampleFormat::I32 => Self::build_input_stream::<i32>(
+				device,
+				&stream_config,
+				channels,
+				tx.clone(),
+			),
+			SampleFormat::I64 => Self::build_input_stream::<i64>(
+				device,
+				&stream_config,
+				channels,
+				tx.clone(),
+			),
+			SampleFormat::U8 => Self::build_input_stream::<u8>(
+				device,
+				&stream_config,
+				channels,
+				tx.clone(),
+			),
+			SampleFormat::U16 => Self::build_input_stream::<u16>(
+				device,
+				&stream_config,
+				channels,
+				tx.clone(),
+			),
+			SampleFormat::U32 => Self::build_input_stream::<u32>(
+				device,
+				&stream_config,
+				channels,
+				tx.clone(),
+			),
+			SampleFormat::U64 => Self::build_input_stream::<u64>(
+				device,
+				&stream_config,
+				channels,
+				tx.clone(),
+			),
+			SampleFormat::F32 => Self::build_input_stream::<f32>(
+				device,
+				&stream_config,
+				channels,
+				tx.clone(),
+			),
+			SampleFormat::F64 => Self::build_input_stream::<f64>(
+				device,
+				&stream_config,
+				channels,
+				tx.clone(),
+			),
 			sample_format => {
 				log::error!("Unsupported audio sample format: {}", sample_format);
 				return None;
@@ -235,11 +268,12 @@ impl SystemBeat {
 			let window: Vec<f32> = self.sample_buffer.drain(..WINDOW_SIZE).collect();
 
 			// Compute energy for this window
-			let energy: f32 = window.iter().map(|s| s * s).sum::<f32>() / WINDOW_SIZE as f32;
+			let energy: f32 =
+				window.iter().map(|s| s * s).sum::<f32>() / WINDOW_SIZE as f32;
 
 			// Compute rolling average
-			let avg_energy: f32 =
-				self.energy_history.iter().sum::<f32>() / self.energy_history.len() as f32;
+			let avg_energy: f32 = self.energy_history.iter().sum::<f32>()
+				/ self.energy_history.len() as f32;
 
 			// Update history ring buffer
 			self.energy_history[self.history_index] = energy;
@@ -258,7 +292,9 @@ impl SystemBeat {
 
 		if let Some(scale) = beat_detected {
 			log::debug!("Beat detected! scale={:.2}", scale);
-			ComponentResponse::emit_many(vec![Event::View(ViewEvent::BeatPulse { scale })])
+			ComponentResponse::emit_many(vec![Event::View(ViewEvent::BeatPulse {
+				scale,
+			})])
 		} else {
 			ComponentResponse::none()
 		}
@@ -279,7 +315,9 @@ impl SystemBeat {
 
 				// Start new stream
 				self.stream = match name.as_deref() {
-					Some(device_name) => Self::start_stream_named(device_name, &self.sample_tx),
+					Some(device_name) => {
+						Self::start_stream_named(device_name, &self.sample_tx)
+					}
 					None => Self::start_stream_default(&self.sample_tx),
 				};
 

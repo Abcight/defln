@@ -21,7 +21,10 @@ impl<'de> Deserialize<'de> for CoachValue {
 		impl<'de> serde::de::Visitor<'de> for CoachValueVisitor {
 			type Value = CoachValue;
 
-			fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+			fn expecting(
+				&self,
+				formatter: &mut std::fmt::Formatter,
+			) -> std::fmt::Result {
 				formatter.write_str("a number or a string")
 			}
 
@@ -200,7 +203,10 @@ pub struct CoachManager {
 }
 
 impl CoachManager {
-	pub fn new(model_path: std::path::PathBuf, preset_path: std::path::PathBuf) -> Self {
+	pub fn new(
+		model_path: std::path::PathBuf,
+		preset_path: std::path::PathBuf,
+	) -> Self {
 		let (event_tx, event_rx) = std::sync::mpsc::channel();
 		let (msg_tx, msg_rx) = std::sync::mpsc::channel();
 
@@ -289,7 +295,9 @@ impl CoachWorker {
 		}
 
 		if cfg!(feature = "cuda") || cfg!(feature = "metal") {
-			log::info!("Coach falling back to CPU inference (GPU init failed or not present)");
+			log::info!(
+				"Coach falling back to CPU inference (GPU init failed or not present)"
+			);
 		} else {
 			log::info!("Coach built without GPU features; using CPU inference");
 		}
@@ -321,12 +329,19 @@ impl CoachWorker {
 			match std::fs::File::open(&self.model_path) {
 				Ok(mut file) => match gguf_file::Content::read(&mut file) {
 					Ok(content) => {
-						match ModelWeights::from_gguf(content, &mut file, &self.device) {
+						match ModelWeights::from_gguf(
+							content,
+							&mut file,
+							&self.device,
+						) {
 							Ok(w) => {
 								log::info!("Successfully loaded GGUF model");
 								model = Some(w);
 							}
-							Err(e) => log::error!("Failed to parse GGUF model weights: {}", e),
+							Err(e) => log::error!(
+								"Failed to parse GGUF model weights: {}",
+								e
+							),
 						}
 					}
 					Err(e) => log::error!("Failed to read GGUF content: {}", e),
@@ -393,7 +408,8 @@ impl CoachWorker {
 			match model.forward(&input, index_pos) {
 				Ok(logits) => {
 					let seq_len = current_tokens.len();
-					let logits_vec = logits.squeeze(0).unwrap().to_vec1::<f32>().unwrap();
+					let logits_vec =
+						logits.squeeze(0).unwrap().to_vec1::<f32>().unwrap();
 
 					let mut next_token = 0;
 					let mut max_prob = f32::NEG_INFINITY;
@@ -565,7 +581,10 @@ impl CoachWorker {
 						&& limit > 0
 					{
 						let word_limit = limit * 3 / 4;
-						prompt.push_str(&format!(" (Around {} words maximum)", word_limit));
+						prompt.push_str(&format!(
+							" (Around {} words maximum)",
+							word_limit
+						));
 					}
 					for (k, v) in &self.state.variables {
 						let placeholder = format!("{{{}}}", k);
@@ -581,7 +600,8 @@ impl CoachWorker {
 					} else if let (Some(m), Some(tok)) =
 						(model.as_deref_mut(), tokenizer.as_deref_mut())
 					{
-						let response_text = self.generate_text(&prompt, max_tokens, m, tok, true);
+						let response_text =
+							self.generate_text(&prompt, max_tokens, m, tok, true);
 						let _ = self.tx.send(CoachOutput {
 							message: Some(response_text),
 							state: self.state.variables.clone(),
@@ -604,7 +624,10 @@ impl CoachWorker {
 						&& limit > 0
 					{
 						let word_limit = limit * 3 / 4;
-						prompt.push_str(&format!(" (Around {} words maximum)", word_limit));
+						prompt.push_str(&format!(
+							" (Around {} words maximum)",
+							word_limit
+						));
 					}
 					for (k, v) in &self.state.variables {
 						let placeholder = format!("{{{}}}", k);
@@ -621,7 +644,8 @@ impl CoachWorker {
 					} else if let (Some(m), Some(tok)) =
 						(model.as_deref_mut(), tokenizer.as_deref_mut())
 					{
-						let response_text = self.generate_text(&prompt, max_tokens, m, tok, false);
+						let response_text =
+							self.generate_text(&prompt, max_tokens, m, tok, false);
 						self.state
 							.set(store_at.clone(), CoachValue::String(response_text));
 						let _ = self.tx.send(CoachOutput {
@@ -629,7 +653,9 @@ impl CoachWorker {
 							state: self.state.variables.clone(),
 						});
 					} else {
-						log::error!("Failed to generate response for StoreMessage action");
+						log::error!(
+							"Failed to generate response for StoreMessage action"
+						);
 					}
 				}
 			}

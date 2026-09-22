@@ -31,7 +31,10 @@ impl BreathingOverlay {
 				phase,
 				start_time: Instant::now(),
 				base_duration,
-				duration: scaled_duration(base_duration, phase_multipliers.multiplier_for(phase)),
+				duration: scaled_duration(
+					base_duration,
+					phase_multipliers.multiplier_for(phase),
+				),
 			},
 			show_overlay,
 			phase_multipliers,
@@ -40,9 +43,9 @@ impl BreathingOverlay {
 	}
 
 	pub fn init(&self) -> ComponentResponse {
-		let mut response = ComponentResponse::emit(Event::Breathing(BreathingEvent::PhaseStarted(
-			self.state.phase,
-		)));
+		let mut response = ComponentResponse::emit(Event::Breathing(
+			BreathingEvent::PhaseStarted(self.state.phase),
+		));
 		response.scheduled.push((
 			Event::Breathing(BreathingEvent::PhaseComplete),
 			self.state.duration,
@@ -69,9 +72,10 @@ impl BreathingOverlay {
 				let mut response = ComponentResponse::emit(Event::Breathing(
 					BreathingEvent::PhaseStarted(next_phase),
 				));
-				response
-					.scheduled
-					.push((Event::Breathing(BreathingEvent::PhaseComplete), duration));
+				response.scheduled.push((
+					Event::Breathing(BreathingEvent::PhaseComplete),
+					duration,
+				));
 				response
 			}
 			Event::Breathing(BreathingEvent::SetPhaseMultiplier { phase, value }) => {

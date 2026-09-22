@@ -166,9 +166,13 @@ impl IslandCtx {
 		let (row, col) = island.index_to_pos(self.selected);
 		let (new_row, new_col) = match direction {
 			GridDirection::Up => (row.saturating_sub(1), col),
-			GridDirection::Down => ((row + 1).min(island.row_count().saturating_sub(1)), col),
+			GridDirection::Down => {
+				((row + 1).min(island.row_count().saturating_sub(1)), col)
+			}
 			GridDirection::Left => (row, col.saturating_sub(1)),
-			GridDirection::Right => (row, (col + 1).min(island.col_count(row).saturating_sub(1))),
+			GridDirection::Right => {
+				(row, (col + 1).min(island.col_count(row).saturating_sub(1)))
+			}
 		};
 
 		// Clamp column to valid range for new row
@@ -324,7 +328,11 @@ impl<'a> IslandWidget<'a> {
 		action
 	}
 
-	fn handle_input(&mut self, ctx: &egui::Context, _island: &Island) -> Option<IslandAction> {
+	fn handle_input(
+		&mut self,
+		ctx: &egui::Context,
+		_island: &Island,
+	) -> Option<IslandAction> {
 		let mut confirmed_action = None;
 
 		ctx.input(|i| {
@@ -373,7 +381,11 @@ impl<'a> IslandWidget<'a> {
 			});
 	}
 
-	fn render_grid_impl(island_ctx: &mut IslandCtx, ui: &mut egui::Ui, island: &Island) {
+	fn render_grid_impl(
+		island_ctx: &mut IslandCtx,
+		ui: &mut egui::Ui,
+		island: &Island,
+	) {
 		let screen_height = ui.ctx().screen_rect().height();
 		let scale = (screen_height / 800.0).max(0.5);
 
@@ -412,7 +424,12 @@ impl<'a> IslandWidget<'a> {
 		island_ctx.max_row_width = new_max;
 	}
 
-	fn render_entry_static(ui: &mut egui::Ui, entry: &IslandEntry, is_selected: bool, scale: f32) {
+	fn render_entry_static(
+		ui: &mut egui::Ui,
+		entry: &IslandEntry,
+		is_selected: bool,
+		scale: f32,
+	) {
 		let font_size = (16.0 * scale).max(12.0);
 		let h_margin = 16.0 * scale;
 		let v_margin = 10.0 * scale;

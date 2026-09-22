@@ -45,7 +45,10 @@ impl LiveE621Client {
 			}
 
 			if let Some(oldest) = self.request_times.front() {
-				tokio::time::sleep(RATE_LIMIT_WINDOW.saturating_sub(oldest.elapsed())).await;
+				tokio::time::sleep(
+					RATE_LIMIT_WINDOW.saturating_sub(oldest.elapsed()),
+				)
+				.await;
 			}
 		}
 	}
@@ -53,7 +56,8 @@ impl LiveE621Client {
 
 #[test]
 fn e621_regressions_run_sequentially_under_one_rate_limit() {
-	let runtime = tokio::runtime::Runtime::new().expect("create regression-test runtime");
+	let runtime =
+		tokio::runtime::Runtime::new().expect("create regression-test runtime");
 	runtime.block_on(async {
 		let mut client = LiveE621Client::new();
 		post_2270206::run(&mut client)

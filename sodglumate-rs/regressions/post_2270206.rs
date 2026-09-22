@@ -56,7 +56,9 @@ pub(crate) async fn run(client: &mut super::LiveE621Client) -> anyhow::Result<()
 		"post 2270206 no longer has a full media URL; remove this regression if the post was deleted"
 	);
 	assert!(
-		post.preview.width > 0 && post.preview.height > 0 && post.preview.url.is_some(),
+		post.preview.width > 0
+			&& post.preview.height > 0
+			&& post.preview.url.is_some(),
 		"playable post 2270206 no longer exposes a usable preview thumbnail"
 	);
 
