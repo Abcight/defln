@@ -1,3 +1,17 @@
+//! Immediate-mode presentation layer.
+//
+//! A view and the operational component whose state it displays are deliberately
+//! separate objects, even when they currently have a one-to-one relationship.
+//! 
+//! Views may read application state and emit commands or events, but must not
+//! perform networking, decoding, audio capture, background work, or directly
+//! mutate components.
+//! 
+//! Keep interaction and rendering state here; keep durable application state
+//! and work in components.
+//! 
+//! Do not merge a view into a component as a convenience.
+
 use crate::beat::SystemBeat;
 use crate::breathing::BreathingOverlay;
 use crate::browser::ContentBrowser;
