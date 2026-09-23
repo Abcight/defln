@@ -1,7 +1,5 @@
 use crate::api::Post;
-use crate::types::{
-	BreathingPhase, BreathingStyle, ImageFillMode, MediaKind, NavDirection,
-};
+use crate::types::{BreathingPhase, BreathingStyle, MediaKind, NavDirection};
 use std::time::Duration;
 
 #[derive(Clone, Debug)]
@@ -11,7 +9,6 @@ pub enum Event {
 	Browser(BrowserEvent),
 	Media(MediaEvent),
 	Breathing(BreathingEvent),
-	View(ViewEvent),
 	Settings(SettingsEvent),
 	Beat(BeatEvent),
 }
@@ -20,13 +17,11 @@ impl Event {
 	pub fn priority(&self) -> Priority {
 		match self {
 			Event::Source(_) => Priority::High,
-			Event::Gateway(GatewayEvent::SearchError { .. }) => Priority::Critical,
 			Event::Gateway(_) => Priority::Normal,
 			Event::Browser(_) => Priority::Normal,
 			Event::Media(MediaEvent::Prefetch { .. }) => Priority::Low,
 			Event::Media(_) => Priority::Normal,
 			Event::Breathing(_) => Priority::Low,
-			Event::View(_) => Priority::Normal,
 			Event::Beat(_) => Priority::Low,
 			Event::Settings(SettingsEvent::SlideshowAdvance) => Priority::Normal,
 			Event::Settings(_) => Priority::Normal,
@@ -36,10 +31,9 @@ impl Event {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Priority {
-	Critical = 0,
-	High = 1,
-	Normal = 2,
-	Low = 3,
+	High = 0,
+	Normal = 1,
+	Low = 2,
 }
 
 impl Priority {
@@ -50,8 +44,16 @@ impl Priority {
 
 #[derive(Clone, Debug)]
 pub enum SourceEvent {
-	Search { query: String, page: u32 },
+	Search {
+		query: String,
+		page: u32,
+	},
 	Navigate(NavDirection),
+	ConfigureCoach {
+		enabled: bool,
+		model: Option<String>,
+		preset: Option<String>,
+	},
 }
 
 #[derive(Clone, Debug)]
@@ -60,9 +62,6 @@ pub enum GatewayEvent {
 		query: String,
 		page: u32,
 		limit: u32,
-	},
-	SearchError {
-		message: String,
 	},
 	FetchNextPage,
 }
@@ -86,12 +85,11 @@ pub enum MediaEvent {
 		full_url: Option<String>,
 		kind: MediaKind,
 	},
-	LoadError {
-		error: String,
-	},
 	Prefetch {
 		urls: Vec<(Option<String>, Option<String>, MediaKind)>, // (sample_url, full_url, kind)
 	},
+	/// The current media was drawn during the latest UI pass.
+	Painted,
 }
 
 #[derive(Clone, Debug)]
@@ -101,24 +99,6 @@ pub enum BreathingEvent {
 	SetPhaseMultiplier { phase: BreathingPhase, value: f32 },
 	SetStyle { style: BreathingStyle },
 	PhaseStarted(BreathingPhase),
-}
-
-#[derive(Clone, Debug)]
-pub enum ViewEvent {
-	MediaReady,
-	RequestBreathingToggle,
-	BeatPulse {
-		scale: f32,
-	},
-	SetImageFillMode {
-		mode: ImageFillMode,
-	},
-	ToggleImageFillMode,
-	CoachChanged {
-		enabled: bool,
-		model: Option<String>,
-		preset: Option<String>,
-	},
 }
 
 #[derive(Clone, Debug)]

@@ -4,7 +4,7 @@ pub mod scheduler;
 
 pub use event::{
 	BeatEvent, BreathingEvent, BrowserEvent, ComponentResponse, Event, GatewayEvent,
-	MediaEvent, SettingsEvent, SourceEvent, ViewEvent,
+	MediaEvent, SettingsEvent, SourceEvent,
 };
 pub use queue::EventQueue;
 pub use scheduler::Scheduler;
@@ -16,7 +16,7 @@ use crate::coach::CoachManager;
 use crate::gateway::BooruGateway;
 use crate::media::MediaPane;
 use crate::settings::SettingsManager;
-use crate::view::ViewManager;
+use crate::view::{ApplicationState, View, Views};
 use eframe::egui;
 
 pub struct Reactor {
@@ -27,7 +27,7 @@ pub struct Reactor {
 	pub browser: ContentBrowser,
 	pub media: MediaPane,
 	pub breathing: BreathingOverlay,
-	pub view: ViewManager,
+	pub views: Views,
 	pub settings: SettingsManager,
 	pub beat: SystemBeat,
 	pub coach: Option<CoachManager>,
@@ -49,7 +49,7 @@ impl Reactor {
 				settings.breathing_phase_multipliers(),
 				settings.breathing_style,
 			),
-			view: ViewManager::new(
+			views: Views::new(
 				settings.search_query,
 				settings.search_query_presets,
 				settings.search_page_input,
@@ -112,51 +112,8 @@ impl Reactor {
 		self.process_response(media_response);
 		self.process_response(beat_response);
 
-		if let Some(coach) = &self.coach
-			&& let Some(output) = coach.try_recv()
-		{
-			if let Some(msg) = output.message {
-				let cleaned_msg = msg.replace('\n', " ").replace('\r', "");
-
-				// Split into words and reconstruct lines of max 60 chars
-				let mut current_line = String::new();
-				let mut is_first_line = true;
-				for word in cleaned_msg.split_whitespace() {
-					if current_line.len() + word.len() + 1 > 45
-						&& !current_line.is_empty()
-					{
-						if is_first_line {
-							self.view
-								.coach_logs
-								.push(format!("> {}", current_line.trim_end()));
-							is_first_line = false;
-						} else {
-							self.view
-								.coach_logs
-								.push(format!("  {}", current_line.trim_end()));
-						}
-						current_line.clear();
-					}
-					current_line.push_str(word);
-					current_line.push(' ');
-				}
-
-				// Push any remaining text as the final line
-				let final_line = current_line.trim_end();
-				if !final_line.is_empty() {
-					if is_first_line {
-						self.view.coach_logs.push(format!("> {}", final_line));
-					} else {
-						self.view.coach_logs.push(format!("  {}", final_line));
-					}
-				}
-
-				// Trim history to 50 items
-				while self.view.coach_logs.len() > 50 {
-					self.view.coach_logs.remove(0);
-				}
-			}
-			self.view.coach_state = output.state;
+		if let Some(coach) = &mut self.coach {
+			coach.poll();
 		}
 
 		// Process event queue until empty
@@ -174,23 +131,18 @@ impl Reactor {
 		}
 
 		// Render
-		let events = {
-			let gateway = &self.gateway;
-			let browser = &self.browser;
-			let breathing = &self.breathing;
-			let settings = &self.settings;
-			let beat = &self.beat;
-
-			self.view.render(
-				ctx,
-				gateway,
-				browser,
-				&mut self.media,
-				breathing,
-				settings,
-				beat,
-			)
-		};
+		let events = self.views.render(
+			ctx,
+			&ApplicationState {
+				gateway: &self.gateway,
+				browser: &self.browser,
+				media: &self.media,
+				breathing: &self.breathing,
+				settings: &self.settings,
+				beat: &self.beat,
+				coach: self.coach.as_ref(),
+			},
+		);
 
 		// Process any events from rendering immediately
 		for event in events {
@@ -233,15 +185,6 @@ impl Reactor {
 				}
 			}
 			Event::Media(_) => response = self.media.handle(event),
-			Event::View(ViewEvent::CoachChanged {
-				enabled,
-				model,
-				preset,
-			}) => {
-				response = self.view.handle(event);
-				self.configure_coach(*enabled, model.clone(), preset.clone());
-			}
-			Event::View(_) => response = self.view.handle(event),
 			Event::Beat(_) => response = self.beat.handle(event),
 			Event::Breathing(b) => {
 				response = self.breathing.handle(event);
@@ -310,6 +253,14 @@ impl Reactor {
 					direction: *direction,
 				}))
 			}
+			SourceEvent::ConfigureCoach {
+				enabled,
+				model,
+				preset,
+			} => {
+				self.configure_coach(*enabled, model.clone(), preset.clone());
+				ComponentResponse::none()
+			}
 		}
 	}
 }
@@ -321,9 +272,9 @@ impl eframe::App for Reactor {
 
 	fn save(&mut self, _storage: &mut dyn eframe::Storage) {
 		let saved = crate::config::SavedSettings {
-			search_query: self.view.search_query.clone(),
-			search_query_presets: self.view.search_query_presets.clone(),
-			search_page_input: self.view.search_page_input.clone(),
+			search_query: self.views.search_query.clone(),
+			search_query_presets: self.views.search_query_presets.clone(),
+			search_page_input: self.views.search_page_input.clone(),
 			auto_play: self.settings.auto_play(),
 			auto_play_delay_secs: self.settings.auto_play_delay().as_secs_f32(),
 			cap_by_breathing: self.settings.cap_by_breathing(),
@@ -333,14 +284,14 @@ impl eframe::App for Reactor {
 			breathing_release_multiplier: self.breathing.phase_multipliers().release,
 			breathing_idle_multiplier: self.breathing.phase_multipliers().idle,
 			breathing_style: self.breathing.style(),
-			auto_pan_cycle_duration: self.view.auto_pan_cycle_duration,
+			auto_pan_cycle_duration: self.views.auto_pan_cycle_duration,
 			selected_audio_device: self.beat.selected_device().clone(),
-			beat_pulse_enabled: self.view.beat_pulse_enabled,
-			beat_pulse_scale: self.view.beat_pulse_scale,
-			image_fill_mode: self.view.image_fill_mode,
-			coach_enabled: self.view.coach_enabled,
-			coach_model: self.view.coach_model.clone(),
-			coach_preset: self.view.coach_preset.clone(),
+			beat_pulse_enabled: self.views.beat_pulse_enabled,
+			beat_pulse_scale: self.views.beat_pulse_scale,
+			image_fill_mode: self.views.image_fill_mode,
+			coach_enabled: self.views.coach_enabled,
+			coach_model: self.views.coach_model.clone(),
+			coach_preset: self.views.coach_preset.clone(),
 		};
 		crate::config::save_settings(&saved);
 	}

@@ -19,13 +19,21 @@ pub enum GatewayMessage {
 	},
 }
 
+#[derive(Debug)]
+pub enum SearchStatus {
+	Idle,
+	Loading,
+	Ready,
+	Failed(String),
+}
+
 pub struct BooruGateway {
 	client: Arc<E621Client>,
 	sender: mpsc::Sender<GatewayMessage>,
 	receiver: mpsc::Receiver<GatewayMessage>,
 	current_query: String,
 	current_page: u32,
-	fetch_pending: bool,
+	status: SearchStatus,
 	last_request_times: VecDeque<Instant>,
 	request_generation: u64,
 }
@@ -40,7 +48,7 @@ impl BooruGateway {
 			receiver,
 			current_query: String::new(),
 			current_page: 1,
-			fetch_pending: false,
+			status: SearchStatus::Idle,
 			last_request_times: VecDeque::new(),
 			request_generation: 0,
 		}
@@ -88,7 +96,7 @@ impl BooruGateway {
 						posts.len(),
 						is_new
 					);
-					self.fetch_pending = false;
+					self.status = SearchStatus::Ready;
 					self.current_page = page;
 					responses.push(Event::Browser(BrowserEvent::PostsReceived {
 						posts,
@@ -108,9 +116,7 @@ impl BooruGateway {
 						continue;
 					}
 					log::error!("Search error: {}", message);
-					self.fetch_pending = false;
-					responses
-						.push(Event::Gateway(GatewayEvent::SearchError { message }));
+					self.status = SearchStatus::Failed(message);
 				}
 			}
 		}
@@ -138,7 +144,7 @@ impl BooruGateway {
 				self.record_request();
 				self.current_query = query.clone();
 				self.current_page = *page;
-				self.fetch_pending = true;
+				self.status = SearchStatus::Loading;
 				self.request_generation = self.request_generation.wrapping_add(1);
 				self.spawn_search(
 					query.clone(),
@@ -153,7 +159,7 @@ impl BooruGateway {
 					log::debug!("API rate limit: delaying FetchNextPage");
 					return ComponentResponse::none();
 				}
-				if !self.fetch_pending && !self.current_query.is_empty() {
+				if !self.is_loading() && !self.current_query.is_empty() {
 					let next_page = self.current_page + 1;
 					log::info!(
 						"FetchNextPage: query='{}', page={}",
@@ -161,7 +167,7 @@ impl BooruGateway {
 						next_page
 					);
 					self.record_request();
-					self.fetch_pending = true;
+					self.status = SearchStatus::Loading;
 					self.spawn_search(
 						self.current_query.clone(),
 						next_page,
@@ -169,7 +175,7 @@ impl BooruGateway {
 						false,
 						self.request_generation,
 					);
-				} else if self.fetch_pending {
+				} else if self.is_loading() {
 					log::debug!("FetchNextPage ignored: fetch already pending");
 				}
 			}
@@ -231,7 +237,11 @@ impl BooruGateway {
 	}
 
 	pub fn is_loading(&self) -> bool {
-		self.fetch_pending
+		matches!(self.status, SearchStatus::Loading)
+	}
+
+	pub fn status(&self) -> &SearchStatus {
+		&self.status
 	}
 }
 
@@ -249,7 +259,7 @@ mod tests {
 	fn stale_search_responses_are_ignored() {
 		let mut gateway = BooruGateway::new();
 		gateway.request_generation = 2;
-		gateway.fetch_pending = true;
+		gateway.status = SearchStatus::Loading;
 		gateway
 			.sender
 			.try_send(GatewayMessage::SearchComplete {

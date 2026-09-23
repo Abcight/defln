@@ -1,4 +1,4 @@
-use crate::reactor::{BreathingEvent, Event, SettingsEvent, SourceEvent, ViewEvent};
+use crate::reactor::{BreathingEvent, Event, SettingsEvent, SourceEvent};
 use crate::types::{BreathingPhase, BreathingStyle, NavDirection};
 use eframe::egui;
 use std::time::{Duration, Instant};
@@ -12,6 +12,8 @@ pub enum IslandAction {
 	Push(&'static Island),
 	/// Pop back to the parent island
 	Pop,
+	RequestBreathingToggle,
+	ToggleImageFillMode,
 }
 
 /// A single entry in an island grid
@@ -238,7 +240,10 @@ pub static AUTOPLAY_ISLAND: Island = Island {
 pub static BREATHING_ISLAND: Island = Island {
 	rows: &[
 		&[
-			emit("Toggle", || Event::View(ViewEvent::RequestBreathingToggle)),
+			IslandEntry {
+				label: "Toggle",
+				action: IslandAction::RequestBreathingToggle,
+			},
 			emit("Classic", || {
 				Event::Breathing(BreathingEvent::SetStyle {
 					style: BreathingStyle::Classic,
@@ -280,7 +285,10 @@ pub static ROOT_ISLAND: Island = Island {
 		&[
 			push("Autoplay", &AUTOPLAY_ISLAND),
 			push("Breathing", &BREATHING_ISLAND),
-			emit("View", || Event::View(ViewEvent::ToggleImageFillMode)),
+			IslandEntry {
+				label: "View",
+				action: IslandAction::ToggleImageFillMode,
+			},
 		],
 		&[
 			emit("Previous image", || {

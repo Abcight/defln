@@ -1,24 +1,44 @@
 use crate::beat::SystemBeat;
 use crate::breathing::BreathingOverlay;
 use crate::browser::ContentBrowser;
-use crate::coach::CoachValue;
-use crate::gateway::BooruGateway;
+use crate::coach::CoachManager;
+use crate::gateway::{BooruGateway, SearchStatus};
 use crate::media::MediaPane;
 use crate::reactor::{
-	BeatEvent, BreathingEvent, ComponentResponse, Event, GatewayEvent, MediaEvent,
-	SettingsEvent, SourceEvent, ViewEvent,
+	BeatEvent, BreathingEvent, Event, MediaEvent, SettingsEvent, SourceEvent,
 };
 use crate::settings::SettingsManager;
 use crate::types::{BreathingPhase, BreathingStyle, ImageFillMode, NavDirection};
 use eframe::egui::{self, ScrollArea};
 use egui_extras::{Column, TableBuilder};
-use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
 pub mod island;
 pub mod text_utils;
 
 use island::{IslandAction, IslandCtx, IslandWidget, ROOT_ISLAND};
+
+/// Read-only access to operational application state during a UI pass.
+///
+/// Views may combine data from any number of components, but can only affect
+/// them by returning events after the complete UI pass has finished.
+pub struct ApplicationState<'a> {
+	pub gateway: &'a BooruGateway,
+	pub browser: &'a ContentBrowser,
+	pub media: &'a MediaPane,
+	pub breathing: &'a BreathingOverlay,
+	pub settings: &'a SettingsManager,
+	pub beat: &'a SystemBeat,
+	pub coach: Option<&'a CoachManager>,
+}
+
+pub trait View {
+	fn render(
+		&mut self,
+		ctx: &egui::Context,
+		state: &ApplicationState<'_>,
+	) -> Vec<Event>;
+}
 
 /// Content for modal popups
 #[derive(Clone)]
@@ -28,7 +48,7 @@ pub enum ModalContent {
 	BreathingDisclaimer,
 }
 
-pub struct ViewManager {
+pub struct Views {
 	// Display state
 	image_load_time: Instant,
 	user_has_panned: bool,
@@ -40,7 +60,7 @@ pub struct ViewManager {
 	pub(crate) search_page_input: String,
 	selected_search_query_preset: Option<String>,
 	query_selector_open: bool,
-	error_msg: Option<String>,
+	last_media_url: Option<String>,
 	user_is_adult: bool,
 	user_accepted_tos: bool,
 
@@ -67,8 +87,6 @@ pub struct ViewManager {
 	pub(crate) coach_enabled: bool,
 	pub(crate) coach_model: Option<String>,
 	pub(crate) coach_preset: Option<String>,
-	pub(crate) coach_logs: Vec<String>,
-	pub(crate) coach_state: HashMap<String, CoachValue>,
 
 	// Gallery animation state
 	gallery_anim_start_offset: f32,
@@ -81,7 +99,7 @@ pub struct ViewManager {
 	user_pan_offset: egui::Vec2,
 }
 
-impl ViewManager {
+impl Views {
 	#[expect(
 		clippy::too_many_arguments,
 		reason = "This constructor mirrors the persisted view settings; a settings struct can be introduced with the next view refactor."
@@ -114,7 +132,7 @@ impl ViewManager {
 			search_page_input,
 			selected_search_query_preset,
 			query_selector_open: false,
-			error_msg: None,
+			last_media_url: None,
 			user_is_adult: false,
 			user_accepted_tos: false,
 			modal: ModalContent::Hello,
@@ -131,8 +149,6 @@ impl ViewManager {
 			coach_enabled,
 			coach_model,
 			coach_preset,
-			coach_logs: Vec::new(),
-			coach_state: HashMap::new(),
 			gallery_anim_start_offset: 0.0,
 			gallery_anim_offset: 0.0,
 			gallery_anim_time: 0.0,
@@ -142,104 +158,64 @@ impl ViewManager {
 		}
 	}
 
-	pub fn handle(&mut self, event: &Event) -> ComponentResponse {
-		match event {
-			Event::View(ViewEvent::MediaReady) => {
-				self.image_load_time = Instant::now();
-				self.user_has_panned = false;
-				self.user_zoom = 1.0;
-				self.user_pan_offset = egui::Vec2::ZERO;
-				self.error_msg = None;
-				ComponentResponse::none()
-			}
-			Event::View(ViewEvent::BeatPulse { scale }) => {
-				self.beat_intensity = *scale;
-				self.last_beat_scale = *scale;
-				self.last_beat_time = Instant::now();
-				ComponentResponse::none()
-			}
-			Event::Gateway(GatewayEvent::SearchError { message }) => {
-				self.error_msg = Some(message.clone());
-				ComponentResponse::none()
-			}
-			Event::Media(MediaEvent::LoadError { error }) => {
-				self.error_msg = Some(format!("Failed to load: {}", error));
-				ComponentResponse::none()
-			}
-			Event::View(ViewEvent::SetImageFillMode { mode }) => {
-				self.image_fill_mode = *mode;
-				ComponentResponse::none()
-			}
-			Event::View(ViewEvent::ToggleImageFillMode) => {
-				match self.image_fill_mode {
-					ImageFillMode::Cover => self.image_fill_mode = ImageFillMode::Fit,
-					ImageFillMode::Fit => {
-						self.image_fill_mode = ImageFillMode::FitToGallery
-					}
-					ImageFillMode::FitToGallery => {
-						self.image_fill_mode = ImageFillMode::Cover
-					}
-				}
-				ComponentResponse::none()
-			}
-			_ => ComponentResponse::none(),
-		}
-	}
-
-	/// Main render function of the whole thing
-	#[expect(
-		clippy::too_many_arguments,
-		reason = "Rendering currently receives the concrete application components explicitly."
-	)]
-	pub fn render(
+	fn render_frame(
 		&mut self,
 		ctx: &egui::Context,
-		gateway: &BooruGateway,
-		browser: &ContentBrowser,
-		media: &mut MediaPane,
-		breathing: &BreathingOverlay,
-		settings: &SettingsManager,
-		beat: &SystemBeat,
+		state: &ApplicationState<'_>,
 	) -> Vec<Event> {
 		let mut events = Vec::new();
+		let media_url = state.media.current_url().map(str::to_owned);
+		if self.last_media_url != media_url {
+			self.last_media_url = media_url;
+			self.image_load_time = Instant::now();
+			self.user_has_panned = false;
+			self.user_zoom = 1.0;
+			self.user_pan_offset = egui::Vec2::ZERO;
+		}
+		let (beat_at, beat_scale) = state.beat.latest_beat();
+		if beat_at > self.last_beat_time && beat_scale > 0.0 {
+			self.last_beat_time = beat_at;
+			self.last_beat_scale = beat_scale;
+			self.beat_intensity = beat_scale;
+		}
 		let modal_active = !matches!(self.modal, ModalContent::None);
 
 		// Handle input only when no modal is active
 		if !modal_active {
 			let is_typing = ctx.memory(|m| m.focused().is_some());
 			if !is_typing {
-				self.handle_keyboard_input(ctx, media, &mut events);
+				self.handle_keyboard_input(ctx, &mut events);
 			}
 		}
 
 		// Top panel
 		self.render_top_panel(
 			ctx,
-			gateway,
-			settings,
-			breathing,
-			beat,
+			state.gateway,
+			state.settings,
+			state.breathing,
+			state.beat,
 			&mut events,
 			!modal_active,
 		);
 
 		// Central panel
-		self.render_central_panel(ctx, browser, media, gateway, !modal_active);
+		self.render_central_panel(ctx, state, &mut events, !modal_active);
 
 		// Overlays
-		match breathing.style() {
+		match state.breathing.style() {
 			BreathingStyle::Classic => {
-				self.render_breathing_overlay(ctx, breathing);
-				self.render_breathing_pulse(ctx, breathing);
+				self.render_breathing_overlay(ctx, state.breathing);
+				self.render_breathing_pulse(ctx, state.breathing);
 			}
 			BreathingStyle::Immersive => {
-				self.render_immersive_breathing_overlay(ctx, breathing);
+				self.render_immersive_breathing_overlay(ctx, state.breathing);
 			}
 		}
-		self.render_info_overlay(ctx, browser);
+		self.render_info_overlay(ctx, state.browser);
 
 		// Beat debug dot
-		self.render_beat_debug(ctx, beat);
+		self.render_beat_debug(ctx, state.beat);
 
 		// Island navigation overlay
 		self.render_island_overlay(ctx, &mut events);
@@ -253,7 +229,6 @@ impl ViewManager {
 	fn handle_keyboard_input(
 		&mut self,
 		ctx: &egui::Context,
-		_media: &mut MediaPane,
 		events: &mut Vec<Event>,
 	) {
 		// Detect shift press/release edges for island activation
@@ -499,9 +474,7 @@ impl ViewManager {
 							)
 							.clicked()
 						{
-							events.push(Event::View(ViewEvent::SetImageFillMode {
-								mode: ImageFillMode::Cover,
-							}));
+							self.image_fill_mode = ImageFillMode::Cover;
 						}
 						if ui
 							.selectable_label(
@@ -510,9 +483,7 @@ impl ViewManager {
 							)
 							.clicked()
 						{
-							events.push(Event::View(ViewEvent::SetImageFillMode {
-								mode: ImageFillMode::Fit,
-							}));
+							self.image_fill_mode = ImageFillMode::Fit;
 						}
 						if ui
 							.selectable_label(
@@ -521,9 +492,7 @@ impl ViewManager {
 							)
 							.clicked()
 						{
-							events.push(Event::View(ViewEvent::SetImageFillMode {
-								mode: ImageFillMode::FitToGallery,
-							}));
+							self.image_fill_mode = ImageFillMode::FitToGallery;
 						}
 					});
 
@@ -656,7 +625,7 @@ impl ViewManager {
 			self.coach_preset.clone(),
 		);
 		if previous_coach_config != current_coach_config {
-			events.push(Event::View(ViewEvent::CoachChanged {
+			events.push(Event::Source(SourceEvent::ConfigureCoach {
 				enabled: self.coach_enabled,
 				model: self.coach_model.clone(),
 				preset: self.coach_preset.clone(),
@@ -843,11 +812,14 @@ impl ViewManager {
 	fn render_central_panel(
 		&mut self,
 		ctx: &egui::Context,
-		browser: &ContentBrowser,
-		media: &mut MediaPane,
-		gateway: &BooruGateway,
+		state: &ApplicationState<'_>,
+		events: &mut Vec<Event>,
 		enabled: bool,
 	) {
+		let browser = state.browser;
+		let media = state.media;
+		let gateway = state.gateway;
+		let coach = state.coach;
 		egui::CentralPanel::default().show(ctx, |ui| {
 			if !enabled {
 				ui.disable();
@@ -856,10 +828,15 @@ impl ViewManager {
 				ui.centered_and_justified(|ui| {
 					ui.spinner();
 				});
-			} else if let Some(err) = &self.error_msg {
-				ui.label(egui::RichText::new(err).color(egui::Color32::RED));
+			} else if let SearchStatus::Failed(error) = gateway.status() {
+				ui.label(egui::RichText::new(error).color(egui::Color32::RED));
+			} else if let Some(error) = media.current_error() {
+				ui.label(
+					egui::RichText::new(format!("Failed to load: {error}"))
+						.color(egui::Color32::RED),
+				);
 			} else if let Some(_url) = media.current_url() {
-				self.render_media(ui, ctx, media, browser);
+				self.render_media(ui, ctx, media, browser, events);
 			} else {
 				ui.centered_and_justified(|ui| {
 					ui.label("Enter a query and search to start.");
@@ -868,7 +845,7 @@ impl ViewManager {
 		});
 
 		// Render Coach Overlay
-		if !self.coach_logs.is_empty() {
+		if coach.is_some_and(|coach| !coach.logs().is_empty()) {
 			let screen_height = ctx.screen_rect().height();
 			let base_font_size = (screen_height * 0.03).max(16.0);
 			let font_size = base_font_size * 0.75;
@@ -882,7 +859,14 @@ impl ViewManager {
 				.interactable(false)
 				.order(egui::Order::Foreground)
 				.show(ctx, |ui| {
-					let recent_logs = self.coach_logs.iter().rev().take(20).rev();
+					let recent_logs = coach
+						.into_iter()
+						.flat_map(CoachManager::logs)
+						.rev()
+						.take(20)
+						.collect::<Vec<_>>()
+						.into_iter()
+						.rev();
 					let outline_color = egui::Color32::from_black_alpha(204);
 					let text_color = egui::Color32::from_rgb(180, 220, 180); // Muted terminal green
 					let font_id = egui::FontId::monospace(font_size);
@@ -943,7 +927,9 @@ impl ViewManager {
 									.strong(),
 							);
 							ui.add_space(8.0);
-							for (k, v) in &self.coach_state {
+							for (k, v) in
+								coach.into_iter().flat_map(CoachManager::state)
+							{
 								ui.label(
 									egui::RichText::new(format!("{}: {}", k, v))
 										.color(egui::Color32::LIGHT_GRAY)
@@ -959,13 +945,17 @@ impl ViewManager {
 		&mut self,
 		ui: &mut egui::Ui,
 		ctx: &egui::Context,
-		media: &mut MediaPane,
+		media: &MediaPane,
 		browser: &ContentBrowser,
+		events: &mut Vec<Event>,
 	) {
 		let pan_cycle = self.auto_pan_cycle_duration;
 		let load_time = self.image_load_time;
 		let mut user_panned = self.user_has_panned;
 		let island_active = self.island_ctx.active || self.island_ctx.in_cooldown();
+		if media.needs_painted_notification() {
+			events.push(Event::Media(MediaEvent::Painted));
+		}
 
 		let handle_scroll_input = |ui: &mut egui::Ui, input_active: &mut bool| {
 			// Don't process scroll input when island overlay is active or just closed
@@ -1006,12 +996,10 @@ impl ViewManager {
 			}
 		};
 
-		media.note_current_gif_painted();
-
 		if media.current_is_playable()
 			&& !matches!(self.image_fill_mode, ImageFillMode::FitToGallery)
 		{
-			media.show_current_video(ui);
+			Self::render_current_video(ui, media, None);
 			self.user_has_panned = user_panned;
 			return;
 		}
@@ -1455,14 +1443,18 @@ impl ViewManager {
 										)
 									})
 									.unwrap_or(center_rect);
-								media.show_current_video_in_rect(ui, video_rect);
+								Self::render_current_video(
+									ui,
+									media,
+									Some(video_rect),
+								);
 							}
 						});
 					}
 				}
 			}
 		} else if media.current_is_playable() {
-			media.show_current_video(ui);
+			Self::render_current_video(ui, media, None);
 		} else if media.is_loading() {
 			ui.centered_and_justified(|ui| {
 				ui.spinner();
@@ -1470,6 +1462,41 @@ impl ViewManager {
 		}
 
 		self.user_has_panned = user_panned;
+	}
+
+	fn render_current_video(
+		ui: &mut egui::Ui,
+		media: &MediaPane,
+		target_rect: Option<egui::Rect>,
+	) {
+		let available_rect =
+			target_rect.unwrap_or_else(|| ui.available_rect_before_wrap());
+		if let Some(player) = media.current_video_player() {
+			let rect = target_rect.unwrap_or_else(|| {
+				let (width, height) = player.decoded_frame_size().unwrap_or((16, 9));
+				Self::contained_aspect_rect(
+					available_rect,
+					width as f32 / height.max(1) as f32,
+				)
+			});
+			ui.allocate_new_ui(egui::UiBuilder::new().max_rect(rect), |ui| {
+				player.in_sized(
+					ui,
+					rect.width().max(16.0),
+					Some(rect.height().max(16.0)),
+				);
+			});
+		} else if target_rect.is_none() {
+			let (rect, _) =
+				ui.allocate_exact_size(available_rect.size(), egui::Sense::hover());
+			ui.painter().text(
+				rect.center(),
+				egui::Align2::CENTER_CENTER,
+				"Loading playable media...",
+				egui::FontId::proportional(13.0),
+				egui::Color32::LIGHT_GRAY,
+			);
+		}
 	}
 
 	fn contained_aspect_rect(space: egui::Rect, aspect: f32) -> egui::Rect {
@@ -1926,23 +1953,24 @@ impl ViewManager {
 
 		if let Some(action) = IslandWidget::new(&mut self.island_ctx).show(ctx) {
 			match action {
-				IslandAction::Emit(factory) => {
-					let event = factory();
-					// Intercept breathing toggle request to check disclaimer
-					if matches!(event, Event::View(ViewEvent::RequestBreathingToggle))
-					{
-						if !self.breathing_disclaimer_accepted {
-							self.modal = ModalContent::BreathingDisclaimer;
-						} else {
-							events.push(Event::Breathing(BreathingEvent::Toggle));
-						}
-					} else {
-						events.push(event);
-					}
-				}
+				IslandAction::Emit(factory) => events.push(factory()),
 				IslandAction::Push(island) => self.island_ctx.push(island),
 				IslandAction::Pop => {
 					self.island_ctx.pop();
+				}
+				IslandAction::RequestBreathingToggle => {
+					if self.breathing_disclaimer_accepted {
+						events.push(Event::Breathing(BreathingEvent::Toggle));
+					} else {
+						self.modal = ModalContent::BreathingDisclaimer;
+					}
+				}
+				IslandAction::ToggleImageFillMode => {
+					self.image_fill_mode = match self.image_fill_mode {
+						ImageFillMode::Cover => ImageFillMode::Fit,
+						ImageFillMode::Fit => ImageFillMode::FitToGallery,
+						ImageFillMode::FitToGallery => ImageFillMode::Cover,
+					};
 				}
 			}
 		}
@@ -2094,7 +2122,7 @@ impl ViewManager {
 	}
 }
 
-impl Default for ViewManager {
+impl Default for Views {
 	fn default() -> Self {
 		Self::new(
 			"~gay ~male solo abs wolf order:score".to_owned(),
@@ -2108,6 +2136,16 @@ impl Default for ViewManager {
 			None,
 			None,
 		)
+	}
+}
+
+impl View for Views {
+	fn render(
+		&mut self,
+		ctx: &egui::Context,
+		state: &ApplicationState<'_>,
+	) -> Vec<Event> {
+		self.render_frame(ctx, state)
 	}
 }
 
