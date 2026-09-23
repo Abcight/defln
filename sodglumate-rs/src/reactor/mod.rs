@@ -1,3 +1,14 @@
+//! Components own application state and work; views own immediate-mode layout
+//! and interaction.
+//! 
+//! Components may prepare resources required for presentation, for example,
+//! they can manage the downloading and storing of media from the internet.
+//! 
+//! Components must not build UI layout or handle widgets.
+//! 
+//! Views communicate changes only through commands and events, which the
+//! reactor applies after rendering.
+
 pub mod message;
 pub mod queue;
 pub mod scheduler;
