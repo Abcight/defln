@@ -37,11 +37,6 @@ pub enum Command {
 	AdvanceSlideshow,
 	ToggleCapByBreathing,
 	SetAudioDevice(Option<String>),
-	ConfigureCoach {
-		enabled: bool,
-		model: Option<String>,
-		preset: Option<String>,
-	},
 }
 
 #[derive(Clone, Debug)]
