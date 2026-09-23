@@ -1,7 +1,5 @@
 use crate::api::Post;
-use crate::reactor::{
-	BrowserEvent, ComponentResponse, Event, GatewayEvent, MediaEvent,
-};
+use crate::reactor::{Command, ComponentResponse, Event, Message};
 use crate::types::{MediaKind, NavDirection};
 
 pub struct ContentBrowser {
@@ -20,13 +18,13 @@ impl ContentBrowser {
 		}
 	}
 
-	pub fn handle(&mut self, event: &Event) -> ComponentResponse {
+	pub fn observe(&mut self, event: &Event) -> ComponentResponse {
 		match event {
-			Event::Browser(BrowserEvent::PostsReceived {
+			Event::SearchCompleted {
 				posts,
 				page,
 				is_new,
-			}) => {
+			} => {
 				let filtered_posts: Vec<Post> = posts
 					.iter()
 					.filter(|p| MediaKind::from_extension(&p.file.ext).is_some())
@@ -59,7 +57,13 @@ impl ContentBrowser {
 					ComponentResponse::none()
 				}
 			}
-			Event::Browser(BrowserEvent::Navigate { direction }) => {
+			_ => ComponentResponse::none(),
+		}
+	}
+
+	pub fn handle(&mut self, command: &Command) -> ComponentResponse {
+		match command {
+			Command::Navigate(direction) => {
 				if self.posts.is_empty() {
 					log::debug!("Navigate ignored: no posts");
 					return ComponentResponse::none();
@@ -98,7 +102,11 @@ impl ContentBrowser {
 					self.posts.len()
 				);
 
-				self.emit_current_post_changed()
+				let mut response = self.emit_current_post_changed();
+				response
+					.messages
+					.push(Message::Event(Event::Navigated(*direction)));
+				response
 			}
 			_ => ComponentResponse::none(),
 		}
@@ -106,7 +114,7 @@ impl ContentBrowser {
 
 	fn emit_current_post_changed(&self) -> ComponentResponse {
 		let post = self.posts.get(self.current_index).cloned();
-		let mut events = Vec::new();
+		let mut messages = Vec::new();
 
 		if let Some(post) = post {
 			// Request media load with sample and full URLs
@@ -122,7 +130,7 @@ impl ContentBrowser {
 					full_url,
 					kind
 				);
-				events.push(Event::Media(MediaEvent::LoadRequest {
+				messages.push(Message::Command(Command::LoadMedia {
 					sample_url,
 					full_url,
 					kind,
@@ -136,7 +144,7 @@ impl ContentBrowser {
 					"Near end of results (remaining={}), requesting next page",
 					remaining
 				);
-				events.push(Event::Gateway(GatewayEvent::FetchNextPage));
+				messages.push(Message::Command(Command::FetchNextPage));
 			}
 
 			// Emit prefetch hints for next 30 posts
@@ -154,13 +162,13 @@ impl ContentBrowser {
 
 			if !prefetch_urls.is_empty() {
 				log::debug!("Requesting prefetch for {} URLs", prefetch_urls.len());
-				events.push(Event::Media(MediaEvent::Prefetch {
+				messages.push(Message::Command(Command::PrefetchMedia {
 					urls: prefetch_urls,
 				}));
 			}
 		}
 
-		ComponentResponse::emit_many(events)
+		ComponentResponse::messages(messages)
 	}
 
 	pub fn current_post(&self) -> Option<&Post> {
@@ -218,17 +226,17 @@ mod tests {
 	}
 
 	fn posts_received(posts: Vec<Post>, is_new: bool) -> Event {
-		Event::Browser(BrowserEvent::PostsReceived {
+		Event::SearchCompleted {
 			posts,
 			page: 1,
 			is_new,
-		})
+		}
 	}
 
 	#[test]
 	fn filters_unsupported_posts_and_starts_at_first_media() {
 		let mut browser = ContentBrowser::new();
-		browser.handle(&posts_received(
+		browser.observe(&posts_received(
 			vec![post(1, "jpg"), post(2, "mp4"), post(3, "swf")],
 			true,
 		));
@@ -240,16 +248,12 @@ mod tests {
 	#[test]
 	fn navigation_wraps_and_skip_stays_within_results() {
 		let mut browser = ContentBrowser::new();
-		browser.handle(&posts_received(vec![post(1, "jpg"), post(2, "png")], true));
+		browser.observe(&posts_received(vec![post(1, "jpg"), post(2, "png")], true));
 
-		browser.handle(&Event::Browser(BrowserEvent::Navigate {
-			direction: NavDirection::Prev,
-		}));
+		browser.handle(&Command::Navigate(NavDirection::Prev));
 		assert_eq!(browser.current_post().map(|post| post.id), Some(2));
 
-		browser.handle(&Event::Browser(BrowserEvent::Navigate {
-			direction: NavDirection::Skip(10),
-		}));
+		browser.handle(&Command::Navigate(NavDirection::Skip(10)));
 		assert_eq!(browser.current_post().map(|post| post.id), Some(2));
 	}
 
@@ -268,10 +272,10 @@ mod tests {
 		playable.sample.has = false;
 		playable.preview.url = Some("https://example.test/preview.jpg".to_owned());
 
-		let response = browser.handle(&posts_received(vec![playable], true));
-		assert!(response.events.iter().any(|event| matches!(
-			event,
-			Event::Media(MediaEvent::LoadRequest { sample_url, .. })
+		let response = browser.observe(&posts_received(vec![playable], true));
+		assert!(response.messages.iter().any(|message| matches!(
+			message,
+			Message::Command(Command::LoadMedia { sample_url, .. })
 				if sample_url.as_deref() == Some("https://example.test/preview.jpg")
 		)));
 	}

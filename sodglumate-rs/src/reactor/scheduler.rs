@@ -1,12 +1,12 @@
-use super::event::Event;
-use super::queue::EventQueue;
+use super::message::Message;
+use super::queue::MessageQueue;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 use std::time::{Duration, Instant};
 
 struct ScheduledEvent {
 	emit_at: Instant,
-	event: Event,
+	message: Message,
 }
 
 impl PartialEq for ScheduledEvent {
@@ -40,21 +40,21 @@ impl Scheduler {
 		}
 	}
 
-	/// Schedule an event to fire after `delay`
-	pub fn schedule(&mut self, event: Event, delay: Duration) {
+	/// Schedule a message to be enqueued after `delay`.
+	pub fn schedule(&mut self, message: Message, delay: Duration) {
 		self.pending.push(ScheduledEvent {
 			emit_at: Instant::now() + delay,
-			event,
+			message,
 		});
 	}
 
-	/// Poll and drain ready events into the queue
-	pub fn tick(&mut self, queue: &mut EventQueue) {
+	/// Poll and drain ready messages into the queue.
+	pub fn tick(&mut self, queue: &mut MessageQueue) {
 		let now = Instant::now();
 		while let Some(scheduled) = self.pending.peek() {
 			if scheduled.emit_at <= now {
 				let scheduled = self.pending.pop().unwrap();
-				queue.push(scheduled.event);
+				queue.push(scheduled.message);
 			} else {
 				break;
 			}

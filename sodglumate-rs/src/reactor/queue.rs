@@ -1,41 +1,54 @@
-use super::event::Event;
+use super::message::Message;
 use std::collections::VecDeque;
 
-/// Priority event queue with 3 priority levels
-pub struct EventQueue {
-	queues: [VecDeque<Event>; 3],
+/// FIFO message queue. Message order is part of the reactor contract.
+pub struct MessageQueue {
+	queue: VecDeque<Message>,
 }
 
-impl EventQueue {
+impl MessageQueue {
 	pub fn new() -> Self {
 		Self {
-			queues: [
-				VecDeque::new(), // High
-				VecDeque::new(), // Normal
-				VecDeque::new(), // Low
-			],
+			queue: VecDeque::new(),
 		}
 	}
 
 	/// Push an event to the appropriate priority queue
-	pub fn push(&mut self, event: Event) {
-		let priority = event.priority();
-		self.queues[priority.as_index()].push_back(event);
+	pub fn push(&mut self, message: Message) {
+		self.queue.push_back(message);
 	}
 
 	/// Pop the highest priority event available
-	pub fn pop(&mut self) -> Option<Event> {
-		for queue in &mut self.queues {
-			if let Some(event) = queue.pop_front() {
-				return Some(event);
-			}
-		}
-		None
+	pub fn pop(&mut self) -> Option<Message> {
+		self.queue.pop_front()
 	}
 }
 
-impl Default for EventQueue {
+impl Default for MessageQueue {
 	fn default() -> Self {
 		Self::new()
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::reactor::{Command, Event};
+	use crate::types::NavDirection;
+
+	#[test]
+	fn preserves_message_order_across_kinds() {
+		let mut queue = MessageQueue::new();
+		queue.push(Message::Event(Event::MediaPainted));
+		queue.push(Message::Command(Command::Navigate(NavDirection::Next)));
+
+		assert!(matches!(
+			queue.pop(),
+			Some(Message::Event(Event::MediaPainted))
+		));
+		assert!(matches!(
+			queue.pop(),
+			Some(Message::Command(Command::Navigate(NavDirection::Next)))
+		));
 	}
 }

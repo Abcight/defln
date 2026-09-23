@@ -1,4 +1,4 @@
-use crate::reactor::{BreathingEvent, Event, SettingsEvent, SourceEvent};
+use crate::reactor::Command;
 use crate::types::{BreathingPhase, BreathingStyle, NavDirection};
 use eframe::egui;
 use std::time::{Duration, Instant};
@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 #[derive(Clone, Copy)]
 pub enum IslandAction {
 	/// Fire an event (via factory function)
-	Emit(fn() -> Event),
+	Emit(fn() -> Command),
 	/// Push a subcategory island onto the stack
 	Push(&'static Island),
 	/// Pop back to the parent island
@@ -199,7 +199,7 @@ pub enum GridDirection {
 }
 
 /// Helper to create an emit entry
-const fn emit(label: &'static str, factory: fn() -> Event) -> IslandEntry {
+const fn emit(label: &'static str, factory: fn() -> Command) -> IslandEntry {
 	IslandEntry {
 		label,
 		action: IslandAction::Emit(factory),
@@ -222,16 +222,10 @@ const BACK_ENTRY: IslandEntry = IslandEntry {
 
 pub static AUTOPLAY_ISLAND: Island = Island {
 	rows: &[
-		&[emit("Toggle", || {
-			Event::Settings(SettingsEvent::ToggleAutoPlay)
-		})],
+		&[emit("Toggle", || Command::ToggleAutoPlay)],
 		&[
-			emit("-1s", || {
-				Event::Settings(SettingsEvent::AdjustDelay { delta_secs: -1 })
-			}),
-			emit("+1s", || {
-				Event::Settings(SettingsEvent::AdjustDelay { delta_secs: 1 })
-			}),
+			emit("-1s", || Command::AdjustAutoPlayDelay(-1)),
+			emit("+1s", || Command::AdjustAutoPlayDelay(1)),
 		],
 		&[BACK_ENTRY],
 	],
@@ -245,34 +239,24 @@ pub static BREATHING_ISLAND: Island = Island {
 				action: IslandAction::RequestBreathingToggle,
 			},
 			emit("Classic", || {
-				Event::Breathing(BreathingEvent::SetStyle {
-					style: BreathingStyle::Classic,
-				})
+				Command::SetBreathingStyle(BreathingStyle::Classic)
 			}),
 			emit("Immersive", || {
-				Event::Breathing(BreathingEvent::SetStyle {
-					style: BreathingStyle::Immersive,
-				})
+				Command::SetBreathingStyle(BreathingStyle::Immersive)
 			}),
 		],
 		&[
-			emit("Low", || {
-				Event::Breathing(BreathingEvent::SetPhaseMultiplier {
-					phase: BreathingPhase::Idle,
-					value: 1.8,
-				})
+			emit("Low", || Command::SetBreathingPhaseMultiplier {
+				phase: BreathingPhase::Idle,
+				value: 1.8,
 			}),
-			emit("Medium", || {
-				Event::Breathing(BreathingEvent::SetPhaseMultiplier {
-					phase: BreathingPhase::Idle,
-					value: 1.0,
-				})
+			emit("Medium", || Command::SetBreathingPhaseMultiplier {
+				phase: BreathingPhase::Idle,
+				value: 1.0,
 			}),
-			emit("High", || {
-				Event::Breathing(BreathingEvent::SetPhaseMultiplier {
-					phase: BreathingPhase::Idle,
-					value: 0.67,
-				})
+			emit("High", || Command::SetBreathingPhaseMultiplier {
+				phase: BreathingPhase::Idle,
+				value: 0.67,
 			}),
 		],
 		&[BACK_ENTRY],
@@ -291,20 +275,12 @@ pub static ROOT_ISLAND: Island = Island {
 			},
 		],
 		&[
-			emit("Previous image", || {
-				Event::Source(SourceEvent::Navigate(NavDirection::Prev))
-			}),
-			emit("Next image", || {
-				Event::Source(SourceEvent::Navigate(NavDirection::Next))
-			}),
+			emit("Previous image", || Command::Navigate(NavDirection::Prev)),
+			emit("Next image", || Command::Navigate(NavDirection::Next)),
 		],
 		&[
-			emit("Rewind 10", || {
-				Event::Source(SourceEvent::Navigate(NavDirection::Skip(-10)))
-			}),
-			emit("Skip 10", || {
-				Event::Source(SourceEvent::Navigate(NavDirection::Skip(10)))
-			}),
+			emit("Rewind 10", || Command::Navigate(NavDirection::Skip(-10))),
+			emit("Skip 10", || Command::Navigate(NavDirection::Skip(10))),
 		],
 	],
 };

@@ -1,7 +1,5 @@
 use crate::breathing::BreathingOverlay;
-use crate::reactor::{
-	BreathingEvent, BrowserEvent, ComponentResponse, Event, SettingsEvent,
-};
+use crate::reactor::{Command, ComponentResponse, Event, Message};
 use crate::types::{BreathingPhase, NavDirection};
 use std::time::{Duration, Instant};
 
@@ -28,79 +26,49 @@ impl SettingsManager {
 		}
 	}
 
-	pub fn handle(
+	pub fn handle_command(
 		&mut self,
-		event: &Event,
+		command: &Command,
 		breathing: &BreathingOverlay,
 	) -> ComponentResponse {
-		match event {
-			Event::Settings(SettingsEvent::ToggleAutoPlay) => {
+		match command {
+			Command::ToggleAutoPlay => {
 				self.auto_play = !self.auto_play;
 				if self.auto_play {
 					self.last_advance_time = Instant::now();
 					if !self.slideshow_scheduled {
 						self.slideshow_scheduled = true;
-						return ComponentResponse::schedule(
-							Event::Settings(SettingsEvent::SlideshowAdvance),
+						return ComponentResponse::schedule_command(
+							Command::AdvanceSlideshow,
 							self.auto_play_delay,
 						);
 					}
 				}
 				ComponentResponse::none()
 			}
-			Event::Settings(SettingsEvent::SetDelay { duration }) => {
+			Command::SetAutoPlayDelay(duration) => {
 				self.auto_play_delay = *duration;
 				ComponentResponse::none()
 			}
-			Event::Settings(SettingsEvent::AdjustDelay { delta_secs }) => {
+			Command::AdjustAutoPlayDelay(delta_secs) => {
 				let current_secs = self.auto_play_delay.as_secs() as i64;
 				let new_secs = (current_secs + delta_secs).clamp(1, 60);
 				self.auto_play_delay = Duration::from_secs(new_secs as u64);
 				ComponentResponse::none()
 			}
-			Event::Settings(SettingsEvent::ToggleCapByBreathing) => {
+			Command::ToggleCapByBreathing => {
 				self.cap_by_breathing = !self.cap_by_breathing;
 				ComponentResponse::none()
 			}
-			Event::Breathing(BreathingEvent::PhaseStarted(phase)) => {
-				if self.auto_play
-					&& self.cap_by_breathing
-					&& breathing.is_visible()
-					&& matches!(
-						phase,
-						BreathingPhase::Prepare | BreathingPhase::Release
-					) {
-					// Immediately trigger advance in these phases
-					return ComponentResponse::emit(Event::Browser(
-						BrowserEvent::Navigate {
-							direction: NavDirection::Next,
-						},
-					));
-				}
-				ComponentResponse::none()
-			}
-			Event::Browser(BrowserEvent::Navigate { .. }) => {
-				if self.auto_play {
-					self.last_advance_time = Instant::now();
-					if !self.slideshow_scheduled {
-						self.slideshow_scheduled = true;
-						return ComponentResponse::schedule(
-							Event::Settings(SettingsEvent::SlideshowAdvance),
-							self.auto_play_delay,
-						);
-					}
-				}
-				ComponentResponse::none()
-			}
-			Event::Settings(SettingsEvent::SlideshowAdvance) => {
+			Command::AdvanceSlideshow => {
 				self.slideshow_scheduled = false;
 				if self.auto_play {
 					let elapsed = self.last_advance_time.elapsed();
 					if elapsed < self.auto_play_delay {
 						// We haven't waited long enough since the last manual navigation or advance
 						self.slideshow_scheduled = true;
-						return ComponentResponse::schedule(
-							Event::Settings(SettingsEvent::SlideshowAdvance),
+						return ComponentResponse::schedule_command(
+							Command::AdvanceSlideshow,
 							self.auto_play_delay - elapsed,
 						);
 					}
@@ -114,8 +82,8 @@ impl SettingsManager {
 						) {
 							// Blocked by breathing, reschedule to check again shortly
 							self.slideshow_scheduled = true;
-							return ComponentResponse::schedule(
-								Event::Settings(SettingsEvent::SlideshowAdvance),
+							return ComponentResponse::schedule_command(
+								Command::AdvanceSlideshow,
 								Duration::from_secs(1),
 							);
 						}
@@ -124,16 +92,46 @@ impl SettingsManager {
 					// Navigate to next and schedule another advance
 					self.slideshow_scheduled = true;
 					self.last_advance_time = Instant::now();
-					let mut response = ComponentResponse::emit(Event::Browser(
-						BrowserEvent::Navigate {
-							direction: NavDirection::Next,
-						},
+					let mut response = ComponentResponse::command(Command::Navigate(
+						NavDirection::Next,
 					));
 					response.scheduled.push((
-						Event::Settings(SettingsEvent::SlideshowAdvance),
+						Message::Command(Command::AdvanceSlideshow),
 						self.auto_play_delay,
 					));
 					return response;
+				}
+				ComponentResponse::none()
+			}
+			_ => ComponentResponse::none(),
+		}
+	}
+
+	pub fn observe(
+		&mut self,
+		event: &Event,
+		breathing: &BreathingOverlay,
+	) -> ComponentResponse {
+		match event {
+			Event::BreathingPhaseStarted(phase)
+				if self.auto_play
+					&& self.cap_by_breathing
+					&& breathing.is_visible()
+					&& matches!(
+						phase,
+						BreathingPhase::Prepare | BreathingPhase::Release
+					) =>
+			{
+				ComponentResponse::command(Command::Navigate(NavDirection::Next))
+			}
+			Event::Navigated(_) if self.auto_play => {
+				self.last_advance_time = Instant::now();
+				if !self.slideshow_scheduled {
+					self.slideshow_scheduled = true;
+					return ComponentResponse::schedule_command(
+						Command::AdvanceSlideshow,
+						self.auto_play_delay,
+					);
 				}
 				ComponentResponse::none()
 			}
@@ -170,8 +168,7 @@ mod tests {
 		let mut settings = SettingsManager::new(false, Duration::from_secs(5), false);
 		let breathing = BreathingOverlay::default();
 
-		let response = settings
-			.handle(&Event::Settings(SettingsEvent::ToggleAutoPlay), &breathing);
+		let response = settings.handle_command(&Command::ToggleAutoPlay, &breathing);
 
 		assert!(settings.auto_play());
 		assert_eq!(response.scheduled.len(), 1);
@@ -182,16 +179,10 @@ mod tests {
 		let mut settings = SettingsManager::new(true, Duration::from_secs(5), false);
 		let breathing = BreathingOverlay::default();
 
-		settings.handle(
-			&Event::Settings(SettingsEvent::AdjustDelay { delta_secs: -100 }),
-			&breathing,
-		);
+		settings.handle_command(&Command::AdjustAutoPlayDelay(-100), &breathing);
 		assert_eq!(settings.auto_play_delay(), Duration::from_secs(1));
 
-		settings.handle(
-			&Event::Settings(SettingsEvent::AdjustDelay { delta_secs: 100 }),
-			&breathing,
-		);
+		settings.handle_command(&Command::AdjustAutoPlayDelay(100), &breathing);
 		assert_eq!(settings.auto_play_delay(), Duration::from_secs(60));
 	}
 }
