@@ -1,5 +1,5 @@
 use crate::api::Post;
-use crate::reactor::{ComponentResponse, Event, MediaEvent};
+use crate::reactor::{Command, ComponentResponse, Event};
 use crate::types::{AnimatedFrame, LoadedMedia, MediaKind};
 use eframe::egui;
 use egui_player_rs::VideoPainter;
@@ -1250,13 +1250,13 @@ impl MediaPane {
 		}
 	}
 
-	pub fn handle(&mut self, event: &Event) -> ComponentResponse {
-		match event {
-			Event::Media(MediaEvent::LoadRequest {
+	pub fn handle_command(&mut self, command: &Command) -> ComponentResponse {
+		match command {
+			Command::LoadMedia {
 				sample_url,
 				full_url,
 				kind,
-			}) => {
+			} => {
 				log::info!(
 					"LoadRequest: sample={:?}, full={:?} (kind={:?})",
 					sample_url,
@@ -1296,11 +1296,8 @@ impl MediaPane {
 				if let Some(url) = &item.full_url {
 					self.failures.shift_remove(url);
 				}
-				// Check if already cached
-				let cache_key = self.get_cache_key(&item);
-				if self.cache.contains_key(&cache_key) {}
 			}
-			Event::Media(MediaEvent::Prefetch { urls }) => {
+			Command::PrefetchMedia { urls } => {
 				log::debug!("Prefetch requested for {} items", urls.len());
 
 				// Clear old pending items and reset
@@ -1333,10 +1330,16 @@ impl MediaPane {
 					}
 				}
 			}
-			Event::Media(MediaEvent::Painted) => self.note_current_painted(),
 			_ => {}
 		}
 
+		ComponentResponse::none()
+	}
+
+	pub fn observe(&mut self, event: &Event) -> ComponentResponse {
+		if matches!(event, Event::MediaPainted) {
+			self.note_current_painted();
+		}
 		ComponentResponse::none()
 	}
 

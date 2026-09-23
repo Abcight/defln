@@ -1,4 +1,4 @@
-use crate::reactor::{BreathingEvent, ComponentResponse, Event};
+use crate::reactor::{Command, ComponentResponse, Event, Message};
 use crate::types::{BreathingPhase, BreathingPhaseMultipliers, BreathingStyle};
 use rand::Rng;
 use std::time::{Duration, Instant};
@@ -43,23 +43,22 @@ impl BreathingOverlay {
 	}
 
 	pub fn init(&self) -> ComponentResponse {
-		let mut response = ComponentResponse::emit(Event::Breathing(
-			BreathingEvent::PhaseStarted(self.state.phase),
-		));
+		let mut response =
+			ComponentResponse::event(Event::BreathingPhaseStarted(self.state.phase));
 		response.scheduled.push((
-			Event::Breathing(BreathingEvent::PhaseComplete),
+			Message::Command(Command::CompleteBreathingPhase),
 			self.state.duration,
 		));
 		response
 	}
 
-	pub fn handle(&mut self, event: &Event) -> ComponentResponse {
-		match event {
-			Event::Breathing(BreathingEvent::Toggle) => {
+	pub fn handle_command(&mut self, command: &Command) -> ComponentResponse {
+		match command {
+			Command::ToggleBreathing => {
 				self.show_overlay = !self.show_overlay;
 				ComponentResponse::none()
 			}
-			Event::Breathing(BreathingEvent::PhaseComplete) => {
+			Command::CompleteBreathingPhase => {
 				// Transition to next phase
 				let (next_phase, base_duration, duration) = self.transition_phase();
 				self.state = BreathingState {
@@ -69,20 +68,20 @@ impl BreathingOverlay {
 					duration,
 				};
 
-				let mut response = ComponentResponse::emit(Event::Breathing(
-					BreathingEvent::PhaseStarted(next_phase),
-				));
+				let mut response = ComponentResponse::event(
+					Event::BreathingPhaseStarted(next_phase),
+				);
 				response.scheduled.push((
-					Event::Breathing(BreathingEvent::PhaseComplete),
+					Message::Command(Command::CompleteBreathingPhase),
 					duration,
 				));
 				response
 			}
-			Event::Breathing(BreathingEvent::SetPhaseMultiplier { phase, value }) => {
+			Command::SetBreathingPhaseMultiplier { phase, value } => {
 				self.phase_multipliers.set_multiplier_for(*phase, *value);
 				ComponentResponse::none()
 			}
-			Event::Breathing(BreathingEvent::SetStyle { style }) => {
+			Command::SetBreathingStyle(style) => {
 				self.style = *style;
 				ComponentResponse::none()
 			}

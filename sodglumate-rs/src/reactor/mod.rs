@@ -1,26 +1,28 @@
-pub mod event;
+pub mod message;
 pub mod queue;
 pub mod scheduler;
 
-pub use event::{
-	BeatEvent, BreathingEvent, BrowserEvent, ComponentResponse, Event, GatewayEvent,
-	MediaEvent, SettingsEvent, SourceEvent,
-};
-pub use queue::EventQueue;
+pub use message::{Command, ComponentResponse, Event, Message, ViewOutput};
+pub use queue::MessageQueue;
 pub use scheduler::Scheduler;
 
 use crate::beat::SystemBeat;
 use crate::breathing::BreathingOverlay;
 use crate::browser::ContentBrowser;
-use crate::coach::CoachManager;
+use crate::coach::{CoachEvent, CoachManager};
+use crate::config::{
+	SavedSettings, get_models_dir, get_presets_dir, load_settings, save_settings,
+};
 use crate::gateway::BooruGateway;
 use crate::media::MediaPane;
 use crate::settings::SettingsManager;
+use crate::types::NavDirection;
 use crate::view::{ApplicationState, View, Views};
-use eframe::egui;
+use eframe::{App, Frame, egui};
+use std::time::Duration;
 
 pub struct Reactor {
-	queue: EventQueue,
+	queue: MessageQueue,
 	scheduler: Scheduler,
 
 	pub gateway: BooruGateway,
@@ -36,10 +38,10 @@ pub struct Reactor {
 impl Reactor {
 	pub fn new(ctx: &egui::Context) -> Self {
 		log::info!("Initializing all components");
-		let settings = crate::config::load_settings();
+		let settings = load_settings();
 
 		let mut reactor = Self {
-			queue: EventQueue::new(),
+			queue: MessageQueue::new(),
 			scheduler: Scheduler::new(),
 			gateway: BooruGateway::new(),
 			browser: ContentBrowser::new(),
@@ -63,7 +65,7 @@ impl Reactor {
 			),
 			settings: SettingsManager::new(
 				settings.auto_play,
-				std::time::Duration::from_secs_f32(settings.auto_play_delay_secs),
+				Duration::from_secs_f32(settings.auto_play_delay_secs),
 				settings.cap_by_breathing,
 			),
 			beat: SystemBeat::new(settings.selected_audio_device),
@@ -74,8 +76,8 @@ impl Reactor {
 			&& let (Some(m), Some(p), Some(mdir), Some(pdir)) = (
 				&settings.coach_model,
 				&settings.coach_preset,
-				crate::config::get_models_dir(),
-				crate::config::get_presets_dir(),
+				get_models_dir(),
+				get_presets_dir(),
 			) {
 			let m_path = mdir.join(m);
 			let p_path = pdir.join(p);
@@ -92,11 +94,11 @@ impl Reactor {
 	}
 
 	fn process_response(&mut self, response: ComponentResponse) {
-		for e in response.events {
-			self.queue.push(e);
+		for message in response.messages {
+			self.queue.push(message);
 		}
-		for (e, d) in response.scheduled {
-			self.scheduler.schedule(e, d);
+		for (message, delay) in response.scheduled {
+			self.scheduler.schedule(message, delay);
 		}
 	}
 
@@ -116,22 +118,10 @@ impl Reactor {
 			coach.poll();
 		}
 
-		// Process event queue until empty
-		let mut iterations = 0;
-		while let Some(event) = self.queue.pop() {
-			log::trace!("Processing event: {:?}", event);
-			let response = self.route(&event);
-			self.process_response(response);
-
-			iterations += 1;
-			if iterations > 1000 {
-				log::warn!("Event loop exceeded 1000 iterations, breaking");
-				break;
-			}
-		}
+		self.drain_queue();
 
 		// Render
-		let events = self.views.render(
+		let output = self.views.render(
 			ctx,
 			&ApplicationState {
 				gateway: &self.gateway,
@@ -144,68 +134,92 @@ impl Reactor {
 			},
 		);
 
-		// Process any events from rendering immediately
-		for event in events {
-			log::trace!("Processing render event: {:?}", event);
-			let response = self.route(&event);
+		// All views observed the same state; only now may their output take effect.
+		for message in output.messages {
+			self.queue.push(message);
+		}
+		self.drain_queue();
+	}
+
+	fn drain_queue(&mut self) {
+		let mut iterations = 0;
+		while let Some(message) = self.queue.pop() {
+			log::trace!("Processing message: {:?}", message);
+			let response = self.process_message(&message);
 			self.process_response(response);
+
+			iterations += 1;
+			if iterations > 1000 {
+				log::warn!("Event loop exceeded 1000 iterations, breaking");
+				break;
+			}
 		}
 	}
 
-	fn route(&mut self, event: &Event) -> ComponentResponse {
-		let mut response;
+	fn process_message(&mut self, message: &Message) -> ComponentResponse {
+		match message {
+			Message::Command(command) => self.dispatch(command),
+			Message::Event(event) => self.publish(event),
+		}
+	}
 
-		match event {
-			Event::Source(e) => response = self.handle_source(e),
-			Event::Gateway(_) => response = self.gateway.handle(event),
-			Event::Browser(b) => {
-				response = self.browser.handle(event);
-				if let BrowserEvent::Navigate { direction } = b {
-					if let Some(coach) = &self.coach {
-						let coach_event = match direction {
-							crate::types::NavDirection::Next => {
-								crate::coach::CoachEvent::NextImage
-							}
-							crate::types::NavDirection::Prev => {
-								crate::coach::CoachEvent::PrevImage
-							}
-							crate::types::NavDirection::Skip(s) => {
-								if *s > 0 {
-									crate::coach::CoachEvent::NextImage
-								} else {
-									crate::coach::CoachEvent::PrevImage
-								}
-							}
-						};
-						coach.send_event(coach_event);
-					}
-					let settings_res = self.settings.handle(event, &self.breathing);
-					response.events.extend(settings_res.events);
-					response.scheduled.extend(settings_res.scheduled);
-				}
+	fn dispatch(&mut self, command: &Command) -> ComponentResponse {
+		match command {
+			Command::Search { .. } | Command::FetchNextPage => {
+				self.gateway.handle_command(command)
 			}
-			Event::Media(_) => response = self.media.handle(event),
-			Event::Beat(_) => response = self.beat.handle(event),
-			Event::Breathing(b) => {
-				response = self.breathing.handle(event);
-				if let BreathingEvent::PhaseStarted(p) = b {
-					if let Some(coach) = &self.coach {
-						coach.send_event(crate::coach::CoachEvent::PhaseChange(
-							format!("{:?}", p),
-						));
-					}
-					// Route PhaseStarted to settings as well
-					let settings_res = self.settings.handle(event, &self.breathing);
-					response.events.extend(settings_res.events);
-					response.scheduled.extend(settings_res.scheduled);
-				}
+			Command::Navigate(_) => self.browser.handle(command),
+			Command::LoadMedia { .. } | Command::PrefetchMedia { .. } => {
+				self.media.handle_command(command)
 			}
-			Event::Settings(_) => {
-				response = self.settings.handle(event, &self.breathing)
+			Command::ToggleBreathing
+			| Command::CompleteBreathingPhase
+			| Command::SetBreathingPhaseMultiplier { .. }
+			| Command::SetBreathingStyle(_) => self.breathing.handle_command(command),
+			Command::ToggleAutoPlay
+			| Command::SetAutoPlayDelay(_)
+			| Command::AdjustAutoPlayDelay(_)
+			| Command::AdvanceSlideshow
+			| Command::ToggleCapByBreathing => {
+				self.settings.handle_command(command, &self.breathing)
+			}
+			Command::SetAudioDevice(_) => self.beat.handle_command(command),
+			Command::ConfigureCoach {
+				enabled,
+				model,
+				preset,
+			} => {
+				self.configure_coach(*enabled, model.clone(), preset.clone());
+				ComponentResponse::none()
 			}
 		}
+	}
 
-		response
+	fn publish(&mut self, event: &Event) -> ComponentResponse {
+		match event {
+			Event::SearchCompleted { .. } => self.browser.observe(event),
+			Event::Navigated(direction) => {
+				if let Some(coach) = &self.coach {
+					let event = match direction {
+						NavDirection::Next => CoachEvent::NextImage,
+						NavDirection::Prev => CoachEvent::PrevImage,
+						NavDirection::Skip(skip) if *skip < 0 => {
+							CoachEvent::PrevImage
+						}
+						NavDirection::Skip(_) => CoachEvent::NextImage,
+					};
+					coach.send_event(event);
+				}
+				self.settings.observe(event, &self.breathing)
+			}
+			Event::BreathingPhaseStarted(phase) => {
+				if let Some(coach) = &self.coach {
+					coach.send_event(CoachEvent::PhaseChange(format!("{:?}", phase)));
+				}
+				self.settings.observe(event, &self.breathing)
+			}
+			Event::MediaPainted => self.media.observe(event),
+		}
 	}
 
 	fn configure_coach(
@@ -219,12 +233,9 @@ impl Reactor {
 			return;
 		}
 
-		let (Some(model), Some(preset), Some(models_dir), Some(presets_dir)) = (
-			model,
-			preset,
-			crate::config::get_models_dir(),
-			crate::config::get_presets_dir(),
-		) else {
+		let (Some(model), Some(preset), Some(models_dir), Some(presets_dir)) =
+			(model, preset, get_models_dir(), get_presets_dir())
+		else {
 			return;
 		};
 
@@ -236,42 +247,15 @@ impl Reactor {
 			log::warn!("Coach model or preset is unavailable");
 		}
 	}
-
-	fn handle_source(&mut self, event: &SourceEvent) -> ComponentResponse {
-		match event {
-			SourceEvent::Search { query, page } => {
-				log::info!("Source search: query='{}', page={}", query, page);
-				ComponentResponse::emit(Event::Gateway(GatewayEvent::SearchRequest {
-					query: query.clone(),
-					page: *page,
-					limit: 50,
-				}))
-			}
-			SourceEvent::Navigate(direction) => {
-				log::debug!("Source navigate: {:?}", direction);
-				ComponentResponse::emit(Event::Browser(BrowserEvent::Navigate {
-					direction: *direction,
-				}))
-			}
-			SourceEvent::ConfigureCoach {
-				enabled,
-				model,
-				preset,
-			} => {
-				self.configure_coach(*enabled, model.clone(), preset.clone());
-				ComponentResponse::none()
-			}
-		}
-	}
 }
 
-impl eframe::App for Reactor {
-	fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+impl App for Reactor {
+	fn update(&mut self, ctx: &egui::Context, _frame: &mut Frame) {
 		self.tick(ctx);
 	}
 
 	fn save(&mut self, _storage: &mut dyn eframe::Storage) {
-		let saved = crate::config::SavedSettings {
+		let saved = SavedSettings {
 			search_query: self.views.search_query.clone(),
 			search_query_presets: self.views.search_query_presets.clone(),
 			search_page_input: self.views.search_page_input.clone(),
@@ -293,6 +277,6 @@ impl eframe::App for Reactor {
 			coach_model: self.views.coach_model.clone(),
 			coach_preset: self.views.coach_preset.clone(),
 		};
-		crate::config::save_settings(&saved);
+		save_settings(&saved);
 	}
 }

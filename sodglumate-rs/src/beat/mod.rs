@@ -1,4 +1,4 @@
-use crate::reactor::{BeatEvent, ComponentResponse, Event};
+use crate::reactor::{Command, ComponentResponse};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::{FromSample, Sample, SampleFormat, SizedSample};
 use std::sync::mpsc;
@@ -299,9 +299,9 @@ impl SystemBeat {
 		ComponentResponse::none()
 	}
 
-	pub fn handle(&mut self, event: &Event) -> ComponentResponse {
-		match event {
-			Event::Beat(BeatEvent::SetDevice { name }) => {
+	pub fn handle_command(&mut self, command: &Command) -> ComponentResponse {
+		match command {
+			Command::SetAudioDevice(name) => {
 				log::info!("Switching audio device to: {:?}", name);
 				// Drop old stream
 				self.stream = None;

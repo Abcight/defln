@@ -1,5 +1,5 @@
-use crate::api::E621Client;
-use crate::reactor::{BrowserEvent, ComponentResponse, Event, GatewayEvent};
+use crate::api::{E621Client, Post};
+use crate::reactor::{Command, ComponentResponse, Event, Message};
 use std::collections::VecDeque;
 use std::sync::Arc;
 use std::time::Instant;
@@ -8,7 +8,7 @@ use tokio::sync::mpsc;
 /// Message from async tasks back to the component
 pub enum GatewayMessage {
 	SearchComplete {
-		posts: Vec<crate::api::Post>,
+		posts: Vec<Post>,
 		page: u32,
 		is_new: bool,
 		generation: u64,
@@ -74,7 +74,7 @@ impl BooruGateway {
 	}
 
 	pub fn poll(&mut self) -> ComponentResponse {
-		let mut responses = Vec::new();
+		let mut messages = Vec::new();
 		while let Ok(msg) = self.receiver.try_recv() {
 			match msg {
 				GatewayMessage::SearchComplete {
@@ -98,7 +98,7 @@ impl BooruGateway {
 					);
 					self.status = SearchStatus::Ready;
 					self.current_page = page;
-					responses.push(Event::Browser(BrowserEvent::PostsReceived {
+					messages.push(Message::Event(Event::SearchCompleted {
 						posts,
 						page,
 						is_new,
@@ -121,16 +121,17 @@ impl BooruGateway {
 			}
 		}
 
-		if responses.is_empty() {
+		if messages.is_empty() {
 			ComponentResponse::none()
 		} else {
-			ComponentResponse::emit_many(responses)
+			ComponentResponse::messages(messages)
 		}
 	}
 
-	pub fn handle(&mut self, event: &Event) -> ComponentResponse {
-		match event {
-			Event::Gateway(GatewayEvent::SearchRequest { query, page, limit }) => {
+	pub fn handle_command(&mut self, command: &Command) -> ComponentResponse {
+		match command {
+			Command::Search { query, page } => {
+				let limit = 50;
 				if !self.can_request() {
 					log::warn!("API rate limit exceeded, dropping search request");
 					return ComponentResponse::none();
@@ -149,12 +150,12 @@ impl BooruGateway {
 				self.spawn_search(
 					query.clone(),
 					*page,
-					*limit,
+					limit,
 					true,
 					self.request_generation,
 				);
 			}
-			Event::Gateway(GatewayEvent::FetchNextPage) => {
+			Command::FetchNextPage => {
 				if !self.can_request() {
 					log::debug!("API rate limit: delaying FetchNextPage");
 					return ComponentResponse::none();
@@ -272,7 +273,7 @@ mod tests {
 
 		let response = gateway.poll();
 
-		assert!(response.events.is_empty());
+		assert!(response.messages.is_empty());
 		assert!(gateway.is_loading());
 	}
 }

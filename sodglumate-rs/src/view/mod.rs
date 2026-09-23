@@ -2,11 +2,10 @@ use crate::beat::SystemBeat;
 use crate::breathing::BreathingOverlay;
 use crate::browser::ContentBrowser;
 use crate::coach::CoachManager;
+use crate::config::{get_models_dir, get_presets_dir};
 use crate::gateway::{BooruGateway, SearchStatus};
 use crate::media::MediaPane;
-use crate::reactor::{
-	BeatEvent, BreathingEvent, Event, MediaEvent, SettingsEvent, SourceEvent,
-};
+use crate::reactor::{Command, Event, ViewOutput};
 use crate::settings::SettingsManager;
 use crate::types::{BreathingPhase, BreathingStyle, ImageFillMode, NavDirection};
 use eframe::egui::{self, ScrollArea};
@@ -21,7 +20,7 @@ use island::{IslandAction, IslandCtx, IslandWidget, ROOT_ISLAND};
 /// Read-only access to operational application state during a UI pass.
 ///
 /// Views may combine data from any number of components, but can only affect
-/// them by returning events after the complete UI pass has finished.
+/// them by returning commands or events after the complete UI pass has finished.
 pub struct ApplicationState<'a> {
 	pub gateway: &'a BooruGateway,
 	pub browser: &'a ContentBrowser,
@@ -37,7 +36,7 @@ pub trait View {
 		&mut self,
 		ctx: &egui::Context,
 		state: &ApplicationState<'_>,
-	) -> Vec<Event>;
+	) -> ViewOutput;
 }
 
 /// Content for modal popups
@@ -162,8 +161,8 @@ impl Views {
 		&mut self,
 		ctx: &egui::Context,
 		state: &ApplicationState<'_>,
-	) -> Vec<Event> {
-		let mut events = Vec::new();
+	) -> ViewOutput {
+		let mut output = ViewOutput::default();
 		let media_url = state.media.current_url().map(str::to_owned);
 		if self.last_media_url != media_url {
 			self.last_media_url = media_url;
@@ -184,7 +183,7 @@ impl Views {
 		if !modal_active {
 			let is_typing = ctx.memory(|m| m.focused().is_some());
 			if !is_typing {
-				self.handle_keyboard_input(ctx, &mut events);
+				self.handle_keyboard_input(ctx, &mut output);
 			}
 		}
 
@@ -195,12 +194,12 @@ impl Views {
 			state.settings,
 			state.breathing,
 			state.beat,
-			&mut events,
+			&mut output,
 			!modal_active,
 		);
 
 		// Central panel
-		self.render_central_panel(ctx, state, &mut events, !modal_active);
+		self.render_central_panel(ctx, state, &mut output, !modal_active);
 
 		// Overlays
 		match state.breathing.style() {
@@ -218,18 +217,18 @@ impl Views {
 		self.render_beat_debug(ctx, state.beat);
 
 		// Island navigation overlay
-		self.render_island_overlay(ctx, &mut events);
+		self.render_island_overlay(ctx, &mut output);
 
 		// Modal popup (on top of everything)
-		self.render_modal(ctx, &mut events);
+		self.render_modal(ctx, &mut output);
 
-		events
+		output
 	}
 
 	fn handle_keyboard_input(
 		&mut self,
 		ctx: &egui::Context,
-		events: &mut Vec<Event>,
+		output: &mut ViewOutput,
 	) {
 		// Detect shift press/release edges for island activation
 		let shift_held = ctx.input(|i| i.modifiers.shift);
@@ -250,16 +249,14 @@ impl Views {
 		let c_pressed = ctx.input(|i| i.key_pressed(egui::Key::C));
 
 		if c_pressed {
-			events.push(Event::Settings(SettingsEvent::ToggleAutoPlay));
+			output.command(Command::ToggleAutoPlay);
 		}
 
 		if space_pressed {
 			if ctrl_pressed {
-				events.push(Event::Source(SourceEvent::Navigate(
-					NavDirection::Skip(10),
-				)));
+				output.command(Command::Navigate(NavDirection::Skip(10)));
 			} else {
-				events.push(Event::Source(SourceEvent::Navigate(NavDirection::Next)));
+				output.command(Command::Navigate(NavDirection::Next));
 			}
 		}
 	}
@@ -275,7 +272,7 @@ impl Views {
 		settings: &SettingsManager,
 		breathing: &BreathingOverlay,
 		beat: &SystemBeat,
-		events: &mut Vec<Event>,
+		output: &mut ViewOutput,
 		enabled: bool,
 	) {
 		let previous_coach_config = (
@@ -283,8 +280,8 @@ impl Views {
 			self.coach_model.clone(),
 			self.coach_preset.clone(),
 		);
-		let models_dir = crate::config::get_models_dir();
-		let presets_dir = crate::config::get_presets_dir();
+		let models_dir = get_models_dir();
+		let presets_dir = get_presets_dir();
 		let has_coach_deps = models_dir.as_ref().is_some_and(|d| d.exists())
 			&& presets_dir.as_ref().is_some_and(|d| d.exists());
 
@@ -327,10 +324,10 @@ impl Views {
 				{
 					let page =
 						self.search_page_input.parse::<u32>().unwrap_or(1).max(1);
-					events.push(Event::Source(SourceEvent::Search {
+					output.command(Command::Search {
 						query: self.search_query.clone(),
 						page,
-					}));
+					});
 				}
 				ui.separator();
 
@@ -338,7 +335,7 @@ impl Views {
 
 				let mut auto_play = settings.auto_play();
 				if ui.checkbox(&mut auto_play, "Auto-play").changed() {
-					events.push(Event::Settings(SettingsEvent::ToggleAutoPlay));
+					output.command(Command::ToggleAutoPlay);
 				}
 
 				let mut cap_by_breathing = settings.cap_by_breathing();
@@ -346,7 +343,7 @@ impl Views {
 					.checkbox(&mut cap_by_breathing, "Sync with Breathing")
 					.changed()
 				{
-					events.push(Event::Settings(SettingsEvent::ToggleCapByBreathing));
+					output.command(Command::ToggleCapByBreathing);
 				}
 
 				if settings.auto_play() {
@@ -360,9 +357,9 @@ impl Views {
 						)
 						.changed()
 					{
-						events.push(Event::Settings(SettingsEvent::SetDelay {
-							duration: Duration::from_secs_f32(seconds),
-						}));
+						output.command(Command::SetAutoPlayDelay(
+							Duration::from_secs_f32(seconds),
+						));
 					}
 				}
 
@@ -374,7 +371,7 @@ impl Views {
 					if breathing_enabled && !self.breathing_disclaimer_accepted {
 						self.modal = ModalContent::BreathingDisclaimer;
 					} else {
-						events.push(Event::Breathing(BreathingEvent::Toggle));
+						output.command(Command::ToggleBreathing);
 					}
 				}
 
@@ -396,12 +393,10 @@ impl Views {
 							)
 							.changed()
 						{
-							events.push(Event::Breathing(
-								BreathingEvent::SetPhaseMultiplier {
-									phase,
-									value: multiplier,
-								},
-							));
+							output.command(Command::SetBreathingPhaseMultiplier {
+								phase,
+								value: multiplier,
+							});
 						}
 					}
 
@@ -420,10 +415,8 @@ impl Views {
 								)
 								.clicked()
 							{
-								events.push(Event::Breathing(
-									BreathingEvent::SetStyle {
-										style: BreathingStyle::Classic,
-									},
+								output.command(Command::SetBreathingStyle(
+									BreathingStyle::Classic,
 								));
 							}
 							if ui
@@ -433,10 +426,8 @@ impl Views {
 								)
 								.clicked()
 							{
-								events.push(Event::Breathing(
-									BreathingEvent::SetStyle {
-										style: BreathingStyle::Immersive,
-									},
+								output.command(Command::SetBreathingStyle(
+									BreathingStyle::Immersive,
 								));
 							}
 						});
@@ -510,18 +501,16 @@ impl Views {
 							)
 							.clicked()
 						{
-							events.push(Event::Beat(BeatEvent::SetDevice {
-								name: None,
-							}));
+							output.command(Command::SetAudioDevice(None));
 						}
 						for device_name in beat.device_names() {
 							let is_selected = beat.selected_device().as_deref()
 								== Some(device_name.as_str());
 							if ui.selectable_label(is_selected, device_name).clicked()
 							{
-								events.push(Event::Beat(BeatEvent::SetDevice {
-									name: Some(device_name.clone()),
-								}));
+								output.command(Command::SetAudioDevice(Some(
+									device_name.clone(),
+								)));
 							}
 						}
 					});
@@ -625,11 +614,11 @@ impl Views {
 			self.coach_preset.clone(),
 		);
 		if previous_coach_config != current_coach_config {
-			events.push(Event::Source(SourceEvent::ConfigureCoach {
+			output.command(Command::ConfigureCoach {
 				enabled: self.coach_enabled,
 				model: self.coach_model.clone(),
 				preset: self.coach_preset.clone(),
-			}));
+			});
 		}
 	}
 
@@ -813,7 +802,7 @@ impl Views {
 		&mut self,
 		ctx: &egui::Context,
 		state: &ApplicationState<'_>,
-		events: &mut Vec<Event>,
+		output: &mut ViewOutput,
 		enabled: bool,
 	) {
 		let browser = state.browser;
@@ -836,7 +825,7 @@ impl Views {
 						.color(egui::Color32::RED),
 				);
 			} else if let Some(_url) = media.current_url() {
-				self.render_media(ui, ctx, media, browser, events);
+				self.render_media(ui, ctx, media, browser, output);
 			} else {
 				ui.centered_and_justified(|ui| {
 					ui.label("Enter a query and search to start.");
@@ -947,14 +936,14 @@ impl Views {
 		ctx: &egui::Context,
 		media: &MediaPane,
 		browser: &ContentBrowser,
-		events: &mut Vec<Event>,
+		output: &mut ViewOutput,
 	) {
 		let pan_cycle = self.auto_pan_cycle_duration;
 		let load_time = self.image_load_time;
 		let mut user_panned = self.user_has_panned;
 		let island_active = self.island_ctx.active || self.island_ctx.in_cooldown();
 		if media.needs_painted_notification() {
-			events.push(Event::Media(MediaEvent::Painted));
+			output.event(Event::MediaPainted);
 		}
 
 		let handle_scroll_input = |ui: &mut egui::Ui, input_active: &mut bool| {
@@ -1945,7 +1934,7 @@ impl Views {
 	fn render_island_overlay(
 		&mut self,
 		ctx: &egui::Context,
-		events: &mut Vec<Event>,
+		output: &mut ViewOutput,
 	) {
 		if !matches!(self.modal, ModalContent::None) {
 			return;
@@ -1953,14 +1942,14 @@ impl Views {
 
 		if let Some(action) = IslandWidget::new(&mut self.island_ctx).show(ctx) {
 			match action {
-				IslandAction::Emit(factory) => events.push(factory()),
+				IslandAction::Emit(factory) => output.command(factory()),
 				IslandAction::Push(island) => self.island_ctx.push(island),
 				IslandAction::Pop => {
 					self.island_ctx.pop();
 				}
 				IslandAction::RequestBreathingToggle => {
 					if self.breathing_disclaimer_accepted {
-						events.push(Event::Breathing(BreathingEvent::Toggle));
+						output.command(Command::ToggleBreathing);
 					} else {
 						self.modal = ModalContent::BreathingDisclaimer;
 					}
@@ -1977,7 +1966,7 @@ impl Views {
 	}
 
 	/// Render modal popup overlay
-	fn render_modal(&mut self, ctx: &egui::Context, events: &mut Vec<Event>) {
+	fn render_modal(&mut self, ctx: &egui::Context, output: &mut ViewOutput) {
 		if matches!(self.modal, ModalContent::None) {
 			return;
 		}
@@ -2110,7 +2099,7 @@ impl Views {
 									if ui.button("   Accept   ").clicked() {
 										self.breathing_disclaimer_accepted = true;
 										self.modal = ModalContent::None;
-										events.push(Event::Breathing(BreathingEvent::Toggle));
+										output.command(Command::ToggleBreathing);
 									}
 								},
 							);
@@ -2144,7 +2133,7 @@ impl View for Views {
 		&mut self,
 		ctx: &egui::Context,
 		state: &ApplicationState<'_>,
-	) -> Vec<Event> {
+	) -> ViewOutput {
 		self.render_frame(ctx, state)
 	}
 }
