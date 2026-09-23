@@ -1,16 +1,15 @@
 use super::event::Event;
 use std::collections::VecDeque;
 
-/// Priority event queue with 4 priority levels
+/// Priority event queue with 3 priority levels
 pub struct EventQueue {
-	queues: [VecDeque<Event>; 4],
+	queues: [VecDeque<Event>; 3],
 }
 
 impl EventQueue {
 	pub fn new() -> Self {
 		Self {
 			queues: [
-				VecDeque::new(), // Critical
 				VecDeque::new(), // High
 				VecDeque::new(), // Normal
 				VecDeque::new(), // Low

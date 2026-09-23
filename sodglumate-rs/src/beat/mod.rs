@@ -1,4 +1,4 @@
-use crate::reactor::{BeatEvent, ComponentResponse, Event, ViewEvent};
+use crate::reactor::{BeatEvent, ComponentResponse, Event};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::{FromSample, Sample, SampleFormat, SizedSample};
 use std::sync::mpsc;
@@ -32,6 +32,7 @@ pub struct SystemBeat {
 	energy_history: Vec<f32>,
 	history_index: usize,
 	last_beat: Instant,
+	last_beat_scale: f32,
 }
 
 impl SystemBeat {
@@ -54,6 +55,7 @@ impl SystemBeat {
 			energy_history: vec![0.0; HISTORY_LEN],
 			history_index: 0,
 			last_beat: Instant::now(),
+			last_beat_scale: 0.0,
 		}
 	}
 
@@ -287,17 +289,14 @@ impl SystemBeat {
 				let scale = (energy / (avg_energy * BEAT_THRESHOLD)).min(3.0);
 				beat_detected = Some(scale);
 				self.last_beat = Instant::now();
+				self.last_beat_scale = scale;
 			}
 		}
 
 		if let Some(scale) = beat_detected {
 			log::debug!("Beat detected! scale={:.2}", scale);
-			ComponentResponse::emit_many(vec![Event::View(ViewEvent::BeatPulse {
-				scale,
-			})])
-		} else {
-			ComponentResponse::none()
 		}
+		ComponentResponse::none()
 	}
 
 	pub fn handle(&mut self, event: &Event) -> ComponentResponse {
@@ -345,6 +344,10 @@ impl SystemBeat {
 
 	pub fn is_active(&self) -> bool {
 		self.stream.is_some()
+	}
+
+	pub fn latest_beat(&self) -> (Instant, f32) {
+		(self.last_beat, self.last_beat_scale)
 	}
 }
 

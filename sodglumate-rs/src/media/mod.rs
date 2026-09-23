@@ -1,5 +1,5 @@
 use crate::api::Post;
-use crate::reactor::{ComponentResponse, Event, MediaEvent, ViewEvent};
+use crate::reactor::{ComponentResponse, Event, MediaEvent};
 use crate::types::{AnimatedFrame, LoadedMedia, MediaKind};
 use eframe::egui;
 use egui_player_rs::VideoPainter;
@@ -163,7 +163,7 @@ pub struct MediaPane {
 	// Cache keyed by full_url (or sample_url if no full)
 	cache: IndexMap<String, (LoadedMedia, CacheState)>,
 	loading_set: HashSet<String>,
-	failed_set: HashSet<String>,
+	failures: IndexMap<String, String>,
 	pending_set: HashSet<String>,
 
 	// Current item being displayed
@@ -232,7 +232,7 @@ impl MediaPane {
 		Self {
 			cache: IndexMap::new(),
 			loading_set: HashSet::new(),
-			failed_set: HashSet::new(),
+			failures: IndexMap::new(),
 			pending_set: HashSet::new(),
 			current_item: None,
 			video_player: None,
@@ -685,7 +685,7 @@ impl MediaPane {
 	}
 
 	pub fn poll(&mut self) -> ComponentResponse {
-		let mut responses = Vec::new();
+		self.poll_video_state();
 
 		// Process completed loads
 		while let Ok(msg) = self.receiver.try_recv() {
@@ -773,12 +773,12 @@ impl MediaPane {
 								&& (current.full_url.as_ref() == Some(&full_url)
 									|| current.sample_url.as_ref() == Some(&full_url))
 							{
-								responses.push(Event::View(ViewEvent::MediaReady));
+								self.failures.shift_remove(&url);
 							}
 						}
 						Err(error) => {
 							log::error!("Image load failed: {} - {}", url, error);
-							self.failed_set.insert(url.clone());
+							self.record_failure(url.clone(), error.clone());
 							let current_item_matches =
 								self.current_item.as_ref().is_some_and(|item| {
 									item.sample_url.as_deref() == Some(url.as_str())
@@ -787,11 +787,7 @@ impl MediaPane {
 								});
 							if current_item_matches
 								&& self.get_current_media().is_none()
-							{
-								responses.push(Event::Media(MediaEvent::LoadError {
-									error,
-								}));
-							}
+							{}
 						}
 					}
 				}
@@ -869,15 +865,11 @@ impl MediaPane {
 						}
 						Err(error) => {
 							log::error!("GIF load failed: {} - {}", url, error);
-							self.failed_set.insert(url.clone());
+							self.record_failure(url.clone(), error.clone());
 							if self.current_item.as_ref().is_some_and(|item| {
 								item.full_url.as_deref() == Some(url.as_str())
 							}) && self.get_current_media().is_none()
-							{
-								responses.push(Event::Media(MediaEvent::LoadError {
-									error,
-								}));
-							}
+							{}
 						}
 					}
 				}
@@ -897,16 +889,12 @@ impl MediaPane {
 								url,
 								error
 							);
-							self.failed_set.insert(url.clone());
+							self.record_failure(url.clone(), error.clone());
 							let current_item_matches =
 								self.current_item.as_ref().is_some_and(|item| {
 									item.full_url.as_deref() == Some(url.as_str())
 								});
-							if current_item_matches {
-								responses.push(Event::Media(MediaEvent::LoadError {
-									error,
-								}));
-							}
+							if current_item_matches {}
 						}
 					}
 				}
@@ -918,11 +906,7 @@ impl MediaPane {
 
 		self.prune_cache();
 
-		if responses.is_empty() {
-			ComponentResponse::none()
-		} else {
-			ComponentResponse::emit_many(responses)
-		}
+		ComponentResponse::none()
 	}
 
 	fn process_loading_queue(&mut self) {
@@ -1116,20 +1100,28 @@ impl MediaPane {
 		}
 	}
 
-	pub fn note_current_gif_painted(&mut self) {
+	fn note_current_painted(&mut self) {
 		let Some(item) = self.current_item.as_ref() else {
 			return;
 		};
 		let Some(url) = item.full_url.clone() else {
 			return;
 		};
-		if Self::is_gif_url(&url)
-			&& self
+		if Self::is_gif_url(&url) {
+			if self
 				.get_current_media()
 				.is_some_and(LoadedMedia::is_animated)
+			{
+				self.note_decoder_ready(&url, "gif");
+				self.note_painted(&url, "gif");
+			}
+		} else if self
+			.video_player
+			.as_ref()
+			.is_some_and(VideoPainter::has_decoded_frames)
 		{
-			self.note_decoder_ready(&url, "gif");
-			self.note_painted(&url, "gif");
+			self.note_decoder_ready(&url, "video");
+			self.note_painted(&url, "video");
 		}
 	}
 
@@ -1140,85 +1132,45 @@ impl MediaPane {
 		})
 	}
 
-	pub fn show_current_video(&mut self, ui: &mut egui::Ui) {
-		let available_rect = ui.available_rect_before_wrap();
-		if let Some(player) = &self.video_player {
-			let rect =
-				contained_video_rect(available_rect, player.decoded_frame_size());
-			ui.allocate_new_ui(egui::UiBuilder::new().max_rect(rect), |ui| {
-				player.in_sized(
-					ui,
-					rect.width().max(16.0),
-					Some(rect.height().max(16.0)),
-				);
-			});
-			let observation = (
-				player.status_message(),
-				player.has_decoded_frames(),
-				player.decoded_frame_size(),
-				player.playback(),
-				player.current_time_seconds(),
-			);
-			self.log_video_debug_state(
-				observation.0,
-				observation.1,
-				observation.2,
-				observation.3,
-				observation.4,
-			);
-			if observation.1
-				&& let Some(url) = self.video_url.clone()
-			{
-				self.note_decoder_ready(&url, "video");
-				self.note_painted(&url, "video");
-			}
+	pub fn current_video_player(&self) -> Option<&VideoPainter> {
+		self.video_player.as_ref()
+	}
+
+	pub fn needs_painted_notification(&self) -> bool {
+		let Some(timing) = &self.playback_timing else {
+			return false;
+		};
+		if timing.painted_logged {
+			return false;
+		}
+		if Self::is_gif_url(&timing.url) {
+			self.get_current_media()
+				.is_some_and(LoadedMedia::is_animated)
 		} else {
-			let (rect, _) =
-				ui.allocate_exact_size(available_rect.size(), egui::Sense::hover());
-			ui.painter().text(
-				rect.center(),
-				egui::Align2::CENTER_CENTER,
-				"Loading playable media...",
-				egui::FontId::proportional(13.0),
-				egui::Color32::LIGHT_GRAY,
-			);
+			self.video_player
+				.as_ref()
+				.is_some_and(VideoPainter::has_decoded_frames)
 		}
 	}
 
-	pub fn show_current_video_in_rect(
-		&mut self,
-		ui: &mut egui::Ui,
-		rect: egui::Rect,
-	) {
-		if let Some(player) = &self.video_player {
-			ui.allocate_new_ui(egui::UiBuilder::new().max_rect(rect), |ui| {
-				player.in_sized(
-					ui,
-					rect.width().max(16.0),
-					Some(rect.height().max(16.0)),
-				);
-			});
-			let observation = (
-				player.status_message(),
-				player.has_decoded_frames(),
-				player.decoded_frame_size(),
-				player.playback(),
-				player.current_time_seconds(),
-			);
-			self.log_video_debug_state(
-				observation.0,
-				observation.1,
-				observation.2,
-				observation.3,
-				observation.4,
-			);
-			if observation.1
-				&& let Some(url) = self.video_url.clone()
-			{
-				self.note_decoder_ready(&url, "video");
-				self.note_painted(&url, "video");
-			}
-		}
+	fn poll_video_state(&mut self) {
+		let Some(player) = &self.video_player else {
+			return;
+		};
+		let observation = (
+			player.status_message(),
+			player.has_decoded_frames(),
+			player.decoded_frame_size(),
+			player.playback(),
+			player.current_time_seconds(),
+		);
+		self.log_video_debug_state(
+			observation.0,
+			observation.1,
+			observation.2,
+			observation.3,
+			observation.4,
+		);
 	}
 
 	fn log_video_debug_state(
@@ -1268,7 +1220,7 @@ impl MediaPane {
 		kind: LoadKind,
 		priority: bool,
 	) {
-		if self.loading_set.contains(&url) || self.failed_set.contains(&url) {
+		if self.loading_set.contains(&url) || self.failures.contains_key(&url) {
 			return;
 		}
 		let work = LoadWork {
@@ -1299,8 +1251,6 @@ impl MediaPane {
 	}
 
 	pub fn handle(&mut self, event: &Event) -> ComponentResponse {
-		let mut responses = Vec::new();
-
 		match event {
 			Event::Media(MediaEvent::LoadRequest {
 				sample_url,
@@ -1341,16 +1291,14 @@ impl MediaPane {
 					self.playback_timing = None;
 				}
 				if let Some(url) = &item.sample_url {
-					self.failed_set.remove(url);
+					self.failures.shift_remove(url);
 				}
 				if let Some(url) = &item.full_url {
-					self.failed_set.remove(url);
+					self.failures.shift_remove(url);
 				}
 				// Check if already cached
 				let cache_key = self.get_cache_key(&item);
-				if self.cache.contains_key(&cache_key) {
-					responses.push(Event::View(ViewEvent::MediaReady));
-				}
+				if self.cache.contains_key(&cache_key) {}
 			}
 			Event::Media(MediaEvent::Prefetch { urls }) => {
 				log::debug!("Prefetch requested for {} items", urls.len());
@@ -1385,15 +1333,11 @@ impl MediaPane {
 					}
 				}
 			}
-			Event::Media(_) => {}
+			Event::Media(MediaEvent::Painted) => self.note_current_painted(),
 			_ => {}
 		}
 
-		if responses.is_empty() {
-			ComponentResponse::none()
-		} else {
-			ComponentResponse::emit_many(responses)
-		}
+		ComponentResponse::none()
 	}
 
 	fn prune_cache(&mut self) {
@@ -1416,6 +1360,15 @@ impl MediaPane {
 			for key in to_remove {
 				self.cache.shift_remove(&key);
 			}
+		}
+	}
+
+	fn record_failure(&mut self, url: String, error: String) {
+		const MAX_FAILURES: usize = 256;
+		self.failures.shift_remove(&url);
+		self.failures.insert(url, error);
+		while self.failures.len() > MAX_FAILURES {
+			self.failures.shift_remove_index(0);
 		}
 	}
 
@@ -1468,21 +1421,22 @@ impl MediaPane {
 	pub fn is_loading(&self) -> bool {
 		!self.loading_set.is_empty()
 	}
-}
 
-fn contained_video_rect(
-	available: egui::Rect,
-	frame_size: Option<(u32, u32)>,
-) -> egui::Rect {
-	let (width, height) = frame_size.unwrap_or((16, 9));
-	let aspect = width as f32 / height.max(1) as f32;
-	let available_aspect = available.width() / available.height().max(1.0);
-	let size = if available_aspect > aspect {
-		egui::vec2(available.height() * aspect, available.height())
-	} else {
-		egui::vec2(available.width(), available.width() / aspect)
-	};
-	eframe::egui::Rect::from_center_size(available.center(), size)
+	pub fn current_error(&self) -> Option<&str> {
+		if self.get_current_media().is_some() {
+			return None;
+		}
+		let item = self.current_item.as_ref()?;
+		item.full_url
+			.as_ref()
+			.and_then(|url| self.failures.get(url))
+			.or_else(|| {
+				item.sample_url
+					.as_ref()
+					.and_then(|url| self.failures.get(url))
+			})
+			.map(String::as_str)
+	}
 }
 
 #[cfg(test)]

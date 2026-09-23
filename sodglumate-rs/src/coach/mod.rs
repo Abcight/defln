@@ -200,6 +200,8 @@ impl CoachEvent {
 pub struct CoachManager {
 	tx: std::sync::mpsc::Sender<CoachEvent>,
 	rx: std::sync::mpsc::Receiver<CoachOutput>,
+	logs: Vec<String>,
+	state: HashMap<String, CoachValue>,
 }
 
 impl CoachManager {
@@ -218,6 +220,8 @@ impl CoachManager {
 		Self {
 			tx: event_tx,
 			rx: msg_rx,
+			logs: Vec::new(),
+			state: HashMap::new(),
 		}
 	}
 
@@ -225,8 +229,46 @@ impl CoachManager {
 		let _ = self.tx.send(event);
 	}
 
-	pub fn try_recv(&self) -> Option<CoachOutput> {
-		self.rx.try_recv().ok()
+	pub fn poll(&mut self) {
+		while let Ok(output) = self.rx.try_recv() {
+			if let Some(message) = output.message {
+				let message = message.replace(['\n', '\r'], " ");
+				let mut line = String::new();
+				let mut first_line = true;
+				for word in message.split_whitespace() {
+					if line.len() + word.len() + 1 > 45 && !line.is_empty() {
+						self.logs.push(format!(
+							"{}{}",
+							if first_line { "> " } else { "  " },
+							line.trim_end()
+						));
+						first_line = false;
+						line.clear();
+					}
+					line.push_str(word);
+					line.push(' ');
+				}
+				if !line.trim_end().is_empty() {
+					self.logs.push(format!(
+						"{}{}",
+						if first_line { "> " } else { "  " },
+						line.trim_end()
+					));
+				}
+				if self.logs.len() > 50 {
+					self.logs.drain(..self.logs.len() - 50);
+				}
+			}
+			self.state = output.state;
+		}
+	}
+
+	pub fn logs(&self) -> &[String] {
+		&self.logs
+	}
+
+	pub fn state(&self) -> &HashMap<String, CoachValue> {
+		&self.state
 	}
 }
 
