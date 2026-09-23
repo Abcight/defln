@@ -1,6 +1,7 @@
 use crate::breathing::BreathingOverlay;
+use crate::config::SavedSettings;
 use crate::reactor::{Command, ComponentResponse, Event, Message};
-use crate::types::{BreathingPhase, NavDirection};
+use crate::types::{BreathingPhase, ImageFillMode, NavDirection};
 use std::time::{Duration, Instant};
 
 pub struct SettingsManager {
@@ -9,10 +10,18 @@ pub struct SettingsManager {
 	slideshow_scheduled: bool,
 	cap_by_breathing: bool,
 	last_advance_time: Instant,
+	search_query: String,
+	search_query_presets: Vec<String>,
+	search_page_input: String,
+	auto_pan_cycle_duration: f32,
+	beat_pulse_enabled: bool,
+	beat_pulse_scale: f32,
+	image_fill_mode: ImageFillMode,
 }
 
 impl SettingsManager {
-	pub fn new(
+	#[cfg(test)]
+	fn new(
 		auto_play: bool,
 		auto_play_delay: Duration,
 		cap_by_breathing: bool,
@@ -23,6 +32,33 @@ impl SettingsManager {
 			slideshow_scheduled: false,
 			cap_by_breathing,
 			last_advance_time: Instant::now(),
+			search_query: String::new(),
+			search_query_presets: Vec::new(),
+			search_page_input: "1".to_owned(),
+			auto_pan_cycle_duration: 10.0,
+			beat_pulse_enabled: false,
+			beat_pulse_scale: 0.03,
+			image_fill_mode: ImageFillMode::default(),
+		}
+	}
+
+	pub fn from_saved(saved: &SavedSettings) -> Self {
+		let saved = saved.clone().normalized();
+		Self {
+			auto_play: saved.auto_play,
+			auto_play_delay: Duration::from_secs_f32(saved.auto_play_delay_secs),
+			slideshow_scheduled: false,
+			cap_by_breathing: saved.cap_by_breathing,
+			last_advance_time: Instant::now(),
+			search_query: saved.search_query.clone(),
+			search_query_presets: normalize_search_query_presets(
+				saved.search_query_presets.clone(),
+			),
+			search_page_input: saved.search_page_input.clone(),
+			auto_pan_cycle_duration: saved.auto_pan_cycle_duration,
+			beat_pulse_enabled: saved.beat_pulse_enabled,
+			beat_pulse_scale: saved.beat_pulse_scale,
+			image_fill_mode: saved.image_fill_mode,
 		}
 	}
 
@@ -47,7 +83,8 @@ impl SettingsManager {
 				ComponentResponse::none()
 			}
 			Command::SetAutoPlayDelay(duration) => {
-				self.auto_play_delay = *duration;
+				self.auto_play_delay = (*duration)
+					.clamp(Duration::from_secs(1), Duration::from_secs(60));
 				ComponentResponse::none()
 			}
 			Command::AdjustAutoPlayDelay(delta_secs) => {
@@ -103,6 +140,34 @@ impl SettingsManager {
 				}
 				ComponentResponse::none()
 			}
+			Command::SetSearchPreferences {
+				query,
+				presets,
+				page_input,
+			} => {
+				self.search_query = query.clone();
+				self.search_query_presets =
+					normalize_search_query_presets(presets.clone());
+				self.search_page_input = page_input.clone();
+				ComponentResponse::none()
+			}
+			Command::SetAutoPanCycleDuration(duration) => {
+				self.auto_pan_cycle_duration =
+					finite_clamped(*duration, 10.0, 120.0, 10.0);
+				ComponentResponse::none()
+			}
+			Command::SetBeatPulseEnabled(enabled) => {
+				self.beat_pulse_enabled = *enabled;
+				ComponentResponse::none()
+			}
+			Command::SetBeatPulseScale(scale) => {
+				self.beat_pulse_scale = finite_clamped(*scale, 0.01, 0.15, 0.03);
+				ComponentResponse::none()
+			}
+			Command::SetImageFillMode(mode) => {
+				self.image_fill_mode = *mode;
+				ComponentResponse::none()
+			}
 			_ => ComponentResponse::none(),
 		}
 	}
@@ -124,7 +189,7 @@ impl SettingsManager {
 			{
 				ComponentResponse::command(Command::Navigate(NavDirection::Next))
 			}
-			Event::Navigated(_) if self.auto_play => {
+			Event::Navigated if self.auto_play => {
 				self.last_advance_time = Instant::now();
 				if !self.slideshow_scheduled {
 					self.slideshow_scheduled = true;
@@ -151,12 +216,60 @@ impl SettingsManager {
 	pub fn auto_play_delay(&self) -> Duration {
 		self.auto_play_delay
 	}
+
+	pub fn search_query(&self) -> &str {
+		&self.search_query
+	}
+
+	pub fn search_query_presets(&self) -> &[String] {
+		&self.search_query_presets
+	}
+
+	pub fn search_page_input(&self) -> &str {
+		&self.search_page_input
+	}
+
+	pub fn auto_pan_cycle_duration(&self) -> f32 {
+		self.auto_pan_cycle_duration
+	}
+
+	pub fn beat_pulse_enabled(&self) -> bool {
+		self.beat_pulse_enabled
+	}
+
+	pub fn beat_pulse_scale(&self) -> f32 {
+		self.beat_pulse_scale
+	}
+
+	pub fn image_fill_mode(&self) -> ImageFillMode {
+		self.image_fill_mode
+	}
 }
 
 impl Default for SettingsManager {
 	fn default() -> Self {
-		Self::new(false, Duration::from_secs(16), false)
+		Self::from_saved(&SavedSettings::default())
 	}
+}
+
+fn finite_clamped(value: f32, min: f32, max: f32, fallback: f32) -> f32 {
+	if value.is_finite() {
+		value.clamp(min, max)
+	} else {
+		fallback
+	}
+}
+
+fn normalize_search_query_presets(presets: Vec<String>) -> Vec<String> {
+	let mut normalized = Vec::new();
+	for preset in presets {
+		let preset = preset.trim();
+		if !preset.is_empty() && !normalized.iter().any(|existing| existing == preset)
+		{
+			normalized.push(preset.to_owned());
+		}
+	}
+	normalized
 }
 
 #[cfg(test)]
@@ -184,5 +297,29 @@ mod tests {
 
 		settings.handle_command(&Command::AdjustAutoPlayDelay(100), &breathing);
 		assert_eq!(settings.auto_play_delay(), Duration::from_secs(60));
+	}
+
+	#[test]
+	fn persisted_view_preferences_are_canonical_settings_state() {
+		let saved = SavedSettings {
+			search_query: "wolves".to_owned(),
+			search_query_presets: vec![
+				" wolves ".to_owned(),
+				"wolves".to_owned(),
+				String::new(),
+			],
+			auto_pan_cycle_duration: f32::NAN,
+			beat_pulse_scale: 99.0,
+			image_fill_mode: ImageFillMode::FitToGallery,
+			..SavedSettings::default()
+		};
+
+		let settings = SettingsManager::from_saved(&saved);
+
+		assert_eq!(settings.search_query(), "wolves");
+		assert_eq!(settings.search_query_presets(), &["wolves"]);
+		assert_eq!(settings.auto_pan_cycle_duration(), 10.0);
+		assert_eq!(settings.beat_pulse_scale(), 0.15);
+		assert_eq!(settings.image_fill_mode(), ImageFillMode::FitToGallery);
 	}
 }
