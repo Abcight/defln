@@ -22,10 +22,15 @@ instructions.
 
 ## Contributing & License
 
-All contributions to this repository are governed by the repository-wide
-[CONTRIBUTING](CONTRIBUTING), [DCO](DCO), and
-[CLA](CLA). The projects in this repository may have different
-outbound licenses, so check each project's LICENSE before using it.
+All contributions are governed by [CONTRIBUTING](CONTRIBUTING),
+[DCO](DCO), and [CLA](CLA).
 
-If a project is missing a LICENSE, or if unsure about its outbound license,
-*assume that no rights are granted* and open an issue for clarification.
+This repository intentionally has no blanket outbound license. Each project
+directory has its own `LICENSE`; that license applies to the project's
+first-party material. Unless a root-level file says otherwise, do not assume
+that repository-level files or material outside a project directory are
+licensed for reuse.
+
+Third-party code, fonts, assets, and notices retain their own terms. If a
+project is missing a `LICENSE`, or if unsure about an item's provenance,
+assume that no rights are granted and open an issue for clarification.

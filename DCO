@@ -1,0 +1,18 @@
+                    Contributor Certification
+                     Version 2.0 - repository
+
+By adding a Signed-off-by trailer to a contribution, I confirm that:
+
+1. I have read and accept Contributor License Agreement version 2.0 in the
+   file "CLA" as recorded in this commit's Git tree.
+2. I have read the LICENSE file in every project directory that this
+   contribution modifies, and I have authority to submit the contribution
+   under those project licenses and the CLA.
+3. My Signed-off-by name and email identify me, and I adopted the trailer with
+   intent to sign this certification.
+4. I understand that Project Owner may use, sublicense, and relicense my
+   contribution as the CLA allows.
+
+My sign-off accepts this exact CLA version only for that contribution. It does
+not accept a later CLA version unless I separately sign off a contribution
+under that version.
