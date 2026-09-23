@@ -100,5 +100,5 @@ contributions require a signed-off commit under the repository DCO and CLA.
 
 ## License
 
-This project is licensed under the GNU Affero General Public License v3.0.
+This project is licensed under the GNU Affero General Public License v3.0 only.
 See [LICENSE](LICENSE) for the full license text.

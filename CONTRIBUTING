@@ -1,8 +1,14 @@
-                           Contributing to mnouw
+                         Contributing to the repository
 
 Thank you for your interest in contributing.
 
-All contributions require a Signed-off-by line in every commit message:
+Before submitting a contribution, read the `LICENSE` in every project
+directory that the change modifies. Each project is separately licensed.
+Unless the Project Owner has explicitly designated a license for it, do not
+submit changes to repository-level files or to a directory without a
+`LICENSE`.
+
+Every commit that is offered for inclusion must include a Signed-off-by trailer:
 
     feat: add new feature
 
@@ -12,9 +18,15 @@ You can add it automatically:
 
     git commit -s -m "your commit message"
 
-By signing off, you accept the Contributor License Agreement in the file
-"CLA", as certified by the repository DCO. If an employer, client, university,
-or other organization owns the work, an authorized representative must accept
-the agreement before you contribute.
+The sign-off is the certification in [DCO](DCO) and accepts [CLA](CLA) version
+2.0 for that contribution. The project license grants the public the rights
+for that project; the CLA separately grants the Project Owner the rights needed
+to operate, sublicense, and relicense the contribution.
+
+Only submit material that you own or are authorized to contribute. Disclose
+all copied code, generated code, fonts, assets, data, patents, and third-party
+license obligations in the pull request. If an employer, client, university,
+or other organization owns any relevant right, an authorized representative of
+that organization must accept the CLA before the contribution is submitted.
 
 Projects may have additional technical contribution requirements.
