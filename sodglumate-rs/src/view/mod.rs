@@ -11,6 +11,7 @@ use crate::reactor::{
 use crate::settings::SettingsManager;
 use crate::types::{BreathingPhase, BreathingStyle, ImageFillMode, NavDirection};
 use eframe::egui::{self, ScrollArea};
+use egui_extras::{Column, TableBuilder};
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
@@ -38,6 +39,7 @@ pub struct ViewManager {
 	pub(crate) search_query_presets: Vec<String>,
 	pub(crate) search_page_input: String,
 	selected_search_query_preset: Option<String>,
+	query_selector_open: bool,
 	error_msg: Option<String>,
 	user_is_adult: bool,
 	user_accepted_tos: bool,
@@ -111,6 +113,7 @@ impl ViewManager {
 			search_query_presets,
 			search_page_input,
 			selected_search_query_preset,
+			query_selector_open: false,
 			error_msg: None,
 			user_is_adult: false,
 			user_accepted_tos: false,
@@ -672,60 +675,149 @@ impl ViewManager {
 			self.selected_search_query_preset = None;
 		}
 
-		let selected_text =
-			self.selected_search_query_preset
-				.clone()
-				.unwrap_or_else(|| {
-					let query = self.search_query.trim();
-					if query.is_empty() {
-						"Custom query".to_owned()
-					} else {
-						query.to_owned()
-					}
-				});
+		let query_response = ui.add(
+			egui::TextEdit::singleline(&mut self.search_query)
+				.desired_width(320.0)
+				.hint_text("Enter a query"),
+		);
+		if query_response.changed() {
+			self.selected_search_query_preset = None;
+		}
+		if query_response.has_focus() {
+			self.query_selector_open = true;
+		}
+		let control_rect = query_response.rect;
 
-		let mut custom_response = None;
+		if !self.query_selector_open {
+			return query_response;
+		}
+
 		let mut preset_to_select = None;
 		let mut preset_to_delete = None;
+		let mut preset_to_move = None;
 		let presets = self.search_query_presets.clone();
-		let combo = egui::ComboBox::from_id_salt("query_selector")
-			.selected_text(selected_text)
-			.width(320.0)
-			.show_ui(ui, |ui| {
-				ui.horizontal(|ui| {
-					ui.label("Custom");
-					let response = ui.add(
-						egui::TextEdit::singleline(&mut self.search_query)
-							.desired_width(280.0),
-					);
-					if response.changed() {
-						self.selected_search_query_preset = None;
-					}
-					custom_response = Some(response);
-				});
-
-				if !presets.is_empty() {
-					ui.separator();
-				}
-
-				for (index, preset) in presets.iter().enumerate() {
-					ui.horizontal(|ui| {
-						let is_selected = self
-							.selected_search_query_preset
-							.as_deref() == Some(preset.as_str());
-						if ui.selectable_label(is_selected, preset).clicked() {
-							preset_to_select = Some(preset.clone());
-						}
-						if ui
-							.small_button("x")
-							.on_hover_text("Delete preset")
-							.clicked()
-						{
-							preset_to_delete = Some(index);
-						}
+		let popup = egui::Area::new(egui::Id::new("query_selector_popup"))
+			.order(egui::Order::Foreground)
+			.fixed_pos(control_rect.left_bottom() + egui::vec2(0.0, 4.0))
+			.show(ui.ctx(), |ui| {
+				egui::Frame::popup(ui.style())
+					.inner_margin(egui::Margin::same(8.0))
+					.show(ui, |ui| {
+						ui.set_width(control_rect.width().max(360.0));
+						TableBuilder::new(ui)
+							.id_salt("query_presets_table")
+							.striped(true)
+							.cell_layout(
+								egui::Layout::left_to_right(egui::Align::Center)
+									.with_main_align(egui::Align::Min),
+							)
+							.column(Column::remainder())
+							.column(Column::exact(32.0))
+							.column(Column::exact(32.0))
+							.column(Column::exact(32.0))
+							.min_scrolled_height(0.0)
+							.max_scroll_height(240.0)
+							.body(|mut body| {
+								for (index, preset) in presets.iter().enumerate() {
+									body.row(32.0, |mut row| {
+										row.col(|ui| {
+											let selected =
+												self.selected_search_query_preset
+													.as_deref() == Some(preset.as_str());
+											let button_size = egui::vec2(
+												ui.available_width(),
+												28.0,
+											);
+											let response = ui
+												.allocate_ui_with_layout(
+													button_size,
+													egui::Layout::left_to_right(
+														egui::Align::Center,
+													)
+													.with_main_align(
+														egui::Align::Min,
+													),
+													|ui| {
+														ui.add(
+															egui::Button::new(preset)
+																.selected(selected)
+																.min_size(
+																	button_size,
+																),
+														)
+													},
+												)
+												.inner;
+											if response.clicked() {
+												preset_to_select =
+													Some(preset.clone());
+											}
+										});
+										row.col(|ui| {
+											if ui
+												.add_enabled_ui(index > 0, |ui| {
+													ui.add_sized(
+														[ui.available_width(), 28.0],
+														egui::Button::new("⬆"),
+													)
+												})
+												.inner
+												.on_hover_text("Move preset up")
+												.clicked()
+											{
+												preset_to_move =
+													Some((index, index - 1));
+											}
+										});
+										row.col(|ui| {
+											if ui
+												.add_enabled_ui(
+													index + 1 < presets.len(),
+													|ui| {
+														ui.add_sized(
+															[
+																ui.available_width(),
+																28.0,
+															],
+															egui::Button::new("⬇"),
+														)
+													},
+												)
+												.inner
+												.on_hover_text("Move preset down")
+												.clicked()
+											{
+												preset_to_move =
+													Some((index, index + 1));
+											}
+										});
+										row.col(|ui| {
+											if ui
+												.add_sized(
+													[ui.available_width(), 28.0],
+													egui::Button::new("🗑"),
+												)
+												.on_hover_text("Delete preset")
+												.clicked()
+											{
+												preset_to_delete = Some(index);
+											}
+										});
+									});
+								}
+							});
 					});
-				}
 			});
+
+		if ui.ctx().input(|input| input.pointer.any_pressed())
+			&& ui.ctx().input(|input| {
+				input.pointer.interact_pos().is_some_and(|position| {
+					!control_rect.contains(position)
+						&& !popup.response.rect.contains(position)
+				})
+			}) {
+			self.query_selector_open = false;
+		}
 
 		if let Some(index) = preset_to_delete {
 			let deleted_preset = self.search_query_presets.remove(index);
@@ -735,13 +827,17 @@ impl ViewManager {
 				self.selected_search_query_preset = None;
 			}
 		}
+		if let Some((from, to)) = preset_to_move {
+			self.search_query_presets.swap(from, to);
+		}
 
 		if let Some(preset) = preset_to_select {
 			self.search_query = preset.clone();
 			self.selected_search_query_preset = Some(preset);
+			query_response.request_focus();
 		}
 
-		custom_response.unwrap_or(combo.response)
+		query_response
 	}
 
 	fn render_central_panel(

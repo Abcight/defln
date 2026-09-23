@@ -5,7 +5,7 @@ setup:
 	rustup target add x86_64-pc-windows-gnu
 
 run:
-	cargo +nightly run --release
+	cargo run --release
 
 debug:
 	cargo run
