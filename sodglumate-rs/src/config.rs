@@ -32,9 +32,6 @@ pub struct SavedSettings {
 	pub beat_pulse_scale: f32,
 	pub image_fill_mode: ImageFillMode,
 
-	pub coach_enabled: bool,
-	pub coach_model: Option<String>,
-	pub coach_preset: Option<String>,
 }
 
 fn default_breathing_multiplier() -> f32 {
@@ -61,9 +58,6 @@ impl Default for SavedSettings {
 			beat_pulse_enabled: false,
 			beat_pulse_scale: 0.03,
 			image_fill_mode: ImageFillMode::Fit,
-			coach_enabled: false,
-			coach_model: None,
-			coach_preset: None,
 		}
 	}
 }
@@ -107,14 +101,6 @@ pub fn get_config_dir() -> Option<PathBuf> {
 	} else {
 		BaseDirs::new().map(|b| b.home_dir().join(".sodglumate"))
 	}
-}
-
-pub fn get_models_dir() -> Option<PathBuf> {
-	get_config_dir().map(|p| p.join("models"))
-}
-
-pub fn get_presets_dir() -> Option<PathBuf> {
-	get_config_dir().map(|p| p.join("presets"))
 }
 
 pub fn load_settings() -> SavedSettings {
