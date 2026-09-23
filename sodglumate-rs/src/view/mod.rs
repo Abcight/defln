@@ -1,8 +1,6 @@
 use crate::beat::SystemBeat;
 use crate::breathing::BreathingOverlay;
 use crate::browser::ContentBrowser;
-use crate::coach::CoachManager;
-use crate::config::{get_models_dir, get_presets_dir};
 use crate::gateway::{BooruGateway, SearchStatus};
 use crate::media::MediaPane;
 use crate::reactor::{Command, Event, ViewOutput};
@@ -28,7 +26,6 @@ pub struct ApplicationState<'a> {
 	pub breathing: &'a BreathingOverlay,
 	pub settings: &'a SettingsManager,
 	pub beat: &'a SystemBeat,
-	pub coach: Option<&'a CoachManager>,
 }
 
 pub trait View {
@@ -41,80 +38,68 @@ pub trait View {
 
 /// Content for modal popups
 #[derive(Clone)]
-pub enum ModalContent {
+enum ModalContent {
 	None,
 	Hello,
 	BreathingDisclaimer,
 }
 
-pub struct Views {
-	// Display state
-	image_load_time: Instant,
-	user_has_panned: bool,
-	pub(crate) auto_pan_cycle_duration: f32,
-
-	// UI state
-	pub(crate) search_query: String,
-	pub(crate) search_query_presets: Vec<String>,
-	pub(crate) search_page_input: String,
+struct TopBarView {
+	search_query: String,
+	search_query_presets: Vec<String>,
+	search_page_input: String,
 	selected_search_query_preset: Option<String>,
 	query_selector_open: bool,
+}
+
+struct MediaView {
+	image_load_time: Instant,
+	user_has_panned: bool,
 	last_media_url: Option<String>,
-	user_is_adult: bool,
-	user_accepted_tos: bool,
-
-	// Modal state
-	modal: ModalContent,
-	breathing_disclaimer_accepted: bool,
-	breathing_disclaimer_checked: bool,
-
-	// Island navigation state
-	island_ctx: IslandCtx,
-	prev_shift_held: bool,
-
-	// Beat debug state
-	beat_intensity: f32,
-	last_beat_time: Instant,
-	last_beat_scale: f32,
-
-	// Beat pulse settings
-	pub(crate) beat_pulse_enabled: bool,
-	pub(crate) beat_pulse_scale: f32,
-
-	pub(crate) image_fill_mode: ImageFillMode,
-
-	pub(crate) coach_enabled: bool,
-	pub(crate) coach_model: Option<String>,
-	pub(crate) coach_preset: Option<String>,
-
-	// Gallery animation state
 	gallery_anim_start_offset: f32,
 	gallery_anim_offset: f32,
 	gallery_anim_time: f32,
 	last_gallery_index: usize,
-
-	// Zoom and pan state
 	user_zoom: f32,
 	user_pan_offset: egui::Vec2,
 }
 
+struct ModalView {
+	user_is_adult: bool,
+	user_accepted_tos: bool,
+	modal: ModalContent,
+	breathing_disclaimer_accepted: bool,
+	breathing_disclaimer_checked: bool,
+}
+
+struct IslandNavigationView {
+	island_ctx: IslandCtx,
+	prev_shift_held: bool,
+}
+
+struct BeatOverlayView {
+	beat_intensity: f32,
+	last_beat_time: Instant,
+	last_beat_scale: f32,
+}
+
+struct ContentOverlayView;
+
+/// Sequential compositor for independent visual elements.
+pub struct Views {
+	top_bar: TopBarView,
+	media: MediaView,
+	modal: ModalView,
+	island_navigation: IslandNavigationView,
+	beat_overlay: BeatOverlayView,
+	content_overlay: ContentOverlayView,
+}
+
 impl Views {
-	#[expect(
-		clippy::too_many_arguments,
-		reason = "This constructor mirrors the persisted view settings; a settings struct can be introduced with the next view refactor."
-	)]
-	pub fn new(
-		search_query: String,
-		search_query_presets: Vec<String>,
-		search_page_input: String,
-		auto_pan_cycle_duration: f32,
-		beat_pulse_enabled: bool,
-		beat_pulse_scale: f32,
-		image_fill_mode: ImageFillMode,
-		coach_enabled: bool,
-		coach_model: Option<String>,
-		coach_preset: Option<String>,
-	) -> Self {
+	pub fn new(settings: &SettingsManager) -> Self {
+		let search_query = settings.search_query().to_owned();
+		let search_query_presets = settings.search_query_presets().to_vec();
+		let search_page_input = settings.search_page_input().to_owned();
 		let search_query_presets =
 			normalize_search_query_presets(search_query_presets);
 		let selected_search_query_preset = search_query_presets
@@ -123,37 +108,41 @@ impl Views {
 			.cloned();
 
 		Self {
-			image_load_time: Instant::now(),
-			user_has_panned: false,
-			auto_pan_cycle_duration,
-			search_query,
-			search_query_presets,
-			search_page_input,
-			selected_search_query_preset,
-			query_selector_open: false,
-			last_media_url: None,
-			user_is_adult: false,
-			user_accepted_tos: false,
-			modal: ModalContent::Hello,
-			breathing_disclaimer_accepted: false,
-			breathing_disclaimer_checked: false,
-			island_ctx: IslandCtx::new(),
-			prev_shift_held: false,
-			beat_intensity: 0.0,
-			last_beat_time: Instant::now(),
-			last_beat_scale: 1.0,
-			beat_pulse_enabled,
-			beat_pulse_scale,
-			image_fill_mode,
-			coach_enabled,
-			coach_model,
-			coach_preset,
-			gallery_anim_start_offset: 0.0,
-			gallery_anim_offset: 0.0,
-			gallery_anim_time: 0.0,
-			last_gallery_index: 0,
-			user_zoom: 1.0,
-			user_pan_offset: egui::Vec2::ZERO,
+			top_bar: TopBarView {
+				search_query,
+				search_query_presets,
+				search_page_input,
+				selected_search_query_preset,
+				query_selector_open: false,
+			},
+			media: MediaView {
+				image_load_time: Instant::now(),
+				user_has_panned: false,
+				last_media_url: None,
+				gallery_anim_start_offset: 0.0,
+				gallery_anim_offset: 0.0,
+				gallery_anim_time: 0.0,
+				last_gallery_index: 0,
+				user_zoom: 1.0,
+				user_pan_offset: egui::Vec2::ZERO,
+			},
+			modal: ModalView {
+				user_is_adult: false,
+				user_accepted_tos: false,
+				modal: ModalContent::Hello,
+				breathing_disclaimer_accepted: false,
+				breathing_disclaimer_checked: false,
+			},
+			island_navigation: IslandNavigationView {
+				island_ctx: IslandCtx::new(),
+				prev_shift_held: false,
+			},
+			beat_overlay: BeatOverlayView {
+				beat_intensity: 0.0,
+				last_beat_time: Instant::now(),
+				last_beat_scale: 1.0,
+			},
+			content_overlay: ContentOverlayView,
 		}
 	}
 
@@ -163,68 +152,99 @@ impl Views {
 		state: &ApplicationState<'_>,
 	) -> ViewOutput {
 		let mut output = ViewOutput::default();
+		let previous_search_preferences = (
+			self.top_bar.search_query.clone(),
+			self.top_bar.search_query_presets.clone(),
+			self.top_bar.search_page_input.clone(),
+		);
 		let media_url = state.media.current_url().map(str::to_owned);
-		if self.last_media_url != media_url {
-			self.last_media_url = media_url;
-			self.image_load_time = Instant::now();
-			self.user_has_panned = false;
-			self.user_zoom = 1.0;
-			self.user_pan_offset = egui::Vec2::ZERO;
+		if self.media.last_media_url != media_url {
+			self.media.last_media_url = media_url;
+			self.media.image_load_time = Instant::now();
+			self.media.user_has_panned = false;
+			self.media.user_zoom = 1.0;
+			self.media.user_pan_offset = egui::Vec2::ZERO;
 		}
 		let (beat_at, beat_scale) = state.beat.latest_beat();
-		if beat_at > self.last_beat_time && beat_scale > 0.0 {
-			self.last_beat_time = beat_at;
-			self.last_beat_scale = beat_scale;
-			self.beat_intensity = beat_scale;
+		if beat_at > self.beat_overlay.last_beat_time && beat_scale > 0.0 {
+			self.beat_overlay.last_beat_time = beat_at;
+			self.beat_overlay.last_beat_scale = beat_scale;
+			self.beat_overlay.beat_intensity = beat_scale;
 		}
-		let modal_active = !matches!(self.modal, ModalContent::None);
+		let modal_active = !matches!(self.modal.modal, ModalContent::None);
 
 		// Handle input only when no modal is active
 		if !modal_active {
 			let is_typing = ctx.memory(|m| m.focused().is_some());
 			if !is_typing {
-				self.handle_keyboard_input(ctx, &mut output);
+				self.island_navigation
+					.handle_keyboard_input(ctx, &mut output);
 			}
 		}
 
 		// Top panel
-		self.render_top_panel(
+		self.top_bar
+			.render(ctx, state, &mut self.modal, &mut output, !modal_active);
+
+		// Central panel
+		let island_active = self.island_navigation.island_ctx.active
+			|| self.island_navigation.island_ctx.in_cooldown();
+		self.media.render(
 			ctx,
-			state.gateway,
-			state.settings,
-			state.breathing,
-			state.beat,
+			state,
+			island_active,
+			self.beat_overlay.beat_intensity,
 			&mut output,
 			!modal_active,
 		);
 
-		// Central panel
-		self.render_central_panel(ctx, state, &mut output, !modal_active);
-
 		// Overlays
 		match state.breathing.style() {
 			BreathingStyle::Classic => {
-				self.render_breathing_overlay(ctx, state.breathing);
-				self.render_breathing_pulse(ctx, state.breathing);
+				self.content_overlay
+					.render_breathing_overlay(ctx, state.breathing);
+				self.content_overlay
+					.render_breathing_pulse(ctx, state.breathing);
 			}
 			BreathingStyle::Immersive => {
-				self.render_immersive_breathing_overlay(ctx, state.breathing);
+				self.content_overlay
+					.render_immersive_breathing_overlay(ctx, state.breathing);
 			}
 		}
-		self.render_info_overlay(ctx, state.browser);
+		self.content_overlay.render_info_overlay(ctx, state.browser);
 
 		// Beat debug dot
-		self.render_beat_debug(ctx, state.beat);
+		self.beat_overlay.render(ctx);
 
 		// Island navigation overlay
-		self.render_island_overlay(ctx, &mut output);
+		self.island_navigation.render(
+			ctx,
+			state.settings,
+			&mut self.modal,
+			&mut output,
+		);
 
 		// Modal popup (on top of everything)
-		self.render_modal(ctx, &mut output);
+		self.modal.render(ctx, &mut output);
+
+		if previous_search_preferences
+			!= (
+				self.top_bar.search_query.clone(),
+				self.top_bar.search_query_presets.clone(),
+				self.top_bar.search_page_input.clone(),
+			) {
+			output.command(Command::SetSearchPreferences {
+				query: self.top_bar.search_query.clone(),
+				presets: self.top_bar.search_query_presets.clone(),
+				page_input: self.top_bar.search_page_input.clone(),
+			});
+		}
 
 		output
 	}
+}
 
+impl IslandNavigationView {
 	fn handle_keyboard_input(
 		&mut self,
 		ctx: &egui::Context,
@@ -260,31 +280,20 @@ impl Views {
 			}
 		}
 	}
+}
 
-	#[expect(
-		clippy::too_many_arguments,
-		reason = "The top panel coordinates several independent component views until the UI is split into smaller panels."
-	)]
-	fn render_top_panel(
+impl TopBarView {
+	fn render(
 		&mut self,
 		ctx: &egui::Context,
-		_gateway: &BooruGateway,
-		settings: &SettingsManager,
-		breathing: &BreathingOverlay,
-		beat: &SystemBeat,
+		state: &ApplicationState<'_>,
+		modal: &mut ModalView,
 		output: &mut ViewOutput,
 		enabled: bool,
 	) {
-		let previous_coach_config = (
-			self.coach_enabled,
-			self.coach_model.clone(),
-			self.coach_preset.clone(),
-		);
-		let models_dir = get_models_dir();
-		let presets_dir = get_presets_dir();
-		let has_coach_deps = models_dir.as_ref().is_some_and(|d| d.exists())
-			&& presets_dir.as_ref().is_some_and(|d| d.exists());
-
+		let settings = state.settings;
+		let breathing = state.breathing;
+		let beat = state.beat;
 		egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
 			if !enabled {
 				ui.disable();
@@ -368,8 +377,8 @@ impl Views {
 				let mut breathing_enabled = breathing.is_visible();
 
 				if ui.checkbox(&mut breathing_enabled, "Breathing").clicked() {
-					if breathing_enabled && !self.breathing_disclaimer_accepted {
-						self.modal = ModalContent::BreathingDisclaimer;
+					if breathing_enabled && !modal.breathing_disclaimer_accepted {
+						modal.modal = ModalContent::BreathingDisclaimer;
 					} else {
 						output.command(Command::ToggleBreathing);
 					}
@@ -435,7 +444,7 @@ impl Views {
 
 				ui.separator();
 
-				let mut pan_speed = self.auto_pan_cycle_duration;
+				let mut pan_speed = settings.auto_pan_cycle_duration();
 				ui.label("Pan Speed (s)");
 				if ui
 					.add(
@@ -445,11 +454,11 @@ impl Views {
 					)
 					.changed()
 				{
-					self.auto_pan_cycle_duration = pan_speed;
+					output.command(Command::SetAutoPanCycleDuration(pan_speed));
 				}
 				ui.separator();
 
-				let current_fill = self.image_fill_mode;
+				let current_fill = settings.image_fill_mode();
 				let fill_label = match current_fill {
 					ImageFillMode::Cover => "Cover",
 					ImageFillMode::Fit => "Fit",
@@ -465,7 +474,9 @@ impl Views {
 							)
 							.clicked()
 						{
-							self.image_fill_mode = ImageFillMode::Cover;
+							output.command(Command::SetImageFillMode(
+								ImageFillMode::Cover,
+							));
 						}
 						if ui
 							.selectable_label(
@@ -474,7 +485,9 @@ impl Views {
 							)
 							.clicked()
 						{
-							self.image_fill_mode = ImageFillMode::Fit;
+							output.command(Command::SetImageFillMode(
+								ImageFillMode::Fit,
+							));
 						}
 						if ui
 							.selectable_label(
@@ -483,7 +496,9 @@ impl Views {
 							)
 							.clicked()
 						{
-							self.image_fill_mode = ImageFillMode::FitToGallery;
+							output.command(Command::SetImageFillMode(
+								ImageFillMode::FitToGallery,
+							));
 						}
 					});
 
@@ -528,98 +543,26 @@ impl Views {
 					);
 				}
 
-				ui.checkbox(&mut self.beat_pulse_enabled, "Pulse");
-				if self.beat_pulse_enabled {
-					ui.label("Scale");
-					ui.add(
-						egui::DragValue::new(&mut self.beat_pulse_scale)
-							.range(0.01..=0.15)
-							.speed(0.01),
-					);
+				let mut beat_pulse_enabled = settings.beat_pulse_enabled();
+				if ui.checkbox(&mut beat_pulse_enabled, "Pulse").changed() {
+					output.command(Command::SetBeatPulseEnabled(beat_pulse_enabled));
 				}
-
-				if has_coach_deps {
-					ui.separator();
-					ui.checkbox(&mut self.coach_enabled, "Coach");
-					if self.coach_enabled {
-						// Render combo box for model
-						let models = if let Some(dir) = &models_dir {
-							std::fs::read_dir(dir)
-								.into_iter()
-								.flatten()
-								.filter_map(|e| e.ok())
-								.map(|e| e.file_name().to_string_lossy().to_string())
-								.filter(|f| f.ends_with(".gguf"))
-								.collect::<Vec<_>>()
-						} else {
-							vec![]
-						};
-
-						let selected_model =
-							self.coach_model.as_deref().unwrap_or("Select Model");
-						egui::ComboBox::from_id_salt("coach_model")
-							.selected_text(selected_model)
-							.show_ui(ui, |ui| {
-								for m in models {
-									if ui
-										.selectable_label(
-											self.coach_model.as_ref() == Some(&m),
-											&m,
-										)
-										.clicked()
-									{
-										self.coach_model = Some(m);
-									}
-								}
-							});
-
-						// Render combo box for preset
-						let presets = if let Some(dir) = &presets_dir {
-							std::fs::read_dir(dir)
-								.into_iter()
-								.flatten()
-								.filter_map(|e| e.ok())
-								.map(|e| e.file_name().to_string_lossy().to_string())
-								.filter(|f| f.ends_with(".toml"))
-								.collect::<Vec<_>>()
-						} else {
-							vec![]
-						};
-
-						let selected_preset =
-							self.coach_preset.as_deref().unwrap_or("Select Preset");
-						egui::ComboBox::from_id_salt("coach_preset")
-							.selected_text(selected_preset)
-							.show_ui(ui, |ui| {
-								for p in presets {
-									if ui
-										.selectable_label(
-											self.coach_preset.as_ref() == Some(&p),
-											&p,
-										)
-										.clicked()
-									{
-										self.coach_preset = Some(p);
-									}
-								}
-							});
+				if beat_pulse_enabled {
+					ui.label("Scale");
+					let mut beat_pulse_scale = settings.beat_pulse_scale();
+					if ui
+						.add(
+							egui::DragValue::new(&mut beat_pulse_scale)
+								.range(0.01..=0.15)
+								.speed(0.01),
+						)
+						.changed()
+					{
+						output.command(Command::SetBeatPulseScale(beat_pulse_scale));
 					}
 				}
 			});
 		});
-
-		let current_coach_config = (
-			self.coach_enabled,
-			self.coach_model.clone(),
-			self.coach_preset.clone(),
-		);
-		if previous_coach_config != current_coach_config {
-			output.command(Command::ConfigureCoach {
-				enabled: self.coach_enabled,
-				model: self.coach_model.clone(),
-				preset: self.coach_preset.clone(),
-			});
-		}
 	}
 
 	fn render_query_selector(&mut self, ui: &mut egui::Ui) -> egui::Response {
@@ -797,18 +740,21 @@ impl Views {
 
 		query_response
 	}
+}
 
-	fn render_central_panel(
+impl MediaView {
+	fn render(
 		&mut self,
 		ctx: &egui::Context,
 		state: &ApplicationState<'_>,
+		island_active: bool,
+		beat_intensity: f32,
 		output: &mut ViewOutput,
 		enabled: bool,
 	) {
 		let browser = state.browser;
 		let media = state.media;
 		let gateway = state.gateway;
-		let coach = state.coach;
 		egui::CentralPanel::default().show(ctx, |ui| {
 			if !enabled {
 				ui.disable();
@@ -825,123 +771,38 @@ impl Views {
 						.color(egui::Color32::RED),
 				);
 			} else if let Some(_url) = media.current_url() {
-				self.render_media(ui, ctx, media, browser, output);
+				self.render_media(
+					ui,
+					ctx,
+					state,
+					island_active,
+					beat_intensity,
+					output,
+				);
 			} else {
 				ui.centered_and_justified(|ui| {
 					ui.label("Enter a query and search to start.");
 				});
 			}
 		});
-
-		// Render Coach Overlay
-		if coach.is_some_and(|coach| !coach.logs().is_empty()) {
-			let screen_height = ctx.screen_rect().height();
-			let base_font_size = (screen_height * 0.03).max(16.0);
-			let font_size = base_font_size * 0.75;
-			let margin = (screen_height * 0.03).max(10.0);
-
-			let info_overlay_height = base_font_size * 5.0;
-			let offset_y = -margin - info_overlay_height;
-
-			egui::Area::new(egui::Id::new("coach_overlay"))
-				.anchor(egui::Align2::LEFT_BOTTOM, egui::vec2(margin, offset_y))
-				.interactable(false)
-				.order(egui::Order::Foreground)
-				.show(ctx, |ui| {
-					let recent_logs = coach
-						.into_iter()
-						.flat_map(CoachManager::logs)
-						.rev()
-						.take(20)
-						.collect::<Vec<_>>()
-						.into_iter()
-						.rev();
-					let outline_color = egui::Color32::from_black_alpha(204);
-					let text_color = egui::Color32::from_rgb(180, 220, 180); // Muted terminal green
-					let font_id = egui::FontId::monospace(font_size);
-					let stroke_width = (font_size * 0.06).clamp(1.0, 2.0); // Not too thick
-
-					let offsets = [
-						egui::vec2(-stroke_width, -stroke_width),
-						egui::vec2(0.0, -stroke_width),
-						egui::vec2(stroke_width, -stroke_width),
-						egui::vec2(-stroke_width, 0.0),
-						egui::vec2(stroke_width, 0.0),
-						egui::vec2(-stroke_width, stroke_width),
-						egui::vec2(0.0, stroke_width),
-						egui::vec2(stroke_width, stroke_width),
-					];
-
-					for msg in recent_logs {
-						let text = msg.clone();
-						let galley = ui.painter().layout_no_wrap(
-							text.clone(),
-							font_id.clone(),
-							text_color,
-						);
-						let shadow_galley = ui.painter().layout_no_wrap(
-							text.clone(),
-							font_id.clone(),
-							outline_color,
-						);
-						let (rect, _) = ui
-							.allocate_exact_size(galley.size(), egui::Sense::hover());
-
-						for offset in offsets {
-							ui.painter().galley(
-								rect.min + offset,
-								shadow_galley.clone(),
-								outline_color,
-							);
-						}
-						ui.painter().galley(rect.min, galley, text_color);
-					}
-				});
-		}
-
-		if ctx.input(|i| i.key_down(egui::Key::R)) {
-			egui::Area::new(egui::Id::new("coach_debug"))
-				.anchor(egui::Align2::LEFT_TOP, egui::vec2(20.0, 20.0))
-				.interactable(false)
-				.order(egui::Order::Foreground)
-				.show(ctx, |ui| {
-					egui::Frame::window(&ctx.style())
-						.fill(egui::Color32::from_black_alpha(220))
-						.inner_margin(12.0)
-						.rounding(8.0)
-						.show(ui, |ui| {
-							ui.heading(
-								egui::RichText::new("Coach mem:")
-									.color(egui::Color32::YELLOW)
-									.strong(),
-							);
-							ui.add_space(8.0);
-							for (k, v) in
-								coach.into_iter().flat_map(CoachManager::state)
-							{
-								ui.label(
-									egui::RichText::new(format!("{}: {}", k, v))
-										.color(egui::Color32::LIGHT_GRAY)
-										.monospace(),
-								);
-							}
-						});
-				});
-		}
 	}
 
 	fn render_media(
 		&mut self,
 		ui: &mut egui::Ui,
 		ctx: &egui::Context,
-		media: &MediaPane,
-		browser: &ContentBrowser,
+		state: &ApplicationState<'_>,
+		island_active: bool,
+		beat_intensity: f32,
 		output: &mut ViewOutput,
 	) {
-		let pan_cycle = self.auto_pan_cycle_duration;
+		let media = state.media;
+		let browser = state.browser;
+		let settings = state.settings;
+		let pan_cycle = settings.auto_pan_cycle_duration();
+		let image_fill_mode = settings.image_fill_mode();
 		let load_time = self.image_load_time;
 		let mut user_panned = self.user_has_panned;
-		let island_active = self.island_ctx.active || self.island_ctx.in_cooldown();
 		if media.needs_painted_notification() {
 			output.event(Event::MediaPainted);
 		}
@@ -986,7 +847,7 @@ impl Views {
 		};
 
 		if media.current_is_playable()
-			&& !matches!(self.image_fill_mode, ImageFillMode::FitToGallery)
+			&& !matches!(image_fill_mode, ImageFillMode::FitToGallery)
 		{
 			Self::render_current_video(ui, media, None);
 			self.user_has_panned = user_panned;
@@ -994,7 +855,7 @@ impl Views {
 		}
 
 		let gallery_fallback_media =
-			if matches!(self.image_fill_mode, ImageFillMode::FitToGallery)
+			if matches!(image_fill_mode, ImageFillMode::FitToGallery)
 				&& media.get_current_media().is_none()
 			{
 				(1..browser.posts_len() as isize)
@@ -1020,7 +881,7 @@ impl Views {
 				let img_size = texture.size_vec2();
 
 				if matches!(
-					self.image_fill_mode,
+					image_fill_mode,
 					ImageFillMode::Fit | ImageFillMode::FitToGallery
 				) {
 					if !island_active {
@@ -1085,14 +946,15 @@ impl Views {
 				}
 
 				// Apply beat pulse if enabled
-				let pulse = if self.beat_pulse_enabled && self.beat_intensity > 0.01 {
+				let pulse = if settings.beat_pulse_enabled() && beat_intensity > 0.01
+				{
 					ctx.request_repaint();
-					1.0 + self.beat_intensity * self.beat_pulse_scale
+					1.0 + beat_intensity * settings.beat_pulse_scale()
 				} else {
 					1.0
 				};
 
-				match self.image_fill_mode {
+				match image_fill_mode {
 					ImageFillMode::Cover => {
 						let width_ratio = available_size.x / img_size.x;
 						let height_ratio = available_size.y / img_size.y;
@@ -1498,7 +1360,9 @@ impl Views {
 		};
 		eframe::egui::Rect::from_center_size(space.center(), size)
 	}
+}
 
+impl ContentOverlayView {
 	fn render_breathing_overlay(
 		&self,
 		ctx: &egui::Context,
@@ -1885,9 +1749,10 @@ impl Views {
 
 		ui.painter().galley(rect.min, galley, color);
 	}
+}
 
-	/// Render debug beat dot, pulses on beat detection
-	fn render_beat_debug(&mut self, ctx: &egui::Context, _beat: &SystemBeat) {
+impl BeatOverlayView {
+	fn render(&mut self, ctx: &egui::Context) {
 		let elapsed = self.last_beat_time.elapsed().as_secs_f32();
 		let decay_rate = 4.6;
 		self.beat_intensity = self.last_beat_scale * (-decay_rate * elapsed).exp();
@@ -1929,14 +1794,17 @@ impl Views {
 				);
 			});
 	}
+}
 
-	/// Render island navigation overlay and handle actions
-	fn render_island_overlay(
+impl IslandNavigationView {
+	fn render(
 		&mut self,
 		ctx: &egui::Context,
+		settings: &SettingsManager,
+		modal: &mut ModalView,
 		output: &mut ViewOutput,
 	) {
-		if !matches!(self.modal, ModalContent::None) {
+		if !matches!(modal.modal, ModalContent::None) {
 			return;
 		}
 
@@ -1948,25 +1816,27 @@ impl Views {
 					self.island_ctx.pop();
 				}
 				IslandAction::RequestBreathingToggle => {
-					if self.breathing_disclaimer_accepted {
+					if modal.breathing_disclaimer_accepted {
 						output.command(Command::ToggleBreathing);
 					} else {
-						self.modal = ModalContent::BreathingDisclaimer;
+						modal.modal = ModalContent::BreathingDisclaimer;
 					}
 				}
 				IslandAction::ToggleImageFillMode => {
-					self.image_fill_mode = match self.image_fill_mode {
+					let mode = match settings.image_fill_mode() {
 						ImageFillMode::Cover => ImageFillMode::Fit,
 						ImageFillMode::Fit => ImageFillMode::FitToGallery,
 						ImageFillMode::FitToGallery => ImageFillMode::Cover,
 					};
+					output.command(Command::SetImageFillMode(mode));
 				}
 			}
 		}
 	}
+}
 
-	/// Render modal popup overlay
-	fn render_modal(&mut self, ctx: &egui::Context, output: &mut ViewOutput) {
+impl ModalView {
+	fn render(&mut self, ctx: &egui::Context, output: &mut ViewOutput) {
 		if matches!(self.modal, ModalContent::None) {
 			return;
 		}
@@ -2113,18 +1983,7 @@ impl Views {
 
 impl Default for Views {
 	fn default() -> Self {
-		Self::new(
-			"~gay ~male solo abs wolf order:score".to_owned(),
-			vec!["~gay ~male solo abs wolf order:score".to_owned()],
-			"1".to_owned(),
-			10.0,
-			false,
-			0.03,
-			ImageFillMode::default(),
-			false,
-			None,
-			None,
-		)
+		Self::new(&SettingsManager::default())
 	}
 }
 

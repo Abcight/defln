@@ -103,9 +103,7 @@ impl ContentBrowser {
 				);
 
 				let mut response = self.emit_current_post_changed();
-				response
-					.messages
-					.push(Message::Event(Event::Navigated(*direction)));
+				response.messages.push(Message::Event(Event::Navigated));
 				response
 			}
 			_ => ComponentResponse::none(),

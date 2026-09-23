@@ -31,7 +31,6 @@ pub struct SavedSettings {
 	pub beat_pulse_enabled: bool,
 	pub beat_pulse_scale: f32,
 	pub image_fill_mode: ImageFillMode,
-
 }
 
 fn default_breathing_multiplier() -> f32 {

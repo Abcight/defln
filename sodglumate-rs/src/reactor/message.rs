@@ -1,5 +1,7 @@
 use crate::api::Post;
-use crate::types::{BreathingPhase, BreathingStyle, MediaKind, NavDirection};
+use crate::types::{
+	BreathingPhase, BreathingStyle, ImageFillMode, MediaKind, NavDirection,
+};
 use std::time::Duration;
 
 #[derive(Clone, Debug)]
@@ -37,6 +39,15 @@ pub enum Command {
 	AdvanceSlideshow,
 	ToggleCapByBreathing,
 	SetAudioDevice(Option<String>),
+	SetSearchPreferences {
+		query: String,
+		presets: Vec<String>,
+		page_input: String,
+	},
+	SetAutoPanCycleDuration(f32),
+	SetBeatPulseEnabled(bool),
+	SetBeatPulseScale(f32),
+	SetImageFillMode(ImageFillMode),
 }
 
 #[derive(Clone, Debug)]
@@ -46,7 +57,7 @@ pub enum Event {
 		page: u32,
 		is_new: bool,
 	},
-	Navigated(NavDirection),
+	Navigated,
 	BreathingPhaseStarted(BreathingPhase),
 	MediaPainted,
 }
@@ -95,7 +106,7 @@ impl ComponentResponse {
 
 #[derive(Default)]
 pub struct ViewOutput {
-	pub messages: Vec<Message>,
+	messages: Vec<Message>,
 }
 
 impl ViewOutput {
@@ -105,6 +116,10 @@ impl ViewOutput {
 
 	pub fn event(&mut self, event: Event) {
 		self.messages.push(Message::Event(event));
+	}
+
+	pub fn into_messages(self) -> impl Iterator<Item = Message> {
+		self.messages.into_iter()
 	}
 }
 
