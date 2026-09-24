@@ -14,7 +14,7 @@ impl BeatOverlayView {
 		}
 	}
 
-	pub(super) fn render(&mut self, ctx: &egui::Context) {
+	pub(super) fn render(&mut self, ui: &mut Ui) {
 		let elapsed = self.last_beat_time.elapsed().as_secs_f32();
 		let decay_rate = 4.6;
 		self.beat_intensity = self.last_beat_scale * (-decay_rate * elapsed).exp();
@@ -23,9 +23,9 @@ impl BeatOverlayView {
 			return;
 		}
 
-		ctx.request_repaint();
+		ui.ctx().request_repaint();
 
-		let screen_rect = ctx.screen_rect();
+		let screen_rect = ui.ctx().screen_rect();
 		let margin = 20.0;
 		let base_radius = 6.0;
 		let bounce = 10.0;
@@ -43,7 +43,7 @@ impl BeatOverlayView {
 			.fixed_pos(center)
 			.order(egui::Order::Foreground)
 			.interactable(false)
-			.show(ctx, |ui| {
+			.show(ui.ctx(), |ui| {
 				ui.painter().circle_filled(center, radius, color);
 				// Outer glow ring
 				let glow_alpha = (self.beat_intensity * 100.0) as u8;

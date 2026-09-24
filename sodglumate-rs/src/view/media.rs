@@ -28,7 +28,7 @@ impl MediaView {
 
 	pub(super) fn render(
 		&mut self,
-		ctx: &egui::Context,
+		ui: &mut Ui,
 		state: &ApplicationState<'_>,
 		island_active: bool,
 		beat_intensity: f32,
@@ -38,7 +38,7 @@ impl MediaView {
 		let browser = state.browser;
 		let media = state.media;
 		let gateway = state.gateway;
-		egui::CentralPanel::default().show(ctx, |ui| {
+		egui::CentralPanel::default().show_inside(ui, |ui| {
 			if !enabled {
 				ui.disable();
 			}
@@ -54,14 +54,7 @@ impl MediaView {
 						.color(egui::Color32::RED),
 				);
 			} else if let Some(_url) = media.current_url() {
-				self.render_media(
-					ui,
-					ctx,
-					state,
-					island_active,
-					beat_intensity,
-					output,
-				);
+				self.render_media(ui, state, island_active, beat_intensity, output);
 			} else {
 				ui.centered_and_justified(|ui| {
 					ui.label("Enter a query and search to start.");
@@ -73,7 +66,6 @@ impl MediaView {
 	fn render_media(
 		&mut self,
 		ui: &mut egui::Ui,
-		ctx: &egui::Context,
 		state: &ApplicationState<'_>,
 		island_active: bool,
 		beat_intensity: f32,
@@ -156,7 +148,7 @@ impl MediaView {
 			media.get_current_media().or(gallery_fallback_media)
 		{
 			if loaded_media.is_animated() {
-				ctx.request_repaint();
+				ui.ctx().request_repaint();
 			}
 			{
 				let available_size = ui.available_size();
@@ -168,46 +160,46 @@ impl MediaView {
 					ImageFillMode::Fit | ImageFillMode::FitToGallery
 				) {
 					if !island_active {
-						let dt = ctx.input(|i| i.stable_dt);
+						let dt = ui.input(|i| i.stable_dt);
 
-						if ctx.input(|i| i.key_down(egui::Key::E)) {
+						if ui.input(|i| i.key_down(egui::Key::E)) {
 							self.user_zoom = (self.user_zoom + dt * 4.0).min(5.0);
-							ctx.request_repaint();
+							ui.ctx().request_repaint();
 						}
-						if ctx.input(|i| i.key_down(egui::Key::Q)) {
+						if ui.input(|i| i.key_down(egui::Key::Q)) {
 							self.user_zoom = (self.user_zoom - dt * 4.0).max(1.0);
-							ctx.request_repaint();
+							ui.ctx().request_repaint();
 						}
 
 						if self.user_zoom > 1.0 {
 							let speed = 1600.0 * dt;
-							if ctx.input(|i| {
+							if ui.input(|i| {
 								i.key_down(egui::Key::ArrowRight)
 									|| i.key_down(egui::Key::D)
 							}) {
 								self.user_pan_offset.x -= speed;
-								ctx.request_repaint();
+								ui.ctx().request_repaint();
 							}
-							if ctx.input(|i| {
+							if ui.input(|i| {
 								i.key_down(egui::Key::ArrowLeft)
 									|| i.key_down(egui::Key::A)
 							}) {
 								self.user_pan_offset.x += speed;
-								ctx.request_repaint();
+								ui.ctx().request_repaint();
 							}
-							if ctx.input(|i| {
+							if ui.input(|i| {
 								i.key_down(egui::Key::ArrowDown)
 									|| i.key_down(egui::Key::S)
 							}) {
 								self.user_pan_offset.y -= speed;
-								ctx.request_repaint();
+								ui.ctx().request_repaint();
 							}
-							if ctx.input(|i| {
+							if ui.input(|i| {
 								i.key_down(egui::Key::ArrowUp)
 									|| i.key_down(egui::Key::W)
 							}) {
 								self.user_pan_offset.y += speed;
-								ctx.request_repaint();
+								ui.ctx().request_repaint();
 							}
 						} else {
 							self.user_pan_offset = egui::Vec2::ZERO;
@@ -231,7 +223,7 @@ impl MediaView {
 				// Apply beat pulse if enabled
 				let pulse = if settings.beat_pulse_enabled() && beat_intensity > 0.01
 				{
-					ctx.request_repaint();
+					ui.ctx().request_repaint();
 					1.0 + beat_intensity * settings.beat_pulse_scale()
 				} else {
 					1.0
@@ -265,7 +257,7 @@ impl MediaView {
 								scroll_area = scroll_area
 									.vertical_scroll_offset(overflow.y * factor);
 							}
-							ctx.request_repaint();
+							ui.ctx().request_repaint();
 						}
 
 						scroll_area.show(ui, |ui| {
@@ -349,7 +341,7 @@ impl MediaView {
 
 						let anim_duration = 0.4;
 						if self.gallery_anim_time < anim_duration {
-							let dt = ctx.input(|i| i.stable_dt);
+							let dt = ui.input(|i| i.stable_dt);
 							self.gallery_anim_time =
 								(self.gallery_anim_time + dt).min(anim_duration);
 							let t = self.gallery_anim_time / anim_duration;
@@ -360,7 +352,7 @@ impl MediaView {
 							};
 							self.gallery_anim_offset =
 								self.gallery_anim_start_offset * (1.0 - ease);
-							ctx.request_repaint();
+							ui.ctx().request_repaint();
 						} else {
 							self.gallery_anim_offset = 0.0;
 						}

@@ -12,13 +12,9 @@ impl IslandNavigationView {
 		}
 	}
 
-	pub(super) fn handle_keyboard_input(
-		&mut self,
-		ctx: &egui::Context,
-		output: &mut ViewOutput,
-	) {
+	pub(super) fn handle_keyboard_input(&mut self, ui: &Ui, output: &mut ViewOutput) {
 		// Detect shift press/release edges for island activation
-		let shift_held = ctx.input(|i| i.modifiers.shift);
+		let shift_held = ui.input(|i| i.modifiers.shift);
 		if shift_held && !self.prev_shift_held {
 			self.island_ctx.activate(&ROOT_ISLAND, 3);
 		} else if !shift_held && self.prev_shift_held {
@@ -31,9 +27,9 @@ impl IslandNavigationView {
 			return;
 		}
 
-		let space_pressed = ctx.input(|i| i.key_pressed(egui::Key::Space));
-		let ctrl_pressed = ctx.input(|i| i.modifiers.ctrl);
-		let c_pressed = ctx.input(|i| i.key_pressed(egui::Key::C));
+		let space_pressed = ui.input(|i| i.key_pressed(egui::Key::Space));
+		let ctrl_pressed = ui.input(|i| i.modifiers.ctrl);
+		let c_pressed = ui.input(|i| i.key_pressed(egui::Key::C));
 
 		if c_pressed {
 			output.command(Command::ToggleAutoPlay);
@@ -52,7 +48,7 @@ impl IslandNavigationView {
 impl IslandNavigationView {
 	pub(super) fn render(
 		&mut self,
-		ctx: &egui::Context,
+		ui: &mut Ui,
 		settings: &SettingsManager,
 		modal: &mut ModalView,
 		output: &mut ViewOutput,
@@ -61,7 +57,7 @@ impl IslandNavigationView {
 			return;
 		}
 
-		if let Some(action) = IslandWidget::new(&mut self.island_ctx).show(ctx) {
+		if let Some(action) = IslandWidget::new(&mut self.island_ctx).show(ui.ctx()) {
 			match action {
 				IslandAction::Emit(factory) => output.command(factory()),
 				IslandAction::Push(island) => self.island_ctx.push(island),
