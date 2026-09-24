@@ -4,14 +4,14 @@ pub(super) struct ContentOverlayView;
 impl ContentOverlayView {
 	pub(super) fn render_breathing_overlay(
 		&self,
-		ctx: &egui::Context,
+		ui: &mut Ui,
 		breathing: &BreathingOverlay,
 	) {
 		if !breathing.is_visible() {
 			return;
 		}
 
-		let screen_height = ctx.screen_rect().height();
+		let screen_height = ui.ctx().screen_rect().height();
 		let font_size = (screen_height * 0.05).max(16.0);
 		let margin_offset = -(screen_height * 0.03).max(10.0);
 
@@ -22,7 +22,7 @@ impl ContentOverlayView {
 			)
 			.interactable(false)
 			.order(egui::Order::Foreground)
-			.show(ctx, |ui| {
+			.show(ui.ctx(), |ui| {
 				ui.with_layout(
 					egui::Layout::right_to_left(egui::Align::Center),
 					|ui| {
@@ -67,7 +67,7 @@ impl ContentOverlayView {
 
 	pub(super) fn render_breathing_pulse(
 		&self,
-		ctx: &egui::Context,
+		ui: &mut Ui,
 		breathing: &BreathingOverlay,
 	) {
 		if !breathing.is_visible() {
@@ -91,7 +91,7 @@ impl ContentOverlayView {
 				BreathingPhase::Idle => return,
 			};
 
-			let screen_rect = ctx.screen_rect();
+			let screen_rect = ui.ctx().screen_rect();
 			let center = screen_rect.center();
 			let font_size = (screen_rect.height() * 0.15) * scale;
 
@@ -100,7 +100,7 @@ impl ContentOverlayView {
 				.anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
 				.interactable(false)
 				.order(egui::Order::Foreground)
-				.show(ctx, |ui| {
+				.show(ui.ctx(), |ui| {
 					let font_id = egui::FontId::proportional(font_size);
 					let shadow_color = egui::Color32::BLACK.gamma_multiply(opacity);
 					let text_color = color.gamma_multiply(opacity);
@@ -141,13 +141,13 @@ impl ContentOverlayView {
 					ui.painter().galley(draw_pos, galley, text_color);
 				});
 
-			ctx.request_repaint();
+			ui.ctx().request_repaint();
 		}
 	}
 
 	pub(super) fn render_immersive_breathing_overlay(
 		&self,
-		ctx: &egui::Context,
+		ui: &mut Ui,
 		breathing: &BreathingOverlay,
 	) {
 		if !breathing.is_visible() {
@@ -159,7 +159,7 @@ impl ContentOverlayView {
 		let duration = state.duration.as_secs_f32();
 		let progress = (elapsed / duration).clamp(0.0, 1.0);
 
-		let screen_rect = ctx.screen_rect();
+		let screen_rect = ui.ctx().screen_rect();
 		let screen_width = screen_rect.width();
 		let screen_height = screen_rect.height();
 
@@ -198,14 +198,14 @@ impl ContentOverlayView {
 			return;
 		}
 
-		ctx.request_repaint();
+		ui.ctx().request_repaint();
 
 		// Render semi-transparent background overlay
 		egui::Area::new(egui::Id::new("immersive_breathing_bg"))
 			.fixed_pos(screen_rect.min)
 			.order(egui::Order::Foreground)
 			.interactable(false)
-			.show(ctx, |ui| {
+			.show(ui.ctx(), |ui| {
 				let bg_alpha = (bar_bg_alpha * text_alpha * 180.0) as u8;
 				ui.painter().rect_filled(
 					screen_rect,
@@ -231,7 +231,7 @@ impl ContentOverlayView {
 				.fixed_pos(bar_rect.min)
 				.order(egui::Order::Foreground)
 				.interactable(false)
-				.show(ctx, |ui| {
+				.show(ui.ctx(), |ui| {
 					let painter = ui.painter();
 					let rounding = bar_height * 0.5;
 
@@ -262,7 +262,7 @@ impl ContentOverlayView {
 				.anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0])
 				.order(egui::Order::Foreground)
 				.interactable(false)
-				.show(ctx, |ui| {
+				.show(ui.ctx(), |ui| {
 					let font_id = egui::FontId::proportional(font_size);
 					let display_color = text_color.gamma_multiply(text_alpha);
 					let stroke_width = (font_size * 0.03).max(1.0);
@@ -277,11 +277,7 @@ impl ContentOverlayView {
 		}
 	}
 
-	pub(super) fn render_info_overlay(
-		&self,
-		ctx: &egui::Context,
-		browser: &ContentBrowser,
-	) {
+	pub(super) fn render_info_overlay(&self, ui: &mut Ui, browser: &ContentBrowser) {
 		if browser.is_empty() {
 			return;
 		}
@@ -291,7 +287,7 @@ impl ContentOverlayView {
 			None => return,
 		};
 
-		let screen_height = ctx.screen_rect().height();
+		let screen_height = ui.ctx().screen_rect().height();
 		let font_size = (screen_height * 0.02).max(12.0);
 		let margin = (screen_height * 0.03).max(10.0);
 		let stroke_width = (font_size * 0.05).max(1.0);
@@ -300,7 +296,7 @@ impl ContentOverlayView {
 			.anchor(egui::Align2::LEFT_BOTTOM, egui::vec2(margin, -margin))
 			.interactable(false)
 			.order(egui::Order::Foreground)
-			.show(ctx, |ui| {
+			.show(ui.ctx(), |ui| {
 				let text_color = egui::Color32::WHITE;
 				let font_id = egui::FontId::proportional(font_size);
 

@@ -25,18 +25,18 @@ impl ModalView {
 		}
 	}
 
-	pub(super) fn render(&mut self, ctx: &egui::Context, output: &mut ViewOutput) {
+	pub(super) fn render(&mut self, ui: &mut Ui, output: &mut ViewOutput) {
 		if matches!(self.modal, ModalContent::None) {
 			return;
 		}
 
-		let screen_rect = ctx.screen_rect();
+		let screen_rect = ui.ctx().screen_rect();
 
 		// Draw semi-transparent dark overlay
 		egui::Area::new(egui::Id::new("modal_backdrop"))
 			.fixed_pos(screen_rect.min)
 			.order(egui::Order::Foreground)
-			.show(ctx, |ui| {
+			.show(ui.ctx(), |ui| {
 				let painter = ui.painter();
 				painter.rect_filled(
 					screen_rect,
@@ -52,7 +52,7 @@ impl ModalView {
 			.collapsible(false)
 			.anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0])
 			.order(egui::Order::Foreground)
-			.show(ctx, |ui| {
+			.show(ui.ctx(), |ui| {
 				ui.set_width(450.0);
 				ui.vertical_centered(|ui| match &self.modal.clone() {
 					ModalContent::Hello => {

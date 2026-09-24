@@ -20,7 +20,7 @@ use crate::media::MediaPane;
 use crate::reactor::{Command, Event, ViewOutput};
 use crate::settings::SettingsManager;
 use crate::types::{BreathingPhase, BreathingStyle, ImageFillMode, NavDirection};
-use eframe::egui::{self, ScrollArea};
+use eframe::egui::{self, LayerId, ScrollArea, Ui};
 use egui_extras::{Column, TableBuilder};
 use std::time::{Duration, Instant};
 
@@ -90,6 +90,43 @@ impl Views {
 		ctx: &egui::Context,
 		state: &ApplicationState<'_>,
 	) -> ViewOutput {
+		use egui::UiBuilder;
+
+		let layer_id = LayerId::background();
+		let available_rect = ctx.available_rect();
+		let mut ui = Ui::new(
+			ctx.clone(),
+			layer_id,
+			"global_egui_frame".into(),
+			UiBuilder::new().max_rect(available_rect),
+		);
+		ui.set_clip_rect(ctx.screen_rect());
+
+		let panel_frame = egui::Frame::default()
+			.fill(ui.style().visuals.window_fill())
+			.stroke(ui.style().visuals.widgets.noninteractive.fg_stroke)
+			.outer_margin(1.0);
+
+		let view_output = panel_frame
+			.show(&mut ui, |ui| {
+				let app_rect = ui.max_rect();
+
+				ui.expand_to_include_rect(app_rect);
+
+				let mut content_ui =
+					ui.new_child(UiBuilder::new().max_rect(app_rect));
+				self.render_frame_inner(&mut content_ui, state)
+			})
+			.inner;
+
+		view_output
+	}
+
+	fn render_frame_inner(
+		&mut self,
+		mut ui: &mut Ui,
+		state: &ApplicationState<'_>,
+	) -> ViewOutput {
 		let mut output = ViewOutput::default();
 		let previous_search_preferences = (
 			self.top_bar.search_query.clone(),
@@ -114,22 +151,28 @@ impl Views {
 
 		// Handle input only when no modal is active
 		if !modal_active {
-			let is_typing = ctx.memory(|m| m.focused().is_some());
+			let is_typing = ui.memory(|m| m.focused().is_some());
 			if !is_typing {
 				self.island_navigation
-					.handle_keyboard_input(ctx, &mut output);
+					.handle_keyboard_input(ui, &mut output);
 			}
 		}
 
 		// Top panel
-		self.top_bar
-			.render(ctx, state, &mut self.modal, &mut output, !modal_active);
+		self.top_bar.render(
+			&mut ui,
+			state,
+			&mut self.modal,
+			&mut output,
+			!modal_active,
+			true,
+		);
 
 		// Central panel
 		let island_active = self.island_navigation.island_ctx.active
 			|| self.island_navigation.island_ctx.in_cooldown();
 		self.media.render(
-			ctx,
+			&mut ui,
 			state,
 			island_active,
 			self.beat_overlay.beat_intensity,
@@ -141,30 +184,31 @@ impl Views {
 		match state.breathing.style() {
 			BreathingStyle::Classic => {
 				self.content_overlay
-					.render_breathing_overlay(ctx, state.breathing);
+					.render_breathing_overlay(&mut ui, state.breathing);
 				self.content_overlay
-					.render_breathing_pulse(ctx, state.breathing);
+					.render_breathing_pulse(&mut ui, state.breathing);
 			}
 			BreathingStyle::Immersive => {
 				self.content_overlay
-					.render_immersive_breathing_overlay(ctx, state.breathing);
+					.render_immersive_breathing_overlay(&mut ui, state.breathing);
 			}
 		}
-		self.content_overlay.render_info_overlay(ctx, state.browser);
+		self.content_overlay
+			.render_info_overlay(&mut ui, state.browser);
 
 		// Beat debug dot
-		self.beat_overlay.render(ctx);
+		self.beat_overlay.render(&mut ui);
 
 		// Island navigation overlay
 		self.island_navigation.render(
-			ctx,
+			&mut ui,
 			state.settings,
 			&mut self.modal,
 			&mut output,
 		);
 
 		// Modal popup (on top of everything)
-		self.modal.render(ctx, &mut output);
+		self.modal.render(&mut ui, &mut output);
 
 		if previous_search_preferences
 			!= (

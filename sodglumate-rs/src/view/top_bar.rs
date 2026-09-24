@@ -1,3 +1,5 @@
+use eframe::egui::{Button, Margin, PointerButton, Rect, Sense, ViewportCommand};
+
 use super::*;
 pub(super) struct TopBarView {
 	pub(super) search_query: String,
@@ -5,6 +7,7 @@ pub(super) struct TopBarView {
 	pub(super) search_page_input: String,
 	pub(super) selected_search_query_preset: Option<String>,
 	pub(super) query_selector_open: bool,
+	last_rect: Rect,
 }
 
 impl TopBarView {
@@ -22,12 +25,89 @@ impl TopBarView {
 			search_page_input: settings.search_page_input().to_owned(),
 			selected_search_query_preset,
 			query_selector_open: false,
+			last_rect: Rect::ZERO,
 		}
 	}
 
 	pub(super) fn render(
 		&mut self,
-		ctx: &egui::Context,
+		ui: &mut Ui,
+		state: &ApplicationState<'_>,
+		modal: &mut ModalView,
+		output: &mut ViewOutput,
+		enabled: bool,
+		embedded_decorations: bool,
+	) {
+		egui::TopBottomPanel::top("top_panel").show_inside(ui, |ui| {
+			if embedded_decorations {
+				let bar_response = ui.interact(
+					self.last_rect,
+					"topbar_interact".into(),
+					Sense::click_and_drag(),
+				);
+
+				if bar_response.double_clicked() {
+					let is_maximized =
+						ui.input(|i| i.viewport().maximized.unwrap_or(false));
+					ui.ctx()
+						.send_viewport_cmd(ViewportCommand::Maximized(!is_maximized));
+				}
+
+				if bar_response.drag_started_by(PointerButton::Primary) {
+					ui.ctx().send_viewport_cmd(ViewportCommand::StartDrag);
+				}
+
+				self.last_rect = egui::Frame::none()
+					.inner_margin(Margin {
+						left: 2.0,
+						right: 2.0,
+						top: 8.0,
+						bottom: 8.0,
+					})
+					.show(ui, |ui| {
+						ui.with_layout(
+							egui::Layout::right_to_left(egui::Align::Center),
+							|ui| {
+								ui.horizontal(|ui| {
+									ui.add(
+										Button::new("_")
+											.min_size([16.0, 16.0].into()),
+									);
+									ui.add(
+										Button::new("_")
+											.min_size([16.0, 16.0].into()),
+									);
+									ui.add(
+										Button::new("×")
+											.min_size([16.0, 16.0].into()),
+									);
+								});
+
+								ui.with_layout(
+									egui::Layout::left_to_right(egui::Align::Min),
+									|ui| {
+										ui.set_clip_rect(
+											ui.available_rect_before_wrap(),
+										);
+										self.render_inner(
+											ui, state, modal, output, enabled,
+										);
+									},
+								);
+							},
+						)
+					})
+					.response
+					.rect;
+			} else {
+				self.render_inner(ui, state, modal, output, enabled);
+			}
+		});
+	}
+
+	pub(super) fn render_inner(
+		&mut self,
+		ui: &mut Ui,
 		state: &ApplicationState<'_>,
 		modal: &mut ModalView,
 		output: &mut ViewOutput,
@@ -36,274 +116,263 @@ impl TopBarView {
 		let settings = state.settings;
 		let breathing = state.breathing;
 		let beat = state.beat;
-		egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
-			if !enabled {
-				ui.disable();
-			}
-			ui.horizontal_wrapped(|ui| {
-				ui.label("Query:");
-				let query_response = self.render_query_selector(ui);
-				if self.selected_search_query_preset.is_none() {
-					let query = self.search_query.trim();
-					let can_save = !query.is_empty()
-						&& !self
-							.search_query_presets
-							.iter()
-							.any(|preset| preset == query);
 
-					if ui
-						.add_enabled(can_save, egui::Button::new("Save preset"))
-						.clicked()
-					{
-						let preset = query.to_owned();
-						self.search_query_presets.push(preset.clone());
-						self.selected_search_query_preset = Some(preset);
-					}
-				}
+		if !enabled {
+			ui.disable();
+		}
 
-				ui.label("Page:");
-				let page_response = ui.add(
-					egui::TextEdit::singleline(&mut self.search_page_input)
-						.desired_width(40.0),
-				);
+		ui.horizontal_wrapped(|ui| {
+			ui.label("Query:");
+			let query_response = self.render_query_selector(ui);
+			if self.selected_search_query_preset.is_none() {
+				let query = self.search_query.trim();
+				let can_save = !query.is_empty()
+					&& !self
+						.search_query_presets
+						.iter()
+						.any(|preset| preset == query);
 
-				if ui.button("Search").clicked()
-					|| (query_response.lost_focus()
-						&& ctx.input(|i| i.key_pressed(egui::Key::Enter)))
-					|| (page_response.lost_focus()
-						&& ctx.input(|i| i.key_pressed(egui::Key::Enter)))
-				{
-					let page =
-						self.search_page_input.parse::<u32>().unwrap_or(1).max(1);
-					output.command(Command::Search {
-						query: self.search_query.clone(),
-						page,
-					});
-				}
-				ui.separator();
-
-				ui.label("Quick settings:");
-
-				let mut auto_play = settings.auto_play();
-				if ui.checkbox(&mut auto_play, "Auto-play").changed() {
-					output.command(Command::ToggleAutoPlay);
-				}
-
-				let mut cap_by_breathing = settings.cap_by_breathing();
 				if ui
-					.checkbox(&mut cap_by_breathing, "Sync with Breathing")
-					.changed()
+					.add_enabled(can_save, egui::Button::new("Save preset"))
+					.clicked()
 				{
-					output.command(Command::ToggleCapByBreathing);
+					let preset = query.to_owned();
+					self.search_query_presets.push(preset.clone());
+					self.selected_search_query_preset = Some(preset);
 				}
+			}
 
-				if settings.auto_play() {
-					let mut seconds = settings.auto_play_delay().as_secs_f32();
-					ui.label("Interval (s)");
-					if ui
-						.add(
-							egui::DragValue::new(&mut seconds)
-								.range(1.0..=60.0)
-								.speed(1.0),
-						)
-						.changed()
-					{
-						output.command(Command::SetAutoPlayDelay(
-							Duration::from_secs_f32(seconds),
-						));
-					}
-				}
+			ui.label("Page:");
+			let page_response = ui.add(
+				egui::TextEdit::singleline(&mut self.search_page_input)
+					.desired_width(40.0),
+			);
 
-				ui.separator();
+			if ui.button("Search").clicked()
+				|| (query_response.lost_focus()
+					&& ui.input(|i| i.key_pressed(egui::Key::Enter)))
+				|| (page_response.lost_focus()
+					&& ui.input(|i| i.key_pressed(egui::Key::Enter)))
+			{
+				let page = self.search_page_input.parse::<u32>().unwrap_or(1).max(1);
+				output.command(Command::Search {
+					query: self.search_query.clone(),
+					page,
+				});
+			}
+			ui.separator();
 
-				let mut breathing_enabled = breathing.is_visible();
+			ui.label("Quick settings:");
 
-				if ui.checkbox(&mut breathing_enabled, "Breathing").clicked() {
-					if breathing_enabled && !modal.breathing_disclaimer_accepted {
-						modal.modal = ModalContent::BreathingDisclaimer;
-					} else {
-						output.command(Command::ToggleBreathing);
-					}
-				}
+			let mut auto_play = settings.auto_play();
+			if ui.checkbox(&mut auto_play, "Auto-play").changed() {
+				output.command(Command::ToggleAutoPlay);
+			}
 
-				if breathing_enabled {
-					let multipliers = breathing.phase_multipliers();
-					for (label, phase, mut multiplier) in [
-						("Prep", BreathingPhase::Prepare, multipliers.prepare),
-						("Inhale", BreathingPhase::Inhale, multipliers.inhale),
-						("Hold", BreathingPhase::Hold, multipliers.hold),
-						("Release", BreathingPhase::Release, multipliers.release),
-						("Idle", BreathingPhase::Idle, multipliers.idle),
-					] {
-						ui.label(label);
-						if ui
-							.add(
-								egui::DragValue::new(&mut multiplier)
-									.range(0.5..=3.0)
-									.speed(0.1),
-							)
-							.changed()
-						{
-							output.command(Command::SetBreathingPhaseMultiplier {
-								phase,
-								value: multiplier,
-							});
-						}
-					}
+			let mut cap_by_breathing = settings.cap_by_breathing();
+			if ui
+				.checkbox(&mut cap_by_breathing, "Sync with Breathing")
+				.changed()
+			{
+				output.command(Command::ToggleCapByBreathing);
+			}
 
-					let current_style = breathing.style();
-					let style_label = match current_style {
-						BreathingStyle::Classic => "Classic",
-						BreathingStyle::Immersive => "Immersive",
-					};
-					egui::ComboBox::from_id_salt("breathing_style")
-						.selected_text(style_label)
-						.show_ui(ui, |ui| {
-							if ui
-								.selectable_label(
-									current_style == BreathingStyle::Classic,
-									"Classic",
-								)
-								.clicked()
-							{
-								output.command(Command::SetBreathingStyle(
-									BreathingStyle::Classic,
-								));
-							}
-							if ui
-								.selectable_label(
-									current_style == BreathingStyle::Immersive,
-									"Immersive",
-								)
-								.clicked()
-							{
-								output.command(Command::SetBreathingStyle(
-									BreathingStyle::Immersive,
-								));
-							}
-						});
-				}
-
-				ui.separator();
-
-				let mut pan_speed = settings.auto_pan_cycle_duration();
-				ui.label("Pan Speed (s)");
+			if settings.auto_play() {
+				let mut seconds = settings.auto_play_delay().as_secs_f32();
+				ui.label("Interval (s)");
 				if ui
 					.add(
-						egui::DragValue::new(&mut pan_speed)
-							.range(10.0..=120.0)
+						egui::DragValue::new(&mut seconds)
+							.range(1.0..=60.0)
 							.speed(1.0),
 					)
 					.changed()
 				{
-					output.command(Command::SetAutoPanCycleDuration(pan_speed));
+					output.command(Command::SetAutoPlayDelay(
+						Duration::from_secs_f32(seconds),
+					));
 				}
-				ui.separator();
+			}
 
-				let current_fill = settings.image_fill_mode();
-				let fill_label = match current_fill {
-					ImageFillMode::Cover => "Cover",
-					ImageFillMode::Fit => "Fit",
-					ImageFillMode::FitToGallery => "Fit to Gallery",
-				};
-				egui::ComboBox::from_id_salt("image_fill_mode")
-					.selected_text(fill_label)
-					.show_ui(ui, |ui| {
-						if ui
-							.selectable_label(
-								current_fill == ImageFillMode::Cover,
-								"Cover",
-							)
-							.clicked()
-						{
-							output.command(Command::SetImageFillMode(
-								ImageFillMode::Cover,
-							));
-						}
-						if ui
-							.selectable_label(
-								current_fill == ImageFillMode::Fit,
-								"Fit",
-							)
-							.clicked()
-						{
-							output.command(Command::SetImageFillMode(
-								ImageFillMode::Fit,
-							));
-						}
-						if ui
-							.selectable_label(
-								current_fill == ImageFillMode::FitToGallery,
-								"Fit to Gallery",
-							)
-							.clicked()
-						{
-							output.command(Command::SetImageFillMode(
-								ImageFillMode::FitToGallery,
-							));
-						}
-					});
+			ui.separator();
 
-				ui.separator();
+			let mut breathing_enabled = breathing.is_visible();
 
-				ui.label("Audio:");
-				let selected_label = beat.selected_device_label();
-				egui::ComboBox::from_id_salt("audio_device")
-					.selected_text(selected_label)
-					.show_ui(ui, |ui| {
-						if ui
-							.selectable_label(
-								beat.selected_device().is_none(),
-								"Default",
-							)
-							.clicked()
-						{
-							output.command(Command::SetAudioDevice(None));
-						}
-						for device_name in beat.device_names() {
-							let is_selected = beat.selected_device().as_deref()
-								== Some(device_name.as_str());
-							if ui.selectable_label(is_selected, device_name).clicked()
-							{
-								output.command(Command::SetAudioDevice(Some(
-									device_name.clone(),
-								)));
-							}
-						}
-					});
-				if beat.is_active() {
-					ui.label(
-						egui::RichText::new("*")
-							.color(egui::Color32::GREEN)
-							.size(10.0),
-					);
+			if ui.checkbox(&mut breathing_enabled, "Breathing").clicked() {
+				if breathing_enabled && !modal.breathing_disclaimer_accepted {
+					modal.modal = ModalContent::BreathingDisclaimer;
 				} else {
-					ui.label(
-						egui::RichText::new("*")
-							.color(egui::Color32::RED)
-							.size(10.0),
-					);
+					output.command(Command::ToggleBreathing);
 				}
+			}
 
-				let mut beat_pulse_enabled = settings.beat_pulse_enabled();
-				if ui.checkbox(&mut beat_pulse_enabled, "Pulse").changed() {
-					output.command(Command::SetBeatPulseEnabled(beat_pulse_enabled));
-				}
-				if beat_pulse_enabled {
-					ui.label("Scale");
-					let mut beat_pulse_scale = settings.beat_pulse_scale();
+			if breathing_enabled {
+				let multipliers = breathing.phase_multipliers();
+				for (label, phase, mut multiplier) in [
+					("Prep", BreathingPhase::Prepare, multipliers.prepare),
+					("Inhale", BreathingPhase::Inhale, multipliers.inhale),
+					("Hold", BreathingPhase::Hold, multipliers.hold),
+					("Release", BreathingPhase::Release, multipliers.release),
+					("Idle", BreathingPhase::Idle, multipliers.idle),
+				] {
+					ui.label(label);
 					if ui
 						.add(
-							egui::DragValue::new(&mut beat_pulse_scale)
-								.range(0.01..=0.15)
-								.speed(0.01),
+							egui::DragValue::new(&mut multiplier)
+								.range(0.5..=3.0)
+								.speed(0.1),
 						)
 						.changed()
 					{
-						output.command(Command::SetBeatPulseScale(beat_pulse_scale));
+						output.command(Command::SetBreathingPhaseMultiplier {
+							phase,
+							value: multiplier,
+						});
 					}
 				}
-			});
+
+				let current_style = breathing.style();
+				let style_label = match current_style {
+					BreathingStyle::Classic => "Classic",
+					BreathingStyle::Immersive => "Immersive",
+				};
+				egui::ComboBox::from_id_salt("breathing_style")
+					.selected_text(style_label)
+					.show_ui(ui, |ui| {
+						if ui
+							.selectable_label(
+								current_style == BreathingStyle::Classic,
+								"Classic",
+							)
+							.clicked()
+						{
+							output.command(Command::SetBreathingStyle(
+								BreathingStyle::Classic,
+							));
+						}
+						if ui
+							.selectable_label(
+								current_style == BreathingStyle::Immersive,
+								"Immersive",
+							)
+							.clicked()
+						{
+							output.command(Command::SetBreathingStyle(
+								BreathingStyle::Immersive,
+							));
+						}
+					});
+			}
+
+			ui.separator();
+
+			let mut pan_speed = settings.auto_pan_cycle_duration();
+			ui.label("Pan Speed (s)");
+			if ui
+				.add(
+					egui::DragValue::new(&mut pan_speed)
+						.range(10.0..=120.0)
+						.speed(1.0),
+				)
+				.changed()
+			{
+				output.command(Command::SetAutoPanCycleDuration(pan_speed));
+			}
+			ui.separator();
+
+			let current_fill = settings.image_fill_mode();
+			let fill_label = match current_fill {
+				ImageFillMode::Cover => "Cover",
+				ImageFillMode::Fit => "Fit",
+				ImageFillMode::FitToGallery => "Fit to Gallery",
+			};
+			egui::ComboBox::from_id_salt("image_fill_mode")
+				.selected_text(fill_label)
+				.show_ui(ui, |ui| {
+					if ui
+						.selectable_label(
+							current_fill == ImageFillMode::Cover,
+							"Cover",
+						)
+						.clicked()
+					{
+						output
+							.command(Command::SetImageFillMode(ImageFillMode::Cover));
+					}
+					if ui
+						.selectable_label(current_fill == ImageFillMode::Fit, "Fit")
+						.clicked()
+					{
+						output.command(Command::SetImageFillMode(ImageFillMode::Fit));
+					}
+					if ui
+						.selectable_label(
+							current_fill == ImageFillMode::FitToGallery,
+							"Fit to Gallery",
+						)
+						.clicked()
+					{
+						output.command(Command::SetImageFillMode(
+							ImageFillMode::FitToGallery,
+						));
+					}
+				});
+
+			ui.separator();
+
+			ui.label("Audio:");
+			let selected_label = beat.selected_device_label();
+			egui::ComboBox::from_id_salt("audio_device")
+				.selected_text(selected_label)
+				.show_ui(ui, |ui| {
+					if ui
+						.selectable_label(beat.selected_device().is_none(), "Default")
+						.clicked()
+					{
+						output.command(Command::SetAudioDevice(None));
+					}
+					for device_name in beat.device_names() {
+						let is_selected = beat.selected_device().as_deref()
+							== Some(device_name.as_str());
+						if ui.selectable_label(is_selected, device_name).clicked() {
+							output.command(Command::SetAudioDevice(Some(
+								device_name.clone(),
+							)));
+						}
+					}
+				});
+			if beat.is_active() {
+				ui.label(
+					egui::RichText::new("*")
+						.color(egui::Color32::GREEN)
+						.size(10.0),
+				);
+			} else {
+				ui.label(
+					egui::RichText::new("*")
+						.color(egui::Color32::RED)
+						.size(10.0),
+				);
+			}
+
+			let mut beat_pulse_enabled = settings.beat_pulse_enabled();
+			if ui.checkbox(&mut beat_pulse_enabled, "Pulse").changed() {
+				output.command(Command::SetBeatPulseEnabled(beat_pulse_enabled));
+			}
+			if beat_pulse_enabled {
+				ui.label("Scale");
+				let mut beat_pulse_scale = settings.beat_pulse_scale();
+				if ui
+					.add(
+						egui::DragValue::new(&mut beat_pulse_scale)
+							.range(0.01..=0.15)
+							.speed(0.01),
+					)
+					.changed()
+				{
+					output.command(Command::SetBeatPulseScale(beat_pulse_scale));
+				}
+			}
 		});
 	}
 
