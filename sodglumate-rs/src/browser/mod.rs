@@ -323,7 +323,7 @@ impl ContentBrowser {
 			.chain(post.relationships.children.iter().copied())
 			.any(|id| self.post_cache.get(&id).is_some_and(supported_link_media))
 	}
-	
+
 	#[cfg(test)]
 	fn checking_children(&self) -> bool {
 		!self.children_pending.is_empty()
@@ -878,7 +878,10 @@ mod tests {
 			{
 				assert!(
 					browser
-						.observe(&Event::LinkedPostLoaded { post_id: 20, result })
+						.observe(&Event::LinkedPostLoaded {
+							post_id: 20,
+							result
+						})
 						.messages
 						.is_empty()
 				);
@@ -922,7 +925,10 @@ mod tests {
 			let retryable = result.is_err();
 			let mut browser = linked_browser();
 			open_link(&mut browser, 20);
-			browser.observe(&Event::LinkedPostLoaded { post_id: 20, result });
+			browser.observe(&Event::LinkedPostLoaded {
+				post_id: 20,
+				result,
+			});
 			assert_eq!(browser.current_post().unwrap().id, 2);
 			assert!(!browser.link_loading());
 			if retryable {
