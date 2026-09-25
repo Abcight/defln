@@ -15,7 +15,7 @@
 use crate::beat::SystemBeat;
 use crate::breathing::BreathingOverlay;
 use crate::browser::ContentBrowser;
-use crate::gateway::{BooruGateway, SearchStatus};
+use crate::gateway::BooruGateway;
 use crate::media::MediaPane;
 use crate::reactor::{Command, Event, ViewOutput};
 use crate::settings::SettingsManager;
@@ -305,6 +305,7 @@ impl Views {
 		self.island_navigation.render(
 			&mut ui,
 			state.settings,
+			state.browser,
 			&mut self.modal,
 			&mut output,
 		);

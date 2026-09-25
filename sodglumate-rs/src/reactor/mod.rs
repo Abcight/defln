@@ -139,10 +139,31 @@ impl Reactor {
 
 	fn dispatch(&mut self, command: &Command) -> ComponentResponse {
 		match command {
-			Command::Search { .. } | Command::FetchNextPage => {
+			Command::Search { .. } => {
+				self.browser.handle(command);
 				self.gateway.handle_command(command)
 			}
-			Command::Navigate(_) => self.browser.handle(command),
+			Command::FetchLinkCandidate {
+				post_id,
+				generation,
+			} => {
+				if self.browser.child_request_is_current(*post_id, *generation) {
+					self.gateway.handle_command(command)
+				} else {
+					ComponentResponse::none()
+				}
+			}
+			Command::FetchLinkedPost { generation, .. } => {
+				if self.browser.link_request_is_current(*generation) {
+					self.gateway.handle_command(command)
+				} else {
+					ComponentResponse::none()
+				}
+			}
+			Command::FetchNextPage => self.gateway.handle_command(command),
+			Command::Navigate(_)
+			| Command::OpenLinkedPost { .. }
+			| Command::PrepareLinks { .. } => self.browser.handle(command),
 			Command::LoadMedia { .. } | Command::PrefetchMedia { .. } => {
 				self.media.handle_command(command)
 			}
@@ -171,7 +192,9 @@ impl Reactor {
 
 	fn publish(&mut self, event: &Event) -> ComponentResponse {
 		match event {
-			Event::SearchCompleted { .. } => self.browser.observe(event),
+			Event::SearchCompleted { .. }
+			| Event::LinkedPostLoaded { .. }
+			| Event::LinkCandidateLoaded { .. } => self.browser.observe(event),
 			Event::Navigated | Event::BreathingPhaseStarted(_) => {
 				self.settings.observe(event, &self.breathing)
 			}

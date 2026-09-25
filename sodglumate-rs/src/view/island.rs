@@ -1,6 +1,7 @@
 use crate::reactor::Command;
 use crate::types::{BreathingPhase, BreathingStyle, NavDirection};
 use eframe::egui;
+use std::sync::LazyLock;
 use std::time::{Duration, Instant};
 
 /// Action to perform when an island entry is selected
@@ -12,6 +13,8 @@ pub enum IslandAction {
 	Push(&'static Island),
 	/// Pop back to the parent island
 	Pop,
+	Links,
+	OpenLinkedPost(u64),
 	RequestBreathingToggle,
 	ToggleImageFillMode,
 }
@@ -24,8 +27,9 @@ pub struct IslandEntry {
 }
 
 /// An island is a 2D grid of entries
+#[derive(Clone)]
 pub struct Island {
-	pub rows: &'static [&'static [IslandEntry]],
+	pub rows: Vec<Vec<IslandEntry>>,
 }
 
 impl Island {
@@ -75,7 +79,7 @@ impl Island {
 /// Mutable state for the island navigation system
 pub struct IslandCtx {
 	/// Stack of (island reference, selected index when we left it)
-	stack: Vec<(&'static Island, usize)>,
+	stack: Vec<(Island, usize)>,
 	/// Currently selected index in the topmost island
 	pub selected: usize,
 	/// Whether the island overlay is currently active
@@ -107,14 +111,14 @@ impl IslandCtx {
 	}
 
 	/// Get the currently displayed island (topmost on stack)
-	pub fn current_island(&self) -> Option<&'static Island> {
-		self.stack.last().map(|(island, _)| *island)
+	pub fn current_island(&self) -> Option<&Island> {
+		self.stack.last().map(|(island, _)| island)
 	}
 
 	/// Activate the island overlay with the given root island and default selection
 	pub fn activate(&mut self, root: &'static Island, default_selected: usize) {
 		self.stack.clear();
-		self.stack.push((root, 0));
+		self.stack.push((root.clone(), 0));
 		self.selected = default_selected;
 		self.active = true;
 		self.cooldown_until = None;
@@ -136,14 +140,22 @@ impl IslandCtx {
 	}
 
 	/// Push a subcategory island onto the stack
-	pub fn push(&mut self, island: &'static Island) {
+	pub fn push(&mut self, island: Island) {
 		let prev_selected = self.selected;
-		if let Some((current, _)) = self.stack.last_mut() {
-			// Update the stored selection for current island
-			*self.stack.last_mut().unwrap() = (*current, prev_selected);
+		if let Some((_, selected)) = self.stack.last_mut() {
+			*selected = prev_selected;
 		}
 		self.stack.push((island, 0));
 		self.selected = 0;
+	}
+
+	pub fn replace_current(&mut self, island: Island) {
+		if let Some((current, _)) = self.stack.last_mut() {
+			*current = island;
+		}
+		self.selected = 0;
+		self.row_widths.clear();
+		self.max_row_width = 0.0;
 	}
 
 	/// Pop back to the parent island, returns false if already at root
@@ -183,7 +195,7 @@ impl IslandCtx {
 	}
 
 	/// Get the currently selected entry
-	pub fn selected_entry(&self) -> Option<&'static IslandEntry> {
+	pub fn selected_entry(&self) -> Option<&IslandEntry> {
 		let island = self.current_island()?;
 		let (row, col) = island.index_to_pos(self.selected);
 		island.get(row, col)
@@ -220,20 +232,20 @@ const BACK_ENTRY: IslandEntry = IslandEntry {
 	action: IslandAction::Pop,
 };
 
-pub static AUTOPLAY_ISLAND: Island = Island {
-	rows: &[
-		&[emit("Toggle", || Command::ToggleAutoPlay)],
-		&[
+pub static AUTOPLAY_ISLAND: LazyLock<Island> = LazyLock::new(|| Island {
+	rows: vec![
+		vec![emit("Toggle", || Command::ToggleAutoPlay)],
+		vec![
 			emit("-1s", || Command::AdjustAutoPlayDelay(-1)),
 			emit("+1s", || Command::AdjustAutoPlayDelay(1)),
 		],
-		&[BACK_ENTRY],
+		vec![BACK_ENTRY],
 	],
-};
+});
 
-pub static BREATHING_ISLAND: Island = Island {
-	rows: &[
-		&[
+pub static BREATHING_ISLAND: LazyLock<Island> = LazyLock::new(|| Island {
+	rows: vec![
+		vec![
 			IslandEntry {
 				label: "Toggle",
 				action: IslandAction::RequestBreathingToggle,
@@ -245,7 +257,7 @@ pub static BREATHING_ISLAND: Island = Island {
 				Command::SetBreathingStyle(BreathingStyle::Immersive)
 			}),
 		],
-		&[
+		vec![
 			emit("Low", || Command::SetBreathingPhaseMultiplier {
 				phase: BreathingPhase::Idle,
 				value: 1.8,
@@ -259,14 +271,14 @@ pub static BREATHING_ISLAND: Island = Island {
 				value: 0.67,
 			}),
 		],
-		&[BACK_ENTRY],
+		vec![BACK_ENTRY],
 	],
-};
+});
 
 /// The root island shown when shift is pressed
-pub static ROOT_ISLAND: Island = Island {
-	rows: &[
-		&[
+pub static ROOT_ISLAND: LazyLock<Island> = LazyLock::new(|| Island {
+	rows: vec![
+		vec![
 			push("Autoplay", &AUTOPLAY_ISLAND),
 			push("Breathing", &BREATHING_ISLAND),
 			IslandEntry {
@@ -274,16 +286,52 @@ pub static ROOT_ISLAND: Island = Island {
 				action: IslandAction::ToggleImageFillMode,
 			},
 		],
-		&[
+		vec![
 			emit("Previous image", || Command::Navigate(NavDirection::Prev)),
 			emit("Next image", || Command::Navigate(NavDirection::Next)),
 		],
-		&[
+		vec![
 			emit("Rewind 10", || Command::Navigate(NavDirection::Skip(-10))),
+			IslandEntry {
+				label: "Links",
+				action: IslandAction::Links,
+			},
 			emit("Skip 10", || Command::Navigate(NavDirection::Skip(10))),
 		],
 	],
-};
+});
+
+pub fn links_island(post: Option<&crate::api::Post>) -> Island {
+	let mut entries = vec![BACK_ENTRY];
+	if let Some(post) = post {
+		if let Some(id) = post.relationships.parent_id {
+			entries.push(IslandEntry {
+				label: "Parent",
+				action: IslandAction::OpenLinkedPost(id),
+			});
+		}
+		const LABELS: [&str; 8] = [
+			"Child1", "Child2", "Child3", "Child4", "Child5", "Child6", "Child7",
+			"Child8",
+		];
+		let capacity = 9 - entries.len();
+		for (&id, label) in post
+			.relationships
+			.children
+			.iter()
+			.zip(LABELS)
+			.take(capacity)
+		{
+			entries.push(IslandEntry {
+				label,
+				action: IslandAction::OpenLinkedPost(id),
+			});
+		}
+	}
+	Island {
+		rows: entries.chunks(3).map(|row| row.to_vec()).collect(),
+	}
+}
 
 /// A custom egui widget for displaying and interacting with islands
 pub struct IslandWidget<'a> {
@@ -301,22 +349,18 @@ impl<'a> IslandWidget<'a> {
 			return None;
 		}
 
-		let island = self.ctx.current_island()?;
+		let island = self.ctx.current_island()?.clone();
 
 		// Handle input first
-		let action = self.handle_input(egui_ctx, island);
+		let action = self.handle_input(egui_ctx);
 
 		// Render overlay and update width cache
-		self.render(egui_ctx, island);
+		self.render(egui_ctx, &island);
 
 		action
 	}
 
-	fn handle_input(
-		&mut self,
-		ctx: &egui::Context,
-		_island: &Island,
-	) -> Option<IslandAction> {
+	fn handle_input(&mut self, ctx: &egui::Context) -> Option<IslandAction> {
 		let mut confirmed_action = None;
 
 		ctx.input(|i| {
@@ -351,16 +395,11 @@ impl<'a> IslandWidget<'a> {
 		let offset_x = screen_rect.width() * 0.15;
 		let offset_y = -screen_rect.height() * 0.2;
 
-		let ctx_ptr = self.ctx as *mut IslandCtx;
-
 		egui::Area::new(egui::Id::new("island_overlay"))
 			.anchor(egui::Align2::LEFT_BOTTOM, [offset_x, offset_y])
 			.show(ctx, |ui| {
 				egui::Frame::none().show(ui, |ui| {
-					// SAFETY: We're in single-threaded egui context
-					unsafe {
-						Self::render_grid_impl(&mut *ctx_ptr, ui, island);
-					}
+					Self::render_grid_impl(self.ctx, ui, island);
 				});
 			});
 	}
@@ -453,5 +492,82 @@ impl<'a> IslandWidget<'a> {
 						.strong(),
 				);
 			});
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::api::Post;
+
+	#[test]
+	fn links_have_back_parent_and_children_with_a_total_limit_of_nine() {
+		for parent in [None, Some(99)] {
+			let mut post = Post::default();
+			post.relationships.parent_id = parent;
+			post.relationships.children = (1..=20).collect();
+			let island = links_island(Some(&post));
+			let entries: Vec<_> = island.rows.iter().flatten().collect();
+			assert_eq!(island.row_count(), 3);
+			assert!(island.rows.iter().all(|row| row.len() == 3));
+			assert_eq!(entries.len(), 9);
+			assert_eq!(entries[0].label, "Back");
+			assert!(matches!(entries[0].action, IslandAction::Pop));
+			let children_start = if parent.is_some() {
+				assert_eq!(entries[1].label, "Parent");
+				assert!(matches!(
+					entries[1].action,
+					IslandAction::OpenLinkedPost(99)
+				));
+				2
+			} else {
+				1
+			};
+			for (index, entry) in entries[children_start..].iter().enumerate() {
+				assert_eq!(entry.label, format!("Child{}", index + 1));
+				assert!(
+					matches!(entry.action, IslandAction::OpenLinkedPost(id) if id == (index + 1) as u64)
+				);
+			}
+		}
+	}
+
+	#[test]
+	fn empty_links_still_allow_returning_to_root() {
+		for post in [None, Some(Post::default())] {
+			let island = links_island(post.as_ref());
+			assert_eq!(island.rows.len(), 1);
+			assert_eq!(island.rows[0].len(), 1);
+			let mut ctx = IslandCtx::new();
+			ctx.activate(&ROOT_ISLAND, 6);
+			ctx.push(island);
+			ctx.navigate(GridDirection::Right);
+			ctx.navigate(GridDirection::Down);
+			assert!(matches!(
+				ctx.selected_entry().unwrap().action,
+				IslandAction::Pop
+			));
+			assert!(ctx.pop());
+			assert_eq!(ctx.selected, 6);
+			assert!(matches!(
+				ctx.selected_entry().unwrap().action,
+				IslandAction::Links
+			));
+		}
+	}
+
+	#[test]
+	fn replacing_links_resets_selection_to_back() {
+		let mut post = Post::default();
+		post.relationships.children = vec![1, 2, 3, 4];
+		let mut ctx = IslandCtx::new();
+		ctx.activate(&ROOT_ISLAND, 6);
+		ctx.push(links_island(Some(&post)));
+		ctx.selected = 4;
+		ctx.replace_current(links_island(None));
+		assert_eq!(ctx.selected, 0);
+		assert_eq!(ctx.selected_entry().unwrap().label, "Back");
+		assert!(ctx.pop());
+		assert_eq!(ctx.selected, 6);
 	}
 }

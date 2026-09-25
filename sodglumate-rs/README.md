@@ -35,6 +35,15 @@ For this reason, most keystrokes are located on the left side of the keyboard.
 | **WASD** | Pan Image / Scroll |
 | **C** | Toggle Auto-play |
 
+Hold **Shift** to open the island, use **WASD** to select a tile, and press
+**Space** to activate it. The **Links** submenu contains **Back**, **Parent**
+when available, and **Child1**, **Child2**, etc., up to nine tiles total.
+Child tiles appear only after their post data confirms a non-deleted post with
+a media URL and a format supported by this build. Unavailable children are omitted.
+Opening a parent or child replaces the current post in its existing result slot;
+previous/next navigation still follows the surrounding search results. **Back**
+returns to the root island menu.
+
 ### Links
 
 This project makes use of e621's API. For more information, see the [e621.net API Documentation](https://e621.net/wiki_pages/help:api).

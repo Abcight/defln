@@ -17,6 +17,21 @@ pub enum Command {
 		page: u32,
 	},
 	FetchNextPage,
+	PrepareLinks {
+		source_id: u64,
+	},
+	FetchLinkCandidate {
+		post_id: u64,
+		generation: u64,
+	},
+	OpenLinkedPost {
+		source_id: u64,
+		target_id: u64,
+	},
+	FetchLinkedPost {
+		post_id: u64,
+		generation: u64,
+	},
 	Navigate(NavDirection),
 	LoadMedia {
 		sample_url: Option<String>,
@@ -52,6 +67,15 @@ pub enum Command {
 
 #[derive(Clone, Debug)]
 pub enum Event {
+	LinkCandidateLoaded {
+		post_id: u64,
+		generation: u64,
+		result: Result<Box<Post>, String>,
+	},
+	LinkedPostLoaded {
+		generation: u64,
+		result: Result<Box<Post>, String>,
+	},
 	SearchCompleted {
 		posts: Vec<Post>,
 		page: u32,
