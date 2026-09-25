@@ -59,7 +59,10 @@ impl Reactor {
 			),
 			views: Views::new(&settings_manager),
 			settings: settings_manager,
-			beat: SystemBeat::new(settings.selected_audio_device),
+			beat: SystemBeat::new(
+				settings.selected_audio_device,
+				settings.beat_pulse_enabled,
+			),
 		};
 
 		// Initialize all components
@@ -154,9 +157,12 @@ impl Reactor {
 			| Command::ToggleCapByBreathing
 			| Command::SetSearchPreferences { .. }
 			| Command::SetAutoPanCycleDuration(_)
-			| Command::SetBeatPulseEnabled(_)
 			| Command::SetBeatPulseScale(_)
 			| Command::SetImageFillMode(_) => {
+				self.settings.handle_command(command, &self.breathing)
+			}
+			Command::SetBeatPulseEnabled(_) => {
+				self.beat.handle_command(command);
 				self.settings.handle_command(command, &self.breathing)
 			}
 			Command::SetAudioDevice(_) => self.beat.handle_command(command),

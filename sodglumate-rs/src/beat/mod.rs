@@ -23,6 +23,7 @@ pub struct SystemBeat {
 	sample_tx: mpsc::SyncSender<Vec<f32>>,
 	/// Active cpal stream (must be kept alive)
 	stream: Option<cpal::Stream>,
+	enabled: bool,
 	/// Available device names
 	device_names: Vec<String>,
 	/// Currently selected device name (None = default)
@@ -36,27 +37,24 @@ pub struct SystemBeat {
 }
 
 impl SystemBeat {
-	pub fn new(selected_device: Option<String>) -> Self {
+	pub fn new(selected_device: Option<String>, enabled: bool) -> Self {
 		let (sample_tx, sample_rx) = mpsc::sync_channel(32);
 
-		let device_names = Self::enumerate_devices();
-		let stream = match selected_device.as_deref() {
-			Some(name) => Self::start_stream_named(name, &sample_tx),
-			None => Self::start_stream_default(&sample_tx),
-		};
-
-		Self {
+		let mut beat = Self {
 			sample_rx,
 			sample_tx,
-			stream,
-			device_names,
+			stream: None,
+			enabled,
+			device_names: Vec::new(),
 			selected_device,
 			sample_buffer: Vec::with_capacity(WINDOW_SIZE * 2),
 			energy_history: vec![0.0; HISTORY_LEN],
 			history_index: 0,
 			last_beat: Instant::now(),
 			last_beat_scale: 0.0,
-		}
+		};
+		beat.restart_capture();
+		beat
 	}
 
 	/// Enumerate all available input devices
@@ -299,34 +297,38 @@ impl SystemBeat {
 		ComponentResponse::none()
 	}
 
+	fn restart_capture(&mut self) {
+		self.stream = None;
+		// Replace the channel so callbacks from the previous stream cannot leak
+		// samples into the next capture session.
+		(self.sample_tx, self.sample_rx) = mpsc::sync_channel(32);
+		self.sample_buffer.clear();
+		self.energy_history.fill(0.0);
+		self.history_index = 0;
+		self.last_beat = Instant::now();
+		self.last_beat_scale = 0.0;
+		if self.enabled {
+			self.device_names = Self::enumerate_devices();
+			self.stream = match self.selected_device.as_deref() {
+				Some(name) => Self::start_stream_named(name, &self.sample_tx),
+				None => Self::start_stream_default(&self.sample_tx),
+			};
+		}
+	}
+
 	pub fn handle_command(&mut self, command: &Command) -> ComponentResponse {
 		match command {
-			Command::SetAudioDevice(name) => {
-				log::info!("Switching audio device to: {:?}", name);
-				// Drop old stream
-				self.stream = None;
-				self.selected_device = name.clone();
-
-				// Reset detection state
-				self.sample_buffer.clear();
-				self.energy_history = vec![0.0; HISTORY_LEN];
-				self.history_index = 0;
-
-				// Start new stream
-				self.stream = match name.as_deref() {
-					Some(device_name) => {
-						Self::start_stream_named(device_name, &self.sample_tx)
-					}
-					None => Self::start_stream_default(&self.sample_tx),
-				};
-
-				// Re-enumerate in case device list changed
-				self.device_names = Self::enumerate_devices();
-
-				ComponentResponse::none()
+			Command::SetBeatPulseEnabled(enabled) if self.enabled != *enabled => {
+				self.enabled = *enabled;
+				self.restart_capture();
 			}
-			_ => ComponentResponse::none(),
+			Command::SetAudioDevice(name) => {
+				self.selected_device = name.clone();
+				self.restart_capture();
+			}
+			_ => {}
 		}
+		ComponentResponse::none()
 	}
 
 	// Accessors for UI
@@ -353,6 +355,43 @@ impl SystemBeat {
 
 impl Default for SystemBeat {
 	fn default() -> Self {
-		Self::new(None)
+		Self::new(None, false)
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn disabled_capture_stays_off_when_selecting_a_device() {
+		let mut beat = SystemBeat::new(None, false);
+		assert!(!beat.is_active());
+		beat.handle_command(&Command::SetAudioDevice(Some(
+			"unavailable test device".into(),
+		)));
+		assert!(!beat.enabled);
+		assert!(!beat.is_active());
+		assert_eq!(beat.selected_device_label(), "unavailable test device");
+	}
+
+	#[test]
+	fn disabling_capture_discards_buffered_samples_and_last_beat() {
+		let mut beat = SystemBeat::new(None, false);
+		// Simulate detection state without opening an audio device in the test.
+		beat.enabled = true;
+		beat.sample_buffer.push(1.0);
+		beat.energy_history.fill(1.0);
+		beat.last_beat_scale = 2.0;
+		let old_sender = beat.sample_tx.clone();
+		old_sender.try_send(vec![1.0; WINDOW_SIZE]).unwrap();
+		beat.handle_command(&Command::SetBeatPulseEnabled(false));
+		beat.poll();
+		assert!(!beat.is_active());
+		assert!(!beat.enabled);
+		assert!(beat.sample_buffer.is_empty());
+		assert!(beat.energy_history.iter().all(|energy| *energy == 0.0));
+		assert_eq!(beat.latest_beat().1, 0.0);
+		assert!(old_sender.try_send(vec![1.0]).is_err());
 	}
 }

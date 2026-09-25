@@ -359,19 +359,18 @@ impl TopBarView {
 						}
 					}
 				});
-			if beat.is_active() {
-				ui.label(
-					egui::RichText::new("*")
-						.color(egui::Color32::GREEN)
-						.size(10.0),
-				);
+			let (audio_color, audio_status) = if !settings.beat_pulse_enabled() {
+				(
+					egui::Color32::GRAY,
+					"Audio capture is off. Enable Pulse to discover input devices.",
+				)
+			} else if beat.is_active() {
+				(egui::Color32::GREEN, "Audio capture is active.")
 			} else {
-				ui.label(
-					egui::RichText::new("*")
-						.color(egui::Color32::RED)
-						.size(10.0),
-				);
-			}
+				(egui::Color32::RED, "Audio input is unavailable.")
+			};
+			ui.label(egui::RichText::new("*").color(audio_color).size(10.0))
+				.on_hover_text(audio_status);
 
 			let mut beat_pulse_enabled = settings.beat_pulse_enabled();
 			if ui.checkbox(&mut beat_pulse_enabled, "Pulse").changed() {

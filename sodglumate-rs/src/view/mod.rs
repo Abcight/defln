@@ -294,7 +294,12 @@ impl Views {
 			.render_info_overlay(&mut ui, state.browser);
 
 		// Beat debug dot
-		self.beat_overlay.render(&mut ui);
+		if state.settings.beat_pulse_enabled() {
+			self.beat_overlay.render(&mut ui);
+		} else {
+			self.beat_overlay.beat_intensity = 0.0;
+			self.beat_overlay.last_beat_scale = 0.0;
+		}
 
 		// Island navigation overlay
 		self.island_navigation.render(
