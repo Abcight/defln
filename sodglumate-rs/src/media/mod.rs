@@ -8,9 +8,7 @@ use egui_player_rs::VideoPainter;
 use indexmap::IndexMap;
 use std::collections::{HashSet, VecDeque};
 use std::io::{self, BufRead, Cursor, Read, Seek, SeekFrom};
-use std::sync::Arc;
 use std::time::{Duration, Instant};
-use tokio::sync::Mutex as AsyncMutex;
 use tokio::sync::mpsc;
 
 /// Number of background workers for general loading
@@ -26,6 +24,10 @@ pub(crate) enum DecodedMedia {
 }
 
 pub enum MediaMessage {
+	WorkFinished {
+		url: String,
+		priority: bool,
+	},
 	ImageLoaded {
 		url: String,
 		is_sample: bool,
@@ -67,6 +69,7 @@ struct LoadWork {
 	is_sample: bool,
 	cache_key: String,
 	kind: LoadKind,
+	priority: bool,
 }
 
 struct StreamingGifReader {
@@ -183,9 +186,12 @@ pub struct MediaPane {
 	pending_full: VecDeque<MediaItem>,    // Depth-first full versions
 	gif_prefetch_budget: usize,
 
-	// Worker channels
-	priority_tx: mpsc::Sender<LoadWork>, // Current item full-res → priority worker
-	work_tx: mpsc::Sender<LoadWork>,     // Everything else → general workers
+	// Keep waiting work here so navigation can promote or replace it.
+	queued_work: IndexMap<String, LoadWork>,
+	general_active: usize,
+	priority_active: bool,
+	http_client: reqwest::Client,
+	result_tx: mpsc::Sender<MediaMessage>,
 
 	// Result channel
 	receiver: mpsc::Receiver<MediaMessage>,
@@ -211,29 +217,6 @@ impl MediaPane {
 				reqwest::Client::new()
 			});
 
-		// Priority channel: dedicated worker for current item full-res
-		let (priority_tx, priority_rx) = mpsc::channel::<LoadWork>(8);
-		Self::spawn_worker(
-			"priority",
-			priority_rx,
-			result_tx.clone(),
-			ctx.clone(),
-			http_client.clone(),
-		);
-
-		// General channel: NUM_WORKERS workers for samples + prefetch
-		let (work_tx, work_rx) = mpsc::channel::<LoadWork>(128);
-		let shared_rx = Arc::new(AsyncMutex::new(work_rx));
-		for i in 0..NUM_WORKERS {
-			Self::spawn_shared_worker(
-				i,
-				shared_rx.clone(),
-				result_tx.clone(),
-				ctx.clone(),
-				http_client.clone(),
-			);
-		}
-
 		Self {
 			cache: IndexMap::new(),
 			loading_set: HashSet::new(),
@@ -250,72 +233,53 @@ impl MediaPane {
 			pending_samples: VecDeque::new(),
 			pending_full: VecDeque::new(),
 			gif_prefetch_budget: 0,
-			priority_tx,
-			work_tx,
+			queued_work: IndexMap::new(),
+			general_active: 0,
+			priority_active: false,
+			http_client,
+			result_tx,
 			receiver: result_rx,
 			egui_ctx: ctx.clone(),
 		}
 	}
 
-	/// Spawn a dedicated worker with its own receiver
-	fn spawn_worker(
-		name: &'static str,
-		rx: mpsc::Receiver<LoadWork>,
-		result_tx: mpsc::Sender<MediaMessage>,
-		ctx: egui::Context,
-		http_client: reqwest::Client,
-	) {
-		let rx = Arc::new(AsyncMutex::new(rx));
-		tokio::spawn(async move {
-			log::info!("Media worker [{}] started", name);
-			loop {
-				let work = {
-					let mut rx = rx.lock().await;
-					rx.recv().await
-				};
-				let Some(work) = work else {
-					log::info!("Media worker [{}] shutting down", name);
-					break;
-				};
-				log::info!(
-					"Worker [{}] loading: {} (sample={})",
-					name,
-					work.url,
-					work.is_sample
-				);
-				Self::process_work(work, &http_client, &result_tx, &ctx).await;
+	fn dispatch_loads(&mut self) {
+		loop {
+			let priority_index = self
+				.queued_work
+				.values()
+				.position(|work| work.priority && !work.is_sample)
+				.or_else(|| self.queued_work.values().position(|work| work.priority));
+			let (index, priority) = if let Some(index) =
+				priority_index.filter(|_| !self.priority_active)
+			{
+				(index, true)
+			} else if self.general_active < NUM_WORKERS
+				&& !self.queued_work.is_empty()
+			{
+				(priority_index.unwrap_or(0), false)
+			} else {
+				break;
+			};
+			let (_, work) = self.queued_work.shift_remove_index(index).unwrap();
+			self.loading_set.insert(work.url.clone());
+			if priority {
+				self.priority_active = true;
+			} else {
+				self.general_active += 1;
 			}
-		});
-	}
-
-	/// Spawn a worker that shares a receiver with other workers
-	fn spawn_shared_worker(
-		id: usize,
-		rx: Arc<AsyncMutex<mpsc::Receiver<LoadWork>>>,
-		result_tx: mpsc::Sender<MediaMessage>,
-		ctx: egui::Context,
-		http_client: reqwest::Client,
-	) {
-		tokio::spawn(async move {
-			log::info!("Media worker [general-{}] started", id);
-			loop {
-				let work = {
-					let mut rx = rx.lock().await;
-					rx.recv().await
-				};
-				let Some(work) = work else {
-					log::info!("Media worker [general-{}] shutting down", id);
-					break;
-				};
-				log::info!(
-					"Worker [general-{}] loading: {} (sample={})",
-					id,
-					work.url,
-					work.is_sample
-				);
-				Self::process_work(work, &http_client, &result_tx, &ctx).await;
-			}
-		});
+			let client = self.http_client.clone();
+			let sender = self.result_tx.clone();
+			let ctx = self.egui_ctx.clone();
+			tokio::spawn(async move {
+				let url = work.url.clone();
+				Self::process_work(work, &client, &sender, &ctx).await;
+				let _ = sender
+					.send(MediaMessage::WorkFinished { url, priority })
+					.await;
+				ctx.request_repaint();
+			});
+		}
 	}
 
 	async fn process_work(
@@ -699,15 +663,36 @@ impl MediaPane {
 		// Process completed loads
 		while let Ok(msg) = self.receiver.try_recv() {
 			match msg {
+				MediaMessage::WorkFinished { url, priority } => {
+					self.loading_set.remove(&url);
+					if priority {
+						self.priority_active = false;
+					} else {
+						self.general_active -= 1;
+					}
+				}
 				MediaMessage::ImageLoaded {
 					url,
 					is_sample,
 					full_url,
 					result,
 				} => {
-					self.loading_set.remove(&url);
 					match result {
 						Ok(decoded_media) => {
+							// A late preview must not replace full content or a streaming GIF.
+							if is_sample
+								&& self.cache.get(&full_url).is_some_and(
+									|(media, state)| {
+										matches!(state, CacheState::Full)
+											|| matches!(
+												media,
+												LoadedMedia::AnimatedImage { .. }
+											)
+									},
+								) {
+								continue;
+							}
+
 							log::info!(
 								"Image loaded: {} (sample={})",
 								url,
@@ -751,19 +736,8 @@ impl MediaPane {
 							} else {
 								CacheState::Full
 							};
-							let animated_full_media_already_present = is_sample
-								&& self.cache.get(&full_url).is_some_and(
-									|(media, _)| {
-										matches!(
-											media,
-											LoadedMedia::AnimatedImage { .. }
-										)
-									},
-								);
-							if !animated_full_media_already_present {
-								self.cache
-									.insert(full_url.clone(), (loaded_media, state));
-							}
+							self.cache
+								.insert(full_url.clone(), (loaded_media, state));
 
 							let is_initial_load =
 								if let Some(ref current) = self.current_item {
@@ -804,114 +778,104 @@ impl MediaPane {
 					url,
 					frame,
 					finished,
-				} => {
-					if finished {
-						self.loading_set.remove(&url);
-					}
-					match frame {
-						Ok(Some((color_image, duration))) => {
-							self.note_decoder_ready(&url, "gif");
-							let frame_index = self
-								.cache
-								.get(&url)
-								.and_then(|(media, _)| match media {
-									LoadedMedia::AnimatedImage { frames, .. } => {
-										Some(frames.len())
-									}
-									LoadedMedia::Image { .. } => None,
-								})
-								.unwrap_or(0);
-							let texture = self.egui_ctx.load_texture(
-								format!("{url}#frame-{frame_index}"),
-								color_image,
-								egui::TextureOptions::LINEAR,
-							);
-							let entry =
-								self.cache.entry(url.clone()).or_insert_with(|| {
-									(
-										LoadedMedia::AnimatedImage {
-											frames: Vec::new(),
-											started_at: std::time::Instant::now(),
-											complete: false,
-										},
-										CacheState::SampleOnly,
-									)
-								});
-							if !matches!(entry.0, LoadedMedia::AnimatedImage { .. }) {
-								entry.0 = LoadedMedia::AnimatedImage {
-									frames: Vec::new(),
-									started_at: std::time::Instant::now(),
-									complete: false,
-								};
-							}
-							if let LoadedMedia::AnimatedImage { frames, .. } =
+				} => match frame {
+					Ok(Some((color_image, duration))) => {
+						self.note_decoder_ready(&url, "gif");
+						let frame_index = self
+							.cache
+							.get(&url)
+							.and_then(|(media, _)| match media {
+								LoadedMedia::AnimatedImage { frames, .. } => {
+									Some(frames.len())
+								}
+								LoadedMedia::Image { .. } => None,
+							})
+							.unwrap_or(0);
+						let texture = self.egui_ctx.load_texture(
+							format!("{url}#frame-{frame_index}"),
+							color_image,
+							egui::TextureOptions::LINEAR,
+						);
+						let entry =
+							self.cache.entry(url.clone()).or_insert_with(|| {
+								(
+									LoadedMedia::AnimatedImage {
+										frames: Vec::new(),
+										started_at: std::time::Instant::now(),
+										complete: false,
+									},
+									CacheState::SampleOnly,
+								)
+							});
+						if !matches!(entry.0, LoadedMedia::AnimatedImage { .. }) {
+							entry.0 = LoadedMedia::AnimatedImage {
+								frames: Vec::new(),
+								started_at: std::time::Instant::now(),
+								complete: false,
+							};
+						}
+						if let LoadedMedia::AnimatedImage { frames, .. } =
+							&mut entry.0
+						{
+							frames.push(AnimatedFrame { texture, duration });
+						}
+						if finished {
+							if let LoadedMedia::AnimatedImage { complete, .. } =
 								&mut entry.0
 							{
-								frames.push(AnimatedFrame { texture, duration });
+								*complete = true;
 							}
-							if finished {
-								if let LoadedMedia::AnimatedImage {
-									complete, ..
-								} = &mut entry.0
-								{
-									*complete = true;
-								}
-								entry.1 = CacheState::Full;
-							}
+							entry.1 = CacheState::Full;
 						}
-						Ok(None) => {
-							if finished
-								&& let Some((media, state)) = self.cache.get_mut(&url)
+					}
+					Ok(None) => {
+						if finished
+							&& let Some((media, state)) = self.cache.get_mut(&url)
+						{
+							if let LoadedMedia::AnimatedImage { complete, .. } = media
 							{
-								if let LoadedMedia::AnimatedImage {
-									complete, ..
-								} = media
-								{
-									*complete = true;
-								}
-								*state = CacheState::Full;
+								*complete = true;
 							}
+							*state = CacheState::Full;
 						}
-						Err(error) => {
-							log::error!("GIF load failed: {} - {}", url, error);
-							self.record_failure(url.clone(), error.clone());
-							if self.current_item.as_ref().is_some_and(|item| {
+					}
+					Err(error) => {
+						log::error!("GIF load failed: {} - {}", url, error);
+						self.record_failure(url.clone(), error.clone());
+						if self.current_item.as_ref().is_some_and(|item| {
+							item.full_url.as_deref() == Some(url.as_str())
+						}) && self.get_current_media().is_none()
+						{}
+					}
+				},
+				MediaMessage::PlayableLoaded { url, result } => match result {
+					Ok(bytes) => {
+						log::info!(
+							"Playable media downloaded but not handled by a specialized backend: url={} bytes={}",
+							url,
+							bytes.len()
+						);
+					}
+					Err(error) => {
+						log::error!(
+							"Playable media load failed: {} - {}",
+							url,
+							error
+						);
+						self.record_failure(url.clone(), error.clone());
+						let current_item_matches =
+							self.current_item.as_ref().is_some_and(|item| {
 								item.full_url.as_deref() == Some(url.as_str())
-							}) && self.get_current_media().is_none()
-							{}
-						}
+							});
+						if current_item_matches {}
 					}
-				}
-				MediaMessage::PlayableLoaded { url, result } => {
-					self.loading_set.remove(&url);
-					match result {
-						Ok(bytes) => {
-							log::info!(
-								"Playable media downloaded but not handled by a specialized backend: url={} bytes={}",
-								url,
-								bytes.len()
-							);
-						}
-						Err(error) => {
-							log::error!(
-								"Playable media load failed: {} - {}",
-								url,
-								error
-							);
-							self.record_failure(url.clone(), error.clone());
-							let current_item_matches =
-								self.current_item.as_ref().is_some_and(|item| {
-									item.full_url.as_deref() == Some(url.as_str())
-								});
-							if current_item_matches {}
-						}
-					}
-				}
+				},
 			}
 		}
 
 		// Process loading queue with priority logic
 		self.process_loading_queue();
+		self.dispatch_loads();
 
 		self.prune_cache();
 
@@ -944,7 +908,7 @@ impl MediaPane {
 				.map(|u| self.loading_set.contains(u))
 				.unwrap_or(false);
 
-			// Kick off sample via general workers
+			// Prioritize the current preview as well as its full-resolution media.
 			if !has_sample {
 				if let Some(ref sample_url) = current.sample_url {
 					if !sample_loading {
@@ -952,7 +916,7 @@ impl MediaPane {
 							sample_url.clone(),
 							true,
 							cache_key.clone(),
-							false,
+							true,
 						);
 					}
 				} else if !current.kind.is_playable()
@@ -995,15 +959,16 @@ impl MediaPane {
 		// Drain pending samples into general workers
 		while let Some(item) = self.pending_samples.pop_front() {
 			let cache_key = self.get_cache_key(&item);
-			if self.cache.contains_key(&cache_key) {
+			if let Some((_, state)) = self.cache.get(&cache_key) {
+				if matches!(state, CacheState::SampleOnly) {
+					self.pending_full.push_back(item);
+				}
 				continue;
 			}
 
 			if let Some(ref sample_url) = item.sample_url {
-				if !self.loading_set.contains(sample_url) {
-					self.enqueue_load(sample_url.clone(), true, cache_key, false);
-					self.pending_full.push_back(item);
-				}
+				self.enqueue_load(sample_url.clone(), true, cache_key, false);
+				self.pending_full.push_back(item);
 			} else if let Some(ref full_url) = item.full_url
 				&& !self.loading_set.contains(full_url)
 			{
@@ -1222,7 +1187,7 @@ impl MediaPane {
 		self.last_video_debug_state = Some(state);
 	}
 
-	/// Enqueue a load to either the priority or general work channel.
+	/// Queue a load, keeping selected media ahead of speculative downloads.
 	fn enqueue_load(
 		&mut self,
 		url: String,
@@ -1248,31 +1213,20 @@ impl MediaPane {
 		if self.loading_set.contains(&url) || self.failures.contains_key(&url) {
 			return;
 		}
-		let work = LoadWork {
-			url: url.clone(),
-			is_sample,
-			cache_key,
-			kind,
-		};
-		let tx = if priority {
-			&self.priority_tx
-		} else {
-			&self.work_tx
-		};
-		match tx.try_send(work) {
-			Ok(()) => {
-				self.loading_set.insert(url.clone());
-				log::info!(
-					"Enqueued load: {} (sample={}, priority={})",
-					url,
-					is_sample,
-					priority
-				);
-			}
-			Err(e) => {
-				log::warn!("Work queue full, deferring: {} ({})", url, e);
-			}
+		if let Some(work) = self.queued_work.get_mut(&url) {
+			work.priority |= priority;
+			return;
 		}
+		self.queued_work.insert(
+			url.clone(),
+			LoadWork {
+				url,
+				is_sample,
+				cache_key,
+				kind,
+				priority,
+			},
+		);
 	}
 
 	pub fn handle_command(&mut self, command: &Command) -> ComponentResponse {
@@ -1293,6 +1247,10 @@ impl MediaPane {
 					full_url: full_url.clone(),
 					kind: *kind,
 				};
+				for work in self.queued_work.values_mut() {
+					work.priority = item.full_url.as_ref() == Some(&work.url)
+						|| item.sample_url.as_ref() == Some(&work.url);
+				}
 				self.current_item = Some(item.clone());
 				if item.kind.is_playable() {
 					if let Some(url) = &item.full_url {
@@ -1328,6 +1286,9 @@ impl MediaPane {
 			Command::PrefetchMedia { urls } => {
 				log::debug!("Prefetch requested for {} items", urls.len());
 
+				// Active downloads finish; obsolete waiting downloads are discarded.
+				self.queued_work.clear();
+
 				// Clear old pending items and reset
 				self.pending_samples.clear();
 				self.pending_full.clear();
@@ -1342,17 +1303,7 @@ impl MediaPane {
 					};
 					let cache_key = self.get_cache_key(&item);
 
-					if !self.cache.contains_key(&cache_key)
-						&& !item
-							.sample_url
-							.as_ref()
-							.is_some_and(|url| self.loading_set.contains(url))
-						&& !item
-							.full_url
-							.as_ref()
-							.is_some_and(|url| self.loading_set.contains(url))
-						&& !self.pending_set.contains(&cache_key)
-					{
+					if !self.pending_set.contains(&cache_key) {
 						self.pending_set.insert(cache_key);
 						self.pending_samples.push_back(item);
 					}
@@ -1477,8 +1428,161 @@ impl MediaPane {
 
 #[cfg(test)]
 mod tests {
-	use super::MediaPane;
+	use super::*;
 	use std::time::Duration;
+
+	fn image_result(is_sample: bool) -> MediaMessage {
+		MediaMessage::ImageLoaded {
+			url: if is_sample { "preview.jpg" } else { "full.jpg" }.into(),
+			is_sample,
+			full_url: "full.jpg".into(),
+			result: Ok(DecodedMedia::Image(egui::ColorImage::new(
+				if is_sample { [1, 1] } else { [2, 2] },
+				egui::Color32::WHITE,
+			))),
+		}
+	}
+
+	#[test]
+	fn full_image_wins_regardless_of_download_completion_order() {
+		for order in [[false, true], [true, false]] {
+			let mut media = MediaPane::new(&egui::Context::default());
+			for is_sample in order {
+				media.result_tx.try_send(image_result(is_sample)).unwrap();
+				media.poll();
+			}
+			let (loaded, state) = media.cache.get("full.jpg").unwrap();
+			assert!(matches!(state, CacheState::Full));
+			assert_eq!(loaded.texture().size(), [2, 2]);
+		}
+	}
+
+	#[test]
+	fn late_preview_preserves_an_incomplete_streaming_animation() {
+		let mut media = MediaPane::new(&egui::Context::default());
+		media
+			.result_tx
+			.try_send(MediaMessage::GifFrame {
+				url: "full.jpg".into(),
+				frame: Ok(Some((
+					egui::ColorImage::new([2, 2], egui::Color32::WHITE),
+					Duration::from_millis(100),
+				))),
+				finished: false,
+			})
+			.unwrap();
+		media.result_tx.try_send(image_result(true)).unwrap();
+		media.poll();
+		assert!(matches!(
+			&media.cache["full.jpg"].0,
+			LoadedMedia::AnimatedImage {
+				complete: false,
+				..
+			}
+		));
+	}
+
+	fn prefetch(media: &mut MediaPane, names: &[&str]) {
+		media.handle_command(&Command::PrefetchMedia {
+			urls: names
+				.iter()
+				.map(|name| (None, Some((*name).into()), MediaKind::Image))
+				.collect(),
+		});
+		media.process_loading_queue();
+	}
+
+	fn select(media: &mut MediaPane, url: &str) {
+		media.handle_command(&Command::LoadMedia {
+			sample_url: None,
+			full_url: Some(url.into()),
+			kind: MediaKind::Image,
+		});
+		media.process_loading_queue();
+	}
+
+	#[tokio::test]
+	async fn selected_prefetch_uses_reserved_capacity_without_duplicate_work() {
+		let mut media = MediaPane::new(&egui::Context::default());
+		prefetch(&mut media, &["a", "b", "c", "d", "e", "selected"]);
+		media.dispatch_loads();
+		assert_eq!(media.general_active, NUM_WORKERS);
+		assert!(!media.priority_active);
+		assert!(!media.loading_set.contains("selected"));
+
+		select(&mut media, "selected");
+		media.dispatch_loads();
+		assert!(media.loading_set.contains("selected"));
+		assert!(media.priority_active);
+		assert!(media.queued_work.contains_key("e"));
+		assert!(!media.queued_work.contains_key("selected"));
+
+		// Selecting an active URL does not enqueue a second download.
+		select(&mut media, "selected");
+		media.dispatch_loads();
+		assert_eq!(media.loading_set.len(), NUM_WORKERS + 1);
+		assert!(!media.queued_work.contains_key("selected"));
+	}
+
+	#[tokio::test]
+	async fn failed_downloads_release_capacity_and_drain_waiting_work() {
+		let mut media = MediaPane::new(&egui::Context::default());
+		// Invalid URLs fail before any network access, exercising real task completion.
+		prefetch(&mut media, &["a", "b", "c", "d", "e", "f"]);
+		select(&mut media, "current");
+		media.dispatch_loads();
+		assert_eq!(media.loading_set.len(), NUM_WORKERS + 1);
+		tokio::time::timeout(Duration::from_secs(1), async {
+			while !media.loading_set.is_empty() || !media.queued_work.is_empty() {
+				tokio::task::yield_now().await;
+				media.poll();
+			}
+		})
+		.await
+		.expect("failed work must release all download slots");
+		assert_eq!(media.failures.len(), 7);
+		assert_eq!(media.general_active, 0);
+		assert!(!media.priority_active);
+	}
+
+	#[test]
+	fn new_prefetch_discards_obsolete_waiting_work_and_keeps_current_selection() {
+		let mut media = MediaPane::new(&egui::Context::default());
+		prefetch(&mut media, &["obsolete", "current"]);
+		select(&mut media, "current");
+		prefetch(&mut media, &["next"]);
+		assert!(!media.queued_work.contains_key("obsolete"));
+		assert!(media.queued_work["current"].priority);
+		assert!(media.queued_work.contains_key("next"));
+	}
+
+	#[test]
+	fn replacing_prefetch_preserves_full_load_after_preview_arrives() {
+		let mut media = MediaPane::new(&egui::Context::default());
+		media.result_tx.try_send(image_result(true)).unwrap();
+		media.poll();
+		for _ in 0..2 {
+			media.handle_command(&Command::PrefetchMedia {
+				urls: vec![(
+					Some("preview.jpg".into()),
+					Some("full.jpg".into()),
+					MediaKind::Image,
+				)],
+			});
+			media.process_loading_queue();
+			assert!(media.queued_work.contains_key("full.jpg"));
+			assert!(!media.queued_work.contains_key("preview.jpg"));
+		}
+	}
+
+	#[test]
+	fn selecting_another_item_demotes_the_previous_priority() {
+		let mut media = MediaPane::new(&egui::Context::default());
+		select(&mut media, "previous");
+		select(&mut media, "current");
+		assert!(!media.queued_work["previous"].priority);
+		assert!(media.queued_work["current"].priority);
+	}
 
 	#[cfg(not(feature = "video"))]
 	#[tokio::test]
