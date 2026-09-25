@@ -1,5 +1,6 @@
 use super::*;
 pub(super) struct MediaView {
+	gallery_transforms: std::collections::HashMap<u64, (f32, egui::Vec2)>,
 	pub(super) image_load_time: Instant,
 	pub(super) user_has_panned: bool,
 	pub(super) last_media_url: Option<String>,
@@ -14,6 +15,7 @@ pub(super) struct MediaView {
 impl MediaView {
 	pub(super) fn new() -> Self {
 		Self {
+			gallery_transforms: Default::default(),
 			image_load_time: Instant::now(),
 			user_has_panned: false,
 			last_media_url: None,
@@ -315,6 +317,21 @@ impl MediaView {
 						});
 					}
 					ImageFillMode::FitToGallery => {
+						// Keep the outgoing image's fitted geometry after navigation
+						// resets the controls for the newly selected image.
+						self.gallery_transforms.retain(|id, _| {
+							(-2..=2).any(|offset| {
+								browser
+									.get_post_relative(offset)
+									.is_some_and(|post| post.id == *id)
+							})
+						});
+						if let Some(post) = browser.current_post() {
+							self.gallery_transforms.insert(
+								post.id,
+								(self.user_zoom, self.user_pan_offset),
+							);
+						}
 						let len = browser.posts_len();
 						if len > 0 {
 							let new_idx = browser.current_index();
@@ -407,7 +424,9 @@ impl MediaView {
 								.translate(egui::vec2(gutter_w + 100.0, 0.0));
 
 							let fit_rect = |img_size: egui::Vec2,
-							                space: egui::Rect|
+							                space: egui::Rect,
+							                zoom: f32,
+							                pan: egui::Vec2|
 							 -> egui::Rect {
 								if space.width() <= 0.01 || space.height() <= 0.01 {
 									return egui::Rect::from_center_size(
@@ -417,11 +436,10 @@ impl MediaView {
 								}
 								let width_ratio = space.width() / img_size.x;
 								let height_ratio = space.height() / img_size.y;
-								let scale =
-									width_ratio.min(height_ratio) * self.user_zoom;
+								let scale = width_ratio.min(height_ratio) * zoom;
 								let size = img_size * scale;
 								egui::Rect::from_center_size(
-									space.center() + self.user_pan_offset,
+									space.center() + pan,
 									size,
 								)
 							};
@@ -442,16 +460,19 @@ impl MediaView {
 								egui::Rect::from_center_size(space.center(), size)
 							};
 
-							let get_rect_at =
-								|slot: isize, size: egui::Vec2| -> egui::Rect {
-									match slot {
-										..=-2 => cover_rect(size, off_left),
-										-1 => cover_rect(size, left_gutter),
-										0 => fit_rect(size, center_rect),
-										1 => cover_rect(size, right_gutter),
-										2.. => cover_rect(size, off_right),
-									}
-								};
+							let get_rect_at = |slot: isize,
+							                   size: egui::Vec2,
+							                   zoom: f32,
+							                   pan: egui::Vec2|
+							 -> egui::Rect {
+								match slot {
+									..=-2 => cover_rect(size, off_left),
+									-1 => cover_rect(size, left_gutter),
+									0 => fit_rect(size, center_rect, zoom, pan),
+									1 => cover_rect(size, right_gutter),
+									2.. => cover_rect(size, off_right),
+								}
+							};
 
 							let get_clip_at = |slot: isize| -> egui::Rect {
 								match slot {
@@ -481,8 +502,23 @@ impl MediaView {
 									let v_ceil = v.ceil();
 									let fract = v - v_floor;
 
-									let r1 = get_rect_at(v_floor as isize, img_size);
-									let r2 = get_rect_at(v_ceil as isize, img_size);
+									let (zoom, pan) = self
+										.gallery_transforms
+										.get(&post.id)
+										.copied()
+										.unwrap_or((1.0, egui::Vec2::ZERO));
+									let r1 = get_rect_at(
+										v_floor as isize,
+										img_size,
+										zoom,
+										pan,
+									);
+									let r2 = get_rect_at(
+										v_ceil as isize,
+										img_size,
+										zoom,
+										pan,
+									);
 
 									let interpolated_center = r1.center()
 										+ (r2.center() - r1.center()) * fract;
