@@ -20,7 +20,7 @@ use crate::media::MediaPane;
 use crate::reactor::{Command, Event, ViewOutput};
 use crate::settings::SettingsManager;
 use crate::types::{BreathingPhase, BreathingStyle, ImageFillMode, NavDirection};
-use eframe::egui::{self, LayerId, ScrollArea, Ui};
+use eframe::egui::{self, LayerId, Rect, ScrollArea, Ui};
 use egui_extras::{Column, TableBuilder};
 use std::time::{Duration, Instant};
 
@@ -71,6 +71,7 @@ pub struct Views {
 	island_navigation: IslandNavigationView,
 	beat_overlay: BeatOverlayView,
 	content_overlay: ContentOverlayView,
+	last_screen_rect: Rect,
 }
 
 impl Views {
@@ -82,6 +83,7 @@ impl Views {
 			island_navigation: IslandNavigationView::new(),
 			beat_overlay: BeatOverlayView::new(),
 			content_overlay: ContentOverlayView,
+			last_screen_rect: Rect::ZERO,
 		}
 	}
 
@@ -91,6 +93,12 @@ impl Views {
 		state: &ApplicationState<'_>,
 	) -> ViewOutput {
 		use egui::UiBuilder;
+
+		let screen_rect = ctx.screen_rect();
+		if self.last_screen_rect != screen_rect {
+			self.last_screen_rect = screen_rect;
+			ctx.request_repaint();
+		}
 
 		let layer_id = LayerId::background();
 		let available_rect = ctx.available_rect();
@@ -105,7 +113,7 @@ impl Views {
 		let panel_frame = egui::Frame::default()
 			.fill(ui.style().visuals.window_fill())
 			.stroke(ui.style().visuals.widgets.noninteractive.fg_stroke)
-			.outer_margin(1.0);
+			.outer_margin(2.0);
 
 		let view_output = panel_frame
 			.show(&mut ui, |ui| {
@@ -119,7 +127,96 @@ impl Views {
 			})
 			.inner;
 
+		Self::render_resize_handles(&mut ui);
+
 		view_output
+	}
+
+	fn render_resize_handles(ui: &mut Ui) {
+		use egui::{
+			CursorIcon, PointerButton, Rect, ResizeDirection, Sense, ViewportCommand,
+			pos2,
+		};
+
+		if ui.input(|i| {
+			i.viewport().maximized.unwrap_or(false)
+				|| i.viewport().fullscreen.unwrap_or(false)
+		}) {
+			return;
+		}
+
+		let rect = ui.ctx().screen_rect();
+		let (left, right, top, bottom) =
+			(rect.left(), rect.right(), rect.top(), rect.bottom());
+		let edge = 6.0;
+		let corner = 12.0;
+		let handles = [
+			(
+				ResizeDirection::NorthWest,
+				CursorIcon::ResizeNwSe,
+				[left, top, left + corner, top + corner],
+			),
+			(
+				ResizeDirection::NorthEast,
+				CursorIcon::ResizeNeSw,
+				[right - corner, top, right, top + corner],
+			),
+			(
+				ResizeDirection::SouthWest,
+				CursorIcon::ResizeNeSw,
+				[left, bottom - corner, left + corner, bottom],
+			),
+			(
+				ResizeDirection::SouthEast,
+				CursorIcon::ResizeNwSe,
+				[right - corner, bottom - corner, right, bottom],
+			),
+			(
+				ResizeDirection::North,
+				CursorIcon::ResizeVertical,
+				[left + corner, top, right - corner, top + edge],
+			),
+			(
+				ResizeDirection::South,
+				CursorIcon::ResizeVertical,
+				[left + corner, bottom - edge, right - corner, bottom],
+			),
+			(
+				ResizeDirection::West,
+				CursorIcon::ResizeHorizontal,
+				[left, top + corner, left + edge, bottom - corner],
+			),
+			(
+				ResizeDirection::East,
+				CursorIcon::ResizeHorizontal,
+				[right - edge, top + corner, right, bottom - corner],
+			),
+		];
+		for (index, (direction, cursor, [x1, y1, x2, y2])) in
+			handles.into_iter().enumerate()
+		{
+			let response = ui
+				.interact(
+					Rect::from_min_max(pos2(x1, y1), pos2(x2, y2)),
+					ui.id().with(("window_resize", index)),
+					Sense::drag(),
+				)
+				.on_hover_cursor(cursor);
+			if response.dragged_by(PointerButton::Primary) {
+				ui.ctx().request_repaint();
+			}
+			// A drag-only response starts on press, as required by native resizing.
+			if response.drag_started_by(PointerButton::Primary) {
+				// The window manager owns the drag and may consume its release.
+				ui.ctx().stop_dragging();
+				ui.ctx()
+					.send_viewport_cmd(ViewportCommand::BeginResize(direction));
+				// stop_dragging does not clear held buttons. Native resizing can
+				// swallow the release, which would suppress subsequent hovering.
+				ui.ctx()
+					.input_mut(|input| input.pointer = Default::default());
+			}
+		}
 	}
 
 	fn render_frame_inner(
