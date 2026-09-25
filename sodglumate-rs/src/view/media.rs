@@ -176,6 +176,7 @@ impl MediaView {
 			}
 		};
 
+		#[cfg(feature = "video")]
 		if media.current_is_playable()
 			&& !matches!(image_fill_mode, ImageFillMode::FitToGallery)
 		{
@@ -426,6 +427,7 @@ impl MediaView {
 						} else {
 							self.gallery_anim_offset = 0.0;
 						}
+						#[cfg(feature = "video")]
 						let gallery_settled = self.gallery_anim_time >= anim_duration
 							&& self.gallery_anim_offset.abs() < 0.001;
 
@@ -658,6 +660,7 @@ impl MediaView {
 								}
 							}
 
+							#[cfg(feature = "video")]
 							if media.current_is_playable() && gallery_settled {
 								let post_aspect =
 									browser.current_post().and_then(|post| {
@@ -707,7 +710,10 @@ impl MediaView {
 				}
 			}
 		} else if media.current_is_playable() {
+			#[cfg(feature = "video")]
 			Self::render_current_video(ui, media, None);
+			#[cfg(not(feature = "video"))]
+			ui.label("Video playback is disabled in this build.");
 		} else if media.is_loading() {
 			ui.centered_and_justified(|ui| {
 				ui.spinner();
@@ -717,6 +723,7 @@ impl MediaView {
 		self.user_has_panned = user_panned;
 	}
 
+	#[cfg(feature = "video")]
 	fn render_current_video(
 		ui: &mut egui::Ui,
 		media: &MediaPane,
@@ -752,6 +759,7 @@ impl MediaView {
 		}
 	}
 
+	#[cfg(feature = "video")]
 	fn contained_aspect_rect(space: egui::Rect, aspect: f32) -> egui::Rect {
 		let aspect = aspect.max(0.001);
 		let space_aspect = space.width() / space.height().max(1.0);
