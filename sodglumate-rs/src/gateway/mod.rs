@@ -332,7 +332,8 @@ mod tests {
 		let mut gateway = BooruGateway::new();
 		gateway.record_request();
 		gateway.record_request();
-		let response = gateway.handle_command(&Command::FetchLinkedPost { post_id: 42 });
+		let response =
+			gateway.handle_command(&Command::FetchLinkedPost { post_id: 42 });
 		assert!(matches!(
 			response.scheduled.as_slice(),
 			[(
