@@ -1,15 +1,19 @@
 use crate::api::Post;
 use crate::reactor::{Command, ComponentResponse, Event, Message};
 use crate::types::{MediaKind, NavDirection};
-use std::collections::VecDeque;
+use std::collections::{HashMap, HashSet, VecDeque};
+
+const PREFETCH_POSTS: usize = 30;
 
 pub struct ContentBrowser {
 	posts: Vec<Post>,
+	post_cache: HashMap<u64, Post>,
 	current_index: usize,
 	current_page: u32,
 	link_generation: u64,
 	pending_link: Option<u64>,
 	children_source: Option<u64>,
+	relationship_window: Vec<u64>,
 	children_generation: u64,
 	children_pending: VecDeque<u64>,
 	validated_children: Vec<Post>,
@@ -20,11 +24,13 @@ impl ContentBrowser {
 		log::info!("Initializing");
 		Self {
 			posts: Vec::new(),
+			post_cache: HashMap::new(),
 			current_index: 0,
 			current_page: 1,
 			link_generation: 0,
 			pending_link: None,
 			children_source: None,
+			relationship_window: Vec::new(),
 			children_generation: 0,
 			children_pending: VecDeque::new(),
 			validated_children: Vec::new(),
@@ -38,33 +44,36 @@ impl ContentBrowser {
 				generation,
 				result,
 			} => {
+				if let Ok(post) = result
+					&& post.id == *post_id
+				{
+					self.post_cache.insert(post.id, (**post).clone());
+				}
 				if !self.child_request_is_current(*post_id, *generation) {
 					return ComponentResponse::none();
 				}
 				self.children_pending.pop_front();
 				match result {
 					Ok(post) if post.id == *post_id && supported_link_media(post) => {
-						self.validated_children.push((**post).clone())
+						if self.current_post().is_some_and(|source| {
+							source.relationships.children.contains(post_id)
+						}) {
+							self.validated_children.push((**post).clone());
+						}
 					}
 					Ok(_) => log::debug!(
-						"Omitting child post {post_id}: no supported, accessible media"
+						"Omitting related post {post_id}: no supported, accessible media"
 					),
 					Err(error) => {
-						log::warn!(
-							"Could not validate child post {post_id}: {error}"
-						);
+						log::warn!("Could not cache related post {post_id}: {error}")
 					}
-				}
-				let capacity = 8 - usize::from(
-					self.current_post()
-						.is_some_and(|post| post.relationships.parent_id.is_some()),
-				);
-				if self.validated_children.len() >= capacity {
-					self.children_pending.clear();
 				}
 				self.next_child_request()
 			}
 			Event::LinkedPostLoaded { generation, result } => {
+				if let Ok(post) = result {
+					self.post_cache.insert(post.id, (**post).clone());
+				}
 				if !self.link_request_is_current(*generation) {
 					return ComponentResponse::none();
 				}
@@ -93,6 +102,9 @@ impl ContentBrowser {
 				page,
 				is_new,
 			} => {
+				for post in posts {
+					self.post_cache.insert(post.id, post.clone());
+				}
 				let filtered_posts: Vec<Post> = posts
 					.iter()
 					.filter(|p| MediaKind::from_extension(&p.file.ext).is_some())
@@ -136,21 +148,40 @@ impl ContentBrowser {
 				let Some(post) = self.current_post() else {
 					return ComponentResponse::none();
 				};
-				if post.id != *source_id || self.children_source == Some(*source_id) {
+				if post.id != *source_id {
 					return ComponentResponse::none();
 				}
-				let children = post.relationships.children.clone();
-				log::info!(
-					"Checking {} child posts for post {source_id}",
-					children.len()
+				// Use the image-prefetch window, with the focused post first.
+				let window: Vec<_> = (0..self.posts.len().min(PREFETCH_POSTS + 1))
+					.filter_map(|offset| self.get_post_relative(offset as isize))
+					.collect();
+				let window_ids: Vec<_> = window.iter().map(|post| post.id).collect();
+				if self.children_source == Some(*source_id)
+					&& self.relationship_window == window_ids
+				{
+					return ComponentResponse::none();
+				}
+				let mut seen = HashSet::new();
+				let related_ids: VecDeque<_> = window
+					.iter()
+					.flat_map(|post| {
+						post.relationships
+							.children
+							.iter()
+							.copied()
+							.chain(post.relationships.parent_id)
+					})
+					.filter(|id| seen.insert(*id))
+					.collect();
+				log::debug!(
+					"Prefetching {} immediate relationships for {} posts",
+					related_ids.len(),
+					window.len()
 				);
 				self.clear_children();
 				self.children_source = Some(*source_id);
-				for id in children {
-					if !self.children_pending.contains(&id) {
-						self.children_pending.push_back(id);
-					}
-				}
+				self.relationship_window = window_ids;
+				self.children_pending = related_ids;
 				self.next_child_request()
 			}
 			Command::Search { .. } => {
@@ -170,11 +201,7 @@ impl ContentBrowser {
 				{
 					return ComponentResponse::none();
 				}
-				let validated = self
-					.validated_children
-					.iter()
-					.find(|post| post.id == *target_id)
-					.cloned();
+				let validated = self.post_cache.get(target_id).cloned();
 				self.cancel_link();
 				self.pending_link = Some(*target_id);
 				log::info!("Opening linked post {target_id} from post {source_id}");
@@ -240,20 +267,28 @@ impl ContentBrowser {
 	fn clear_children(&mut self) {
 		self.children_generation = self.children_generation.wrapping_add(1);
 		self.children_source = None;
+		self.relationship_window.clear();
 		self.children_pending.clear();
 		self.validated_children.clear();
 	}
 
-	fn next_child_request(&self) -> ComponentResponse {
-		match self.children_pending.front() {
-			Some(&post_id) => {
-				ComponentResponse::command(Command::FetchLinkCandidate {
+	fn next_child_request(&mut self) -> ComponentResponse {
+		while let Some(&post_id) = self.children_pending.front() {
+			let Some(post) = self.post_cache.get(&post_id) else {
+				return ComponentResponse::command(Command::FetchLinkCandidate {
 					post_id,
 					generation: self.children_generation,
-				})
+				});
+			};
+			if supported_link_media(post)
+				&& self.current_post().is_some_and(|source| {
+					source.relationships.children.contains(&post_id)
+				}) {
+				self.validated_children.push(post.clone());
 			}
-			None => ComponentResponse::none(),
+			self.children_pending.pop_front();
 		}
+		ComponentResponse::none()
 	}
 
 	pub fn child_request_is_current(&self, post_id: u64, generation: u64) -> bool {
@@ -270,6 +305,23 @@ impl ContentBrowser {
 	pub fn validated_child_ids(&self) -> Vec<u64> {
 		self.validated_children.iter().map(|post| post.id).collect()
 	}
+
+	/// Whether the focused post has a related post that this build can display.
+	///
+	/// Relationship IDs in the search response are only hints. The overlay must
+	/// not advertise them until their cached post data has passed validation.
+	pub fn has_valid_related_posts(&self) -> bool {
+		let Some(post) = self.current_post() else {
+			return false;
+		};
+
+		post.relationships
+			.parent_id
+			.into_iter()
+			.chain(post.relationships.children.iter().copied())
+			.any(|id| self.post_cache.get(&id).is_some_and(supported_link_media))
+	}
+	
 	#[cfg(test)]
 	fn checking_children(&self) -> bool {
 		!self.children_pending.is_empty()
@@ -295,6 +347,9 @@ impl ContentBrowser {
 		let mut messages = Vec::new();
 
 		if let Some(post) = post {
+			messages.push(Message::Command(Command::PrepareLinks {
+				source_id: post.id,
+			}));
 			// Request media load with sample and full URLs
 			let kind =
 				MediaKind::from_extension(&post.file.ext).unwrap_or(MediaKind::Image);
@@ -327,7 +382,7 @@ impl ContentBrowser {
 
 			// Emit prefetch hints for next 30 posts
 			let prefetch_urls: Vec<(Option<String>, Option<String>, MediaKind)> = (1
-				..=30)
+				..=PREFETCH_POSTS)
 				.filter_map(|i| {
 					let idx = (self.current_index + i) % self.posts.len();
 					self.posts.get(idx).and_then(|p| {
@@ -471,6 +526,197 @@ mod tests {
 	}
 
 	#[test]
+	fn relationships_prefetch_the_same_thirty_upcoming_posts_as_images() {
+		let mut browser = ContentBrowser::new();
+		let posts = (1..=40)
+			.map(|id| {
+				let mut post = post(id, "jpg");
+				post.relationships.children = vec![1000 + id];
+				post
+			})
+			.collect();
+		browser.observe(&posts_received(posts, true));
+		let response = browser.handle(&Command::PrepareLinks { source_id: 1 });
+		assert!(matches!(
+			response.messages.as_slice(),
+			[Message::Command(Command::FetchLinkCandidate {
+				post_id: 1001,
+				..
+			})]
+		));
+		assert_eq!(browser.relationship_window, (1..=31).collect::<Vec<_>>());
+		assert_eq!(
+			browser.children_pending,
+			(1001..=1031).collect::<VecDeque<_>>()
+		);
+		let generation = browser.children_generation;
+		browser.handle(&Command::Navigate(NavDirection::Prev));
+		browser.handle(&Command::PrepareLinks { source_id: 40 });
+		assert!(!browser.child_request_is_current(1001, generation));
+		assert_eq!(
+			browser.relationship_window,
+			std::iter::once(40).chain(1..=30).collect::<Vec<_>>()
+		);
+		assert_eq!(browser.children_pending.front(), Some(&1040));
+		assert!(!browser.children_pending.contains(&1031));
+	}
+
+	#[test]
+	fn prefetched_relationships_are_deduplicated_and_ready_on_navigation() {
+		let mut browser = ContentBrowser::new();
+		let mut first = post(1, "jpg");
+		first.relationships.children = vec![10];
+		let mut next = post(2, "jpg");
+		next.relationships.parent_id = Some(10);
+		next.relationships.children = vec![20];
+		browser.observe(&posts_received(vec![first, next], true));
+		browser.handle(&Command::PrepareLinks { source_id: 1 });
+		assert_eq!(browser.children_pending, [10, 20]);
+		let response =
+			child_response(&mut browser, 10, Ok(Box::new(post(10, "jpg"))));
+		assert!(matches!(
+			response.messages.as_slice(),
+			[Message::Command(Command::FetchLinkCandidate {
+				post_id: 20,
+				..
+			})]
+		));
+		let mut child = post(20, "jpg");
+		child.relationships.children = vec![200];
+		assert!(
+			child_response(&mut browser, 20, Ok(Box::new(child)))
+				.messages
+				.is_empty()
+		);
+		assert_eq!(browser.validated_child_ids(), [10]);
+		assert!(!browser.post_cache.contains_key(&200));
+		browser.handle(&Command::Navigate(NavDirection::Next));
+		assert!(
+			browser
+				.handle(&Command::PrepareLinks { source_id: 2 })
+				.messages
+				.is_empty()
+		);
+		assert_eq!(browser.validated_child_ids(), [20]);
+		let response = browser.handle(&Command::OpenLinkedPost {
+			source_id: 2,
+			target_id: 10,
+		});
+		assert_eq!(browser.current_post().unwrap().id, 10);
+		assert!(!response.messages.iter().any(|message| matches!(
+			message,
+			Message::Command(Command::FetchLinkedPost { .. })
+		)));
+	}
+
+	#[test]
+	fn appended_search_results_refresh_relationship_prefetch_without_navigation() {
+		let mut browser = ContentBrowser::new();
+		browser.observe(&posts_received(vec![post(1, "jpg")], true));
+		assert!(
+			browser
+				.handle(&Command::PrepareLinks { source_id: 1 })
+				.messages
+				.is_empty()
+		);
+		let mut next = post(2, "jpg");
+		next.relationships.parent_id = Some(20);
+		browser.observe(&posts_received(vec![next], false));
+		let response = browser.handle(&Command::PrepareLinks { source_id: 1 });
+		assert!(matches!(
+			response.messages.as_slice(),
+			[Message::Command(Command::FetchLinkCandidate {
+				post_id: 20,
+				..
+			})]
+		));
+		assert!(
+			browser
+				.handle(&Command::PrepareLinks { source_id: 1 })
+				.messages
+				.is_empty()
+		);
+	}
+
+	#[test]
+	fn revisiting_a_post_reuses_cached_parent_and_children() {
+		let mut browser = linked_browser();
+		browser.handle(&Command::PrepareLinks { source_id: 2 });
+		let mut child = post(20, "jpg");
+		child.relationships.parent_id = Some(2);
+		child_response(&mut browser, 20, Ok(Box::new(child)));
+		child_response(&mut browser, 30, Ok(Box::new(post(30, "swf"))));
+		child_response(&mut browser, 10, Ok(Box::new(post(10, "jpg"))));
+		assert!(!browser.checking_children());
+		browser.handle(&Command::Navigate(NavDirection::Next));
+		let response = browser.handle(&Command::Navigate(NavDirection::Prev));
+		assert!(response.messages.iter().any(|message| matches!(
+			message,
+			Message::Command(Command::PrepareLinks { source_id: 2 })
+		)));
+		assert!(
+			browser
+				.handle(&Command::PrepareLinks { source_id: 2 })
+				.messages
+				.is_empty()
+		);
+		assert_eq!(browser.validated_child_ids(), [20]);
+		let response = browser.handle(&Command::OpenLinkedPost {
+			source_id: 2,
+			target_id: 20,
+		});
+		assert_eq!(browser.current_post().unwrap().id, 20);
+		assert!(!response.messages.iter().any(|message| matches!(
+			message,
+			Message::Command(Command::FetchLinkedPost { .. })
+		)));
+		assert!(
+			browser
+				.handle(&Command::PrepareLinks { source_id: 20 })
+				.messages
+				.is_empty()
+		);
+		browser.handle(&Command::OpenLinkedPost {
+			source_id: 20,
+			target_id: 2,
+		});
+		assert_eq!(browser.current_post().unwrap().id, 2);
+		assert!(
+			browser
+				.handle(&Command::PrepareLinks { source_id: 2 })
+				.messages
+				.is_empty()
+		);
+		let response = browser.handle(&Command::OpenLinkedPost {
+			source_id: 2,
+			target_id: 10,
+		});
+		assert_eq!(browser.current_post().unwrap().id, 10);
+		assert!(!response.messages.iter().any(|message| matches!(
+			message,
+			Message::Command(Command::FetchLinkedPost { .. })
+		)));
+	}
+
+	#[test]
+	fn displaying_a_post_requests_only_its_immediate_relationships() {
+		let mut browser = ContentBrowser::new();
+		let mut source = post(2, "jpg");
+		source.relationships.children = vec![20];
+		let response = browser.observe(&posts_received(vec![source], true));
+		assert!(response.messages.iter().any(|message| matches!(
+			message,
+			Message::Command(Command::PrepareLinks { source_id: 2 })
+		)));
+		browser.handle(&Command::PrepareLinks { source_id: 2 });
+		let mut child = post(20, "jpg");
+		child.relationships.children = vec![200];
+		let response = child_response(&mut browser, 20, Ok(Box::new(child)));
+		assert!(response.messages.is_empty());
+		assert!(!browser.post_cache.contains_key(&200));
+	}
+
+	#[test]
 	fn child_tiles_wait_for_validation_and_skip_inaccessible_media() {
 		let mut browser = linked_browser();
 		browser.posts[1].relationships.children = vec![20, 21, 22, 23, 24, 25, 26];
@@ -514,12 +760,13 @@ mod tests {
 			browser.links_post().unwrap().relationships.children,
 			[25, 26]
 		);
+		child_response(&mut browser, 10, Ok(Box::new(post(10, "jpg"))));
 		assert!(!browser.checking_children());
 		assert_eq!(browser.current_post().unwrap().id, 2);
 	}
 
 	#[test]
-	fn child_limit_counts_valid_posts_instead_of_unchecked_ids() {
+	fn all_immediate_relationships_are_cached_even_beyond_the_tile_limit() {
 		for parent in [None, Some(10)] {
 			let mut browser = linked_browser();
 			browser.posts[1].relationships.parent_id = parent;
@@ -528,16 +775,15 @@ mod tests {
 			for id in 20..23 {
 				child_response(&mut browser, id, Ok(Box::new(post(id, "swf"))));
 			}
-			let capacity = if parent.is_some() { 7 } else { 8 };
-			for id in 23..23 + capacity {
+			for id in 23..40 {
 				child_response(&mut browser, id, Ok(Box::new(post(id, "jpg"))));
 			}
-			assert_eq!(browser.validated_children.len(), capacity as usize);
+			if let Some(id) = parent {
+				child_response(&mut browser, id, Ok(Box::new(post(id, "jpg"))));
+			}
+			assert_eq!(browser.validated_children.len(), 17);
 			assert!(!browser.checking_children());
-			assert_eq!(
-				browser.validated_child_ids(),
-				(23..23 + capacity).collect::<Vec<_>>()
-			);
+			assert_eq!(browser.validated_child_ids(), (23..40).collect::<Vec<_>>());
 		}
 	}
 
@@ -611,11 +857,14 @@ mod tests {
 				.iter()
 				.any(|message| matches!(message, Message::Event(Event::Navigated)))
 		);
-		let generation = open_link(&mut browser, 2);
-		browser.observe(&Event::LinkedPostLoaded {
-			generation,
-			result: Ok(Box::new(post(2, "jpg"))),
+		let response = browser.handle(&Command::OpenLinkedPost {
+			source_id: 10,
+			target_id: 2,
 		});
+		assert!(!response.messages.iter().any(|message| matches!(
+			message,
+			Message::Command(Command::FetchLinkedPost { .. })
+		)));
 		assert_eq!(browser.current_post().unwrap().id, 2);
 		browser.handle(&Command::Navigate(NavDirection::Next));
 		assert_eq!(browser.current_post().unwrap().id, 3);
@@ -671,7 +920,8 @@ mod tests {
 	}
 
 	#[test]
-	fn unavailable_links_leave_the_current_post_intact_and_can_be_retried() {
+	fn unavailable_links_preserve_the_current_post_and_only_request_failures_are_retried()
+	 {
 		let mut inaccessible = post(20, "jpg");
 		inaccessible.file.url = None;
 		for result in [
@@ -679,13 +929,42 @@ mod tests {
 			Ok(Box::new(inaccessible)),
 			Ok(Box::new(post(20, "swf"))),
 		] {
+			let retryable = result.is_err();
 			let mut browser = linked_browser();
 			let generation = open_link(&mut browser, 20);
 			browser.observe(&Event::LinkedPostLoaded { generation, result });
 			assert_eq!(browser.current_post().unwrap().id, 2);
 			assert!(!browser.link_loading());
-			open_link(&mut browser, 20);
+			if retryable {
+				open_link(&mut browser, 20);
+			} else {
+				let response = browser.handle(&Command::OpenLinkedPost {
+					source_id: 2,
+					target_id: 20,
+				});
+				assert!(response.messages.is_empty());
+				assert_eq!(browser.current_post().unwrap().id, 2);
+			}
 		}
+	}
+
+	#[test]
+	fn related_post_indicator_requires_cached_supported_media() {
+		let mut browser = linked_browser();
+		assert!(!browser.has_valid_related_posts());
+
+		let mut unsupported_parent = post(10, "swf");
+		unsupported_parent.file.url = Some("https://example.test/10.swf".to_owned());
+		browser.post_cache.insert(10, unsupported_parent);
+		assert!(!browser.has_valid_related_posts());
+
+		let mut unavailable_child = post(20, "jpg");
+		unavailable_child.file.url = None;
+		browser.post_cache.insert(20, unavailable_child);
+		assert!(!browser.has_valid_related_posts());
+
+		browser.post_cache.insert(30, post(30, "png"));
+		assert!(browser.has_valid_related_posts());
 	}
 
 	#[test]
