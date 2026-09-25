@@ -143,24 +143,9 @@ impl Reactor {
 				self.browser.handle(command);
 				self.gateway.handle_command(command)
 			}
-			Command::FetchLinkCandidate {
-				post_id,
-				generation,
-			} => {
-				if self.browser.child_request_is_current(*post_id, *generation) {
-					self.gateway.handle_command(command)
-				} else {
-					ComponentResponse::none()
-				}
-			}
-			Command::FetchLinkedPost { generation, .. } => {
-				if self.browser.link_request_is_current(*generation) {
-					self.gateway.handle_command(command)
-				} else {
-					ComponentResponse::none()
-				}
-			}
-			Command::FetchNextPage => self.gateway.handle_command(command),
+			Command::FetchLinkedPost { .. }
+			| Command::FetchLinkCandidate { .. }
+			| Command::FetchNextPage => self.gateway.handle_command(command),
 			Command::Navigate(_)
 			| Command::OpenLinkedPost { .. }
 			| Command::PrepareLinks { .. } => self.browser.handle(command),

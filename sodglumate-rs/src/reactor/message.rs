@@ -30,7 +30,6 @@ pub enum Command {
 	},
 	FetchLinkedPost {
 		post_id: u64,
-		generation: u64,
 	},
 	Navigate(NavDirection),
 	LoadMedia {
@@ -73,7 +72,7 @@ pub enum Event {
 		result: Result<Box<Post>, String>,
 	},
 	LinkedPostLoaded {
-		generation: u64,
+		post_id: u64,
 		result: Result<Box<Post>, String>,
 	},
 	SearchCompleted {

@@ -10,8 +10,7 @@ pub struct ContentBrowser {
 	post_cache: HashMap<u64, Post>,
 	current_index: usize,
 	current_page: u32,
-	link_generation: u64,
-	pending_link: Option<u64>,
+	pending_link: Option<(u64, u64)>,
 	children_source: Option<u64>,
 	relationship_window: Vec<u64>,
 	children_generation: u64,
@@ -27,7 +26,6 @@ impl ContentBrowser {
 			post_cache: HashMap::new(),
 			current_index: 0,
 			current_page: 1,
-			link_generation: 0,
 			pending_link: None,
 			children_source: None,
 			relationship_window: Vec::new(),
@@ -70,14 +68,19 @@ impl ContentBrowser {
 				}
 				self.next_child_request()
 			}
-			Event::LinkedPostLoaded { generation, result } => {
+			Event::LinkedPostLoaded { post_id, result } => {
 				if let Ok(post) = result {
 					self.post_cache.insert(post.id, (**post).clone());
 				}
-				if !self.link_request_is_current(*generation) {
+				let Some((source_id, target_id)) = self.pending_link else {
+					return ComponentResponse::none();
+				};
+				if *post_id != target_id
+					|| self.current_post().map(|post| post.id) != Some(source_id)
+				{
 					return ComponentResponse::none();
 				}
-				let target_id = self.pending_link.take().unwrap();
+				self.pending_link = None;
 				let post = match result {
 					Ok(post) => post,
 					Err(error) => {
@@ -203,17 +206,16 @@ impl ContentBrowser {
 				}
 				let validated = self.post_cache.get(target_id).cloned();
 				self.cancel_link();
-				self.pending_link = Some(*target_id);
+				self.pending_link = Some((*source_id, *target_id));
 				log::info!("Opening linked post {target_id} from post {source_id}");
 				if let Some(post) = validated {
 					return self.observe(&Event::LinkedPostLoaded {
-						generation: self.link_generation,
+						post_id: *target_id,
 						result: Ok(Box::new(post)),
 					});
 				}
 				ComponentResponse::command(Command::FetchLinkedPost {
 					post_id: *target_id,
-					generation: self.link_generation,
 				})
 			}
 			Command::Navigate(direction) => {
@@ -291,7 +293,7 @@ impl ContentBrowser {
 		ComponentResponse::none()
 	}
 
-	pub fn child_request_is_current(&self, post_id: u64, generation: u64) -> bool {
+	fn child_request_is_current(&self, post_id: u64, generation: u64) -> bool {
 		self.children_generation == generation
 			&& self.children_pending.front() == Some(&post_id)
 	}
@@ -329,12 +331,7 @@ impl ContentBrowser {
 
 	fn cancel_link(&mut self) {
 		self.clear_children();
-		self.link_generation = self.link_generation.wrapping_add(1);
 		self.pending_link = None;
-	}
-
-	pub fn link_request_is_current(&self, generation: u64) -> bool {
-		self.pending_link.is_some() && self.link_generation == generation
 	}
 
 	#[cfg(test)]
@@ -493,24 +490,17 @@ mod tests {
 		browser
 	}
 
-	fn open_link(browser: &mut ContentBrowser, target_id: u64) -> u64 {
+	fn open_link(browser: &mut ContentBrowser, target_id: u64) {
 		let source_id = browser.current_post().unwrap().id;
 		let response = browser.handle(&Command::OpenLinkedPost {
 			source_id,
 			target_id,
 		});
-		match response.messages.as_slice() {
-			[
-				Message::Command(Command::FetchLinkedPost {
-					post_id,
-					generation,
-				}),
-			] => {
-				assert_eq!(*post_id, target_id);
-				*generation
-			}
-			_ => panic!("expected one linked-post request"),
-		}
+		assert!(matches!(
+			response.messages.as_slice(),
+			[Message::Command(Command::FetchLinkedPost { post_id })]
+				if *post_id == target_id
+		));
 	}
 
 	fn child_response(
@@ -834,13 +824,13 @@ mod tests {
 	#[test]
 	fn linked_post_replaces_only_the_focused_slot_and_can_be_followed_again() {
 		let mut browser = linked_browser();
-		let generation = open_link(&mut browser, 10);
+		open_link(&mut browser, 10);
 		assert!(browser.link_loading());
 		assert_eq!(browser.current_post().unwrap().id, 2);
 		let mut parent = post(10, "jpg");
 		parent.relationships.children = vec![2];
 		let response = browser.observe(&Event::LinkedPostLoaded {
-			generation,
+			post_id: 10,
 			result: Ok(Box::new(parent)),
 		});
 		assert_eq!(
@@ -880,15 +870,15 @@ mod tests {
 			},
 		] {
 			let mut browser = linked_browser();
-			let generation = open_link(&mut browser, 20);
+			open_link(&mut browser, 20);
 			browser.handle(&command);
-			assert!(!browser.link_request_is_current(generation));
+			assert!(!browser.link_loading());
 			let posts = browser.posts.clone();
 			for result in [Ok(Box::new(post(20, "jpg"))), Err("late failure".into())]
 			{
 				assert!(
 					browser
-						.observe(&Event::LinkedPostLoaded { generation, result })
+						.observe(&Event::LinkedPostLoaded { post_id: 20, result })
 						.messages
 						.is_empty()
 				);
@@ -900,17 +890,17 @@ mod tests {
 	#[test]
 	fn latest_link_wins_and_pagination_does_not_cancel_it() {
 		let mut browser = linked_browser();
-		let old = open_link(&mut browser, 20);
-		let generation = open_link(&mut browser, 30);
+		open_link(&mut browser, 20);
+		open_link(&mut browser, 30);
 		browser.observe(&posts_received(vec![post(4, "jpg")], false));
 		browser.observe(&Event::LinkedPostLoaded {
-			generation: old,
+			post_id: 20,
 			result: Ok(Box::new(post(20, "jpg"))),
 		});
 		assert_eq!(browser.current_post().unwrap().id, 2);
 		assert!(browser.link_loading());
 		browser.observe(&Event::LinkedPostLoaded {
-			generation,
+			post_id: 30,
 			result: Ok(Box::new(post(30, "jpg"))),
 		});
 		assert_eq!(
@@ -931,8 +921,8 @@ mod tests {
 		] {
 			let retryable = result.is_err();
 			let mut browser = linked_browser();
-			let generation = open_link(&mut browser, 20);
-			browser.observe(&Event::LinkedPostLoaded { generation, result });
+			open_link(&mut browser, 20);
+			browser.observe(&Event::LinkedPostLoaded { post_id: 20, result });
 			assert_eq!(browser.current_post().unwrap().id, 2);
 			assert!(!browser.link_loading());
 			if retryable {
