@@ -54,7 +54,10 @@ impl TopBarView {
 				}
 
 				if bar_response.drag_started_by(PointerButton::Primary) {
+					ui.ctx().stop_dragging();
 					ui.ctx().send_viewport_cmd(ViewportCommand::StartDrag);
+					ui.ctx()
+						.input_mut(|input| input.pointer = Default::default());
 				}
 
 				self.last_rect = egui::Frame::none()
@@ -69,22 +72,37 @@ impl TopBarView {
 							egui::Layout::right_to_left(egui::Align::Center),
 							|ui| {
 								ui.horizontal(|ui| {
-									ui.add(
-										Button::new("_")
-											.min_size([16.0, 16.0].into()),
-									);
-									ui.add(
-										Button::new("_")
-											.min_size([16.0, 16.0].into()),
-									);
-									ui.add(
-										Button::new("×")
-											.min_size([16.0, 16.0].into()),
-									);
+									let maximized = ui.input(|i| {
+										i.viewport().maximized.unwrap_or(false)
+									});
+									for (label, tooltip, command) in [
+										("×", "Close", ViewportCommand::Close),
+										(
+											"□",
+											"Resize",
+											ViewportCommand::Maximized(!maximized),
+										),
+										(
+											"_",
+											"Minimize",
+											ViewportCommand::Minimized(true),
+										),
+									] {
+										if ui
+											.add(
+												Button::new(label)
+													.min_size([20.0, 20.0].into()),
+											)
+											.on_hover_text(tooltip)
+											.clicked()
+										{
+											ui.ctx().send_viewport_cmd(command);
+										}
+									}
 								});
 
 								ui.with_layout(
-									egui::Layout::left_to_right(egui::Align::Min),
+									egui::Layout::left_to_right(egui::Align::Center),
 									|ui| {
 										ui.set_clip_rect(
 											ui.available_rect_before_wrap(),
