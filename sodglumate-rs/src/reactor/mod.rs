@@ -177,6 +177,7 @@ impl Reactor {
 impl App for Reactor {
 	fn update(&mut self, ctx: &egui::Context, _frame: &mut Frame) {
 		self.tick(ctx);
+		ctx.request_repaint_after(std::time::Duration::from_secs(1));
 	}
 
 	fn save(&mut self, _storage: &mut dyn eframe::Storage) {
