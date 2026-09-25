@@ -1282,6 +1282,9 @@ impl MediaPane {
 				if let Some(url) = &item.full_url {
 					self.failures.shift_remove(url);
 				}
+				if let Some(error) = self.current_error() {
+					log::warn!("Cannot display selected media: {error}");
+				}
 			}
 			Command::PrefetchMedia { urls } => {
 				log::debug!("Prefetch requested for {} items", urls.len());

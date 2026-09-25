@@ -7,6 +7,15 @@ use tokio::sync::mpsc;
 
 /// Message from async tasks back to the component
 pub enum GatewayMessage {
+	LinkCandidate {
+		post_id: u64,
+		generation: u64,
+		result: Result<Box<Post>, String>,
+	},
+	LinkedPost {
+		generation: u64,
+		result: Result<Box<Post>, String>,
+	},
 	SearchComplete {
 		posts: Vec<Post>,
 		page: u32,
@@ -24,7 +33,7 @@ pub enum SearchStatus {
 	Idle,
 	Loading,
 	Ready,
-	Failed(String),
+	Failed,
 }
 
 pub struct BooruGateway {
@@ -77,6 +86,21 @@ impl BooruGateway {
 		let mut messages = Vec::new();
 		while let Ok(msg) = self.receiver.try_recv() {
 			match msg {
+				GatewayMessage::LinkCandidate {
+					post_id,
+					generation,
+					result,
+				} => messages.push(Message::Event(Event::LinkCandidateLoaded {
+					post_id,
+					generation,
+					result,
+				})),
+				GatewayMessage::LinkedPost { generation, result } => {
+					messages.push(Message::Event(Event::LinkedPostLoaded {
+						generation,
+						result,
+					}));
+				}
 				GatewayMessage::SearchComplete {
 					posts,
 					page,
@@ -116,7 +140,7 @@ impl BooruGateway {
 						continue;
 					}
 					log::error!("Search error: {}", message);
-					self.status = SearchStatus::Failed(message);
+					self.status = SearchStatus::Failed;
 				}
 			}
 		}
@@ -130,6 +154,43 @@ impl BooruGateway {
 
 	pub fn handle_command(&mut self, command: &Command) -> ComponentResponse {
 		match command {
+			Command::FetchLinkedPost {
+				post_id,
+				generation,
+			}
+			| Command::FetchLinkCandidate {
+				post_id,
+				generation,
+			} => {
+				let candidate = matches!(command, Command::FetchLinkCandidate { .. });
+				if !self.can_request() {
+					return ComponentResponse::schedule_command(
+						command.clone(),
+						std::time::Duration::from_secs(1),
+					);
+				}
+				self.record_request();
+				let client = self.client.clone();
+				let sender = self.sender.clone();
+				let (post_id, generation) = (*post_id, *generation);
+				tokio::spawn(async move {
+					let result = client
+						.get_post(post_id)
+						.await
+						.map(Box::new)
+						.map_err(|error| error.to_string());
+					let message = if candidate {
+						GatewayMessage::LinkCandidate {
+							post_id,
+							generation,
+							result,
+						}
+					} else {
+						GatewayMessage::LinkedPost { generation, result }
+					};
+					let _ = sender.send(message).await;
+				});
+			}
 			Command::Search { query, page } => {
 				let limit = 50;
 				if !self.can_request() {
@@ -240,10 +301,6 @@ impl BooruGateway {
 	pub fn is_loading(&self) -> bool {
 		matches!(self.status, SearchStatus::Loading)
 	}
-
-	pub fn status(&self) -> &SearchStatus {
-		&self.status
-	}
 }
 
 impl Default for BooruGateway {
@@ -255,6 +312,53 @@ impl Default for BooruGateway {
 #[cfg(test)]
 mod tests {
 	use super::*;
+
+	#[test]
+	fn throttled_link_requests_are_scheduled_instead_of_dropped() {
+		let mut gateway = BooruGateway::new();
+		gateway.record_request();
+		gateway.record_request();
+		let response = gateway.handle_command(&Command::FetchLinkedPost {
+			post_id: 42,
+			generation: 7,
+		});
+		assert!(matches!(
+			response.scheduled.as_slice(),
+			[(
+				Message::Command(Command::FetchLinkedPost {
+					post_id: 42,
+					generation: 7
+				}),
+				_
+			)]
+		));
+	}
+
+	#[test]
+	fn linked_post_results_do_not_change_the_search_or_pagination_state() {
+		let mut gateway = BooruGateway::new();
+		gateway.current_query = "wolves".into();
+		gateway.current_page = 3;
+		gateway.status = SearchStatus::Loading;
+		gateway
+			.sender
+			.try_send(GatewayMessage::LinkedPost {
+				generation: 7,
+				result: Err("HTTP 404".into()),
+			})
+			.unwrap();
+		let response = gateway.poll();
+		assert!(matches!(
+			response.messages.as_slice(),
+			[Message::Event(Event::LinkedPostLoaded {
+				generation: 7,
+				result: Err(_)
+			})]
+		));
+		assert_eq!(gateway.current_query, "wolves");
+		assert_eq!(gateway.current_page, 3);
+		assert!(gateway.is_loading());
+	}
 
 	#[test]
 	fn stale_search_responses_are_ignored() {

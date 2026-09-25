@@ -101,13 +101,6 @@ impl MediaView {
 				ui.centered_and_justified(|ui| {
 					ui.spinner();
 				});
-			} else if let SearchStatus::Failed(error) = gateway.status() {
-				ui.label(egui::RichText::new(error).color(egui::Color32::RED));
-			} else if let Some(error) = media.current_error() {
-				ui.label(
-					egui::RichText::new(format!("Failed to load: {error}"))
-						.color(egui::Color32::RED),
-				);
 			} else if let Some(_url) = media.current_url() {
 				self.render_media(ui, state, island_active, beat_intensity, output);
 			} else {
@@ -712,8 +705,6 @@ impl MediaView {
 		} else if media.current_is_playable() {
 			#[cfg(feature = "video")]
 			Self::render_current_video(ui, media, None);
-			#[cfg(not(feature = "video"))]
-			ui.label("Video playback is disabled in this build.");
 		} else if media.is_loading() {
 			ui.centered_and_justified(|ui| {
 				ui.spinner();
@@ -746,16 +737,6 @@ impl MediaView {
 					Some(rect.height().max(16.0)),
 				);
 			});
-		} else if target_rect.is_none() {
-			let (rect, _) =
-				ui.allocate_exact_size(available_rect.size(), egui::Sense::hover());
-			ui.painter().text(
-				rect.center(),
-				egui::Align2::CENTER_CENTER,
-				"Loading playable media...",
-				egui::FontId::proportional(13.0),
-				egui::Color32::LIGHT_GRAY,
-			);
 		}
 	}
 

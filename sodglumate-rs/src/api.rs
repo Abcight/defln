@@ -110,6 +110,23 @@ impl E621Client {
 		Self { client }
 	}
 
+	pub async fn get_post(&self, id: u64) -> anyhow::Result<Post> {
+		#[derive(Deserialize)]
+		struct PostResponse {
+			post: Post,
+		}
+		let response = self
+			.client
+			.get(format!("https://e621.net/posts/{id}.json"))
+			.send()
+			.await?
+			.error_for_status()?
+			.json::<PostResponse>()
+			.await?;
+		anyhow::ensure!(response.post.id == id, "Server returned a different post");
+		Ok(response.post)
+	}
+
 	pub async fn search_posts(
 		&self,
 		tags: &str,
