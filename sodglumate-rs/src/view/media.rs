@@ -28,6 +28,59 @@ impl MediaView {
 		}
 	}
 
+	fn paint_gallery_overlap(
+		painter: &egui::Painter,
+		texture: egui::TextureId,
+		rect: egui::Rect,
+		uv: egui::Rect,
+		back_rect: egui::Rect,
+		blend: f32,
+	) {
+		let visible = rect.intersect(painter.clip_rect());
+		let overlap = visible.intersect(back_rect);
+		if !overlap.is_positive() {
+			painter.image(texture, rect, uv, egui::Color32::WHITE);
+			return;
+		}
+
+		// Only the shared pixels crossfade; exposed parts remain fully opaque.
+		for clip in [
+			egui::Rect::from_min_max(
+				visible.min,
+				egui::pos2(visible.right(), overlap.top()),
+			),
+			egui::Rect::from_min_max(
+				egui::pos2(visible.left(), overlap.bottom()),
+				visible.max,
+			),
+			egui::Rect::from_min_max(
+				egui::pos2(visible.left(), overlap.top()),
+				overlap.left_bottom(),
+			),
+			egui::Rect::from_min_max(
+				overlap.right_top(),
+				egui::pos2(visible.right(), overlap.bottom()),
+			),
+		] {
+			if clip.is_positive() {
+				painter.with_clip_rect(clip).image(
+					texture,
+					rect,
+					uv,
+					egui::Color32::WHITE,
+				);
+			}
+		}
+		painter.with_clip_rect(overlap).image(
+			texture,
+			rect,
+			uv,
+			egui::Color32::from_white_alpha(
+				(blend.clamp(0.0, 1.0) * 255.0).round() as u8
+			),
+		);
+	}
+
 	pub(super) fn render(
 		&mut self,
 		ui: &mut Ui,
@@ -484,6 +537,7 @@ impl MediaView {
 								}
 							};
 
+							let mut gallery_images = Vec::new();
 							for offset in [-2, -1, 1, 2, 0] {
 								let v = offset as f32 + self.gallery_anim_offset;
 
@@ -553,17 +607,54 @@ impl MediaView {
 									if final_rect.width() > 0.1
 										&& final_rect.height() > 0.1
 									{
-										let mut painter = ui.painter().clone();
-										painter.set_clip_rect(
-											clip_rect.intersect(ui.clip_rect()),
-										);
-										painter.image(
+										gallery_images.push((
+											offset,
 											off_texture.id(),
 											final_rect,
+											clip_rect.intersect(ui.clip_rect()),
 											uv,
-											egui::Color32::WHITE,
-										);
+										));
 									}
+								}
+							}
+
+							// Keep the two images around the virtual focus above the
+							// side previews, and blend their overlap continuously.
+							gallery_images.sort_by_key(|(offset, ..)| {
+								if *offset == vc_ceil {
+									2
+								} else if *offset == vc_floor {
+									1
+								} else {
+									0
+								}
+							});
+							let back_rect = gallery_images
+								.iter()
+								.find(|(offset, ..)| *offset == vc_floor)
+								.map(|(_, _, rect, clip, _)| rect.intersect(*clip));
+							for (offset, texture, image_rect, clip, uv) in
+								gallery_images
+							{
+								let mut painter = ui.painter().clone();
+								painter.set_clip_rect(clip);
+								if offset == vc_ceil
+									&& vc_floor != vc_ceil && let Some(back_rect) =
+									back_rect
+								{
+									let blend =
+										vc_fract * vc_fract * (3.0 - 2.0 * vc_fract);
+									Self::paint_gallery_overlap(
+										&painter, texture, image_rect, uv, back_rect,
+										blend,
+									);
+								} else {
+									painter.image(
+										texture,
+										image_rect,
+										uv,
+										egui::Color32::WHITE,
+									);
 								}
 							}
 
