@@ -40,6 +40,9 @@ Hold **Shift** to open the island, use **WASD** to select a tile, and press
 when available, and **Child1**, **Child2**, etc., up to nine tiles total.
 Child tiles appear only after their post data confirms a non-deleted post with
 a media URL and a format supported by this build. Unavailable children are omitted.
+The focused post and the next 30 posts have their immediate parent and children
+prefetched into the session cache, using the same window as image prefetching.
+Revisiting a post reuses that metadata; this does not recursively fetch descendants.
 Opening a parent or child replaces the current post in its existing result slot;
 previous/next navigation still follows the surrounding search results. **Back**
 returns to the root island menu.

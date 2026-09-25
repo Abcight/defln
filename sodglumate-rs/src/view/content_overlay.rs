@@ -343,6 +343,10 @@ impl ContentOverlayView {
 					{
 						add_text_line(ui, "Copyright:", &copyright_str);
 					}
+
+					if browser.has_valid_related_posts() {
+						add_text_line(ui, "Has related posts:", "Yes");
+					}
 				});
 			});
 	}

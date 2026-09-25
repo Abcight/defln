@@ -28,6 +28,23 @@ impl MediaView {
 		}
 	}
 
+	fn gallery_fitted_width(
+		post: &crate::api::Post,
+		space: egui::Vec2,
+		loaded: Option<&crate::types::LoadedMedia>,
+	) -> f32 {
+		// Relationship navigation can select a post before its texture arrives.
+		// Metadata keeps the gutters stable during that gap and preview upgrades.
+		let size = if post.file.width > 0 && post.file.height > 0 {
+			egui::vec2(post.file.width as f32, post.file.height as f32)
+		} else if let Some(loaded) = loaded {
+			loaded.texture().size_vec2()
+		} else {
+			return space.x;
+		};
+		size.x * (space.x / size.x).min(space.y / size.y)
+	}
+
 	fn paint_gallery_overlap(
 		painter: &egui::Painter,
 		texture: egui::TextureId,
@@ -434,15 +451,16 @@ impl MediaView {
 								egui::Rect::from_min_size(rect.min, available_size);
 
 							let get_fitted_width = |offset: isize| -> f32 {
-								if let Some(post) = browser.get_post_relative(offset)
-									&& let Some(media) = media.get_media_by_post(post)
-								{
-									let size = media.texture().size_vec2();
-									let scale = (available_size.x / size.x)
-										.min(available_size.y / size.y);
-									return size.x * scale;
-								}
-								available_size.x
+								browser
+									.get_post_relative(offset)
+									.map(|post| {
+										Self::gallery_fitted_width(
+											post,
+											available_size,
+											media.get_media_by_post(post),
+										)
+									})
+									.unwrap_or(available_size.x)
 							};
 
 							let virtual_center = -self.gallery_anim_offset;
@@ -750,5 +768,36 @@ impl MediaView {
 			eframe::egui::vec2(space.width(), space.width() / aspect)
 		};
 		eframe::egui::Rect::from_center_size(space.center(), size)
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::{api::Post, types::LoadedMedia};
+
+	#[test]
+	fn gallery_gutters_do_not_collapse_while_a_linked_image_loads() {
+		let mut post = Post::default();
+		post.file.width = 600;
+		post.file.height = 1200;
+		let space = egui::vec2(1280.0, 720.0);
+		let ctx = egui::Context::default();
+		let width_before_load = MediaView::gallery_fitted_width(&post, space, None);
+		assert_eq!(width_before_load, 360.0);
+		for size in [[60, 120], [600, 1200]] {
+			let loaded = LoadedMedia::Image {
+				texture: ctx.load_texture(
+					"test",
+					egui::ColorImage::new(size, egui::Color32::WHITE),
+					egui::TextureOptions::LINEAR,
+				),
+			};
+			assert_eq!(
+				MediaView::gallery_fitted_width(&post, space, Some(&loaded)),
+				width_before_load
+			);
+		}
+		assert!((space.x - width_before_load) / 2.0 > 0.0);
 	}
 }
