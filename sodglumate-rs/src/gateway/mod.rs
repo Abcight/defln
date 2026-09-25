@@ -13,7 +13,7 @@ pub enum GatewayMessage {
 		result: Result<Box<Post>, String>,
 	},
 	LinkedPost {
-		generation: u64,
+		post_id: u64,
 		result: Result<Box<Post>, String>,
 	},
 	SearchComplete {
@@ -95,9 +95,9 @@ impl BooruGateway {
 					generation,
 					result,
 				})),
-				GatewayMessage::LinkedPost { generation, result } => {
+				GatewayMessage::LinkedPost { post_id, result } => {
 					messages.push(Message::Event(Event::LinkedPostLoaded {
-						generation,
+						post_id,
 						result,
 					}));
 				}
@@ -154,15 +154,10 @@ impl BooruGateway {
 
 	pub fn handle_command(&mut self, command: &Command) -> ComponentResponse {
 		match command {
-			Command::FetchLinkedPost {
-				post_id,
-				generation,
-			}
-			| Command::FetchLinkCandidate {
+			Command::FetchLinkCandidate {
 				post_id,
 				generation,
 			} => {
-				let candidate = matches!(command, Command::FetchLinkCandidate { .. });
 				if !self.can_request() {
 					return ComponentResponse::schedule_command(
 						command.clone(),
@@ -179,16 +174,35 @@ impl BooruGateway {
 						.await
 						.map(Box::new)
 						.map_err(|error| error.to_string());
-					let message = if candidate {
-						GatewayMessage::LinkCandidate {
+					let _ = sender
+						.send(GatewayMessage::LinkCandidate {
 							post_id,
 							generation,
 							result,
-						}
-					} else {
-						GatewayMessage::LinkedPost { generation, result }
-					};
-					let _ = sender.send(message).await;
+						})
+						.await;
+				});
+			}
+			Command::FetchLinkedPost { post_id } => {
+				if !self.can_request() {
+					return ComponentResponse::schedule_command(
+						command.clone(),
+						std::time::Duration::from_secs(1),
+					);
+				}
+				self.record_request();
+				let client = self.client.clone();
+				let sender = self.sender.clone();
+				let post_id = *post_id;
+				tokio::spawn(async move {
+					let result = client
+						.get_post(post_id)
+						.await
+						.map(Box::new)
+						.map_err(|error| error.to_string());
+					let _ = sender
+						.send(GatewayMessage::LinkedPost { post_id, result })
+						.await;
 				});
 			}
 			Command::Search { query, page } => {
@@ -318,17 +332,11 @@ mod tests {
 		let mut gateway = BooruGateway::new();
 		gateway.record_request();
 		gateway.record_request();
-		let response = gateway.handle_command(&Command::FetchLinkedPost {
-			post_id: 42,
-			generation: 7,
-		});
+		let response = gateway.handle_command(&Command::FetchLinkedPost { post_id: 42 });
 		assert!(matches!(
 			response.scheduled.as_slice(),
 			[(
-				Message::Command(Command::FetchLinkedPost {
-					post_id: 42,
-					generation: 7
-				}),
+				Message::Command(Command::FetchLinkedPost { post_id: 42 }),
 				_
 			)]
 		));
@@ -343,7 +351,7 @@ mod tests {
 		gateway
 			.sender
 			.try_send(GatewayMessage::LinkedPost {
-				generation: 7,
+				post_id: 42,
 				result: Err("HTTP 404".into()),
 			})
 			.unwrap();
@@ -351,7 +359,7 @@ mod tests {
 		assert!(matches!(
 			response.messages.as_slice(),
 			[Message::Event(Event::LinkedPostLoaded {
-				generation: 7,
+				post_id: 42,
 				result: Err(_)
 			})]
 		));
