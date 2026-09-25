@@ -142,22 +142,26 @@ impl TopBarView {
 		ui.horizontal_wrapped(|ui| {
 			ui.label("Query:");
 			let query_response = self.render_query_selector(ui);
-			if self.selected_search_query_preset.is_none() {
-				let query = self.search_query.trim();
-				let can_save = !query.is_empty()
-					&& !self
-						.search_query_presets
-						.iter()
-						.any(|preset| preset == query);
+			let query = self.search_query.trim();
+			let can_save = !query.is_empty()
+				&& !self
+					.search_query_presets
+					.iter()
+					.any(|preset| preset == query);
 
-				if ui
-					.add_enabled(can_save, egui::Button::new("Save preset"))
-					.clicked()
-				{
-					let preset = query.to_owned();
-					self.search_query_presets.push(preset.clone());
-					self.selected_search_query_preset = Some(preset);
-				}
+			if ui
+				.add_enabled(can_save, egui::Button::new("💾"))
+				.on_hover_text("Save the current query for reuse")
+				.on_disabled_hover_text(if query.is_empty() {
+					"Enter a query to save"
+				} else {
+					"This query is already saved"
+				})
+				.clicked()
+			{
+				let preset = query.to_owned();
+				self.search_query_presets.push(preset.clone());
+				self.selected_search_query_preset = Some(preset);
 			}
 
 			ui.label("Page:");
