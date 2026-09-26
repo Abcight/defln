@@ -22,6 +22,8 @@ const MAX_DOWNLOAD_BYTES: u64 = 25 * 1024 * 1024;
 const MAX_IMAGE_PIXELS: u64 = 50_000_000;
 const MAX_ANIMATION_FRAMES: usize = 256;
 const MAX_PREFETCH_GIFS: usize = 2;
+const IMAGE_TEXTURE_OPTIONS: egui::TextureOptions =
+	egui::TextureOptions::LINEAR.with_mipmap_mode(Some(egui::TextureFilter::Linear));
 
 pub(crate) enum DecodedMedia {
 	Image(egui::ColorImage),
@@ -32,6 +34,7 @@ pub enum MediaMessage {
 	WorkFinished {
 		url: String,
 		priority: bool,
+		relationship_priority: bool,
 	},
 	ImageLoaded {
 		url: String,
@@ -78,6 +81,8 @@ pub(super) struct LoadWork {
 	cache_key: String,
 	kind: LoadKind,
 	priority: bool,
+	relationship_priority: bool,
+	preserve_on_prefetch: bool,
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -203,6 +208,7 @@ pub struct MediaPane {
 	queued_work: IndexMap<String, LoadWork>,
 	general_active: usize,
 	priority_active: bool,
+	relationship_priority_active: bool,
 	http_client: reqwest::Client,
 	result_tx: mpsc::Sender<MediaMessage>,
 
@@ -215,7 +221,7 @@ pub struct MediaPane {
 impl MediaPane {
 	pub fn new(ctx: &egui::Context) -> Self {
 		log::info!(
-			"Initializing MediaCache with {} workers + 1 priority worker",
+			"Initializing MediaCache with {} general workers + 1 active-post worker + 1 relationship worker",
 			NUM_WORKERS
 		);
 
@@ -241,6 +247,7 @@ impl MediaPane {
 			queued_work: IndexMap::new(),
 			general_active: 0,
 			priority_active: false,
+			relationship_priority_active: false,
 			http_client,
 			result_tx,
 			receiver: result_rx,
@@ -255,14 +262,27 @@ impl MediaPane {
 				.values()
 				.position(|work| work.priority && !work.is_sample)
 				.or_else(|| self.queued_work.values().position(|work| work.priority));
-			let (index, priority) = if let Some(index) =
+			let relationship_priority_index = self
+				.queued_work
+				.values()
+				.position(|work| work.relationship_priority);
+			let (index, priority, relationship_priority) = if let Some(index) =
 				priority_index.filter(|_| !self.priority_active)
 			{
-				(index, true)
-			} else if self.general_active < NUM_WORKERS
-				&& !self.queued_work.is_empty()
+				(index, true, false)
+			} else if let Some(index) = relationship_priority_index
+				.filter(|_| !self.relationship_priority_active)
 			{
-				(priority_index.unwrap_or(0), false)
+				(index, false, true)
+			} else if self.general_active < NUM_WORKERS {
+				let Some(index) = self
+					.queued_work
+					.values()
+					.position(|work| !work.relationship_priority)
+				else {
+					break;
+				};
+				(index, false, false)
 			} else {
 				break;
 			};
@@ -270,6 +290,8 @@ impl MediaPane {
 			self.loading_set.insert(work.url.clone());
 			if priority {
 				self.priority_active = true;
+			} else if relationship_priority {
+				self.relationship_priority_active = true;
 			} else {
 				self.general_active += 1;
 			}
@@ -280,7 +302,11 @@ impl MediaPane {
 				let url = work.url.clone();
 				Self::process_work(work, &client, &sender, &ctx).await;
 				let _ = sender
-					.send(MediaMessage::WorkFinished { url, priority })
+					.send(MediaMessage::WorkFinished {
+						url,
+						priority,
+						relationship_priority,
+					})
 					.await;
 				ctx.request_repaint();
 			});
@@ -695,10 +721,16 @@ impl MediaPane {
 		// Process completed loads
 		while let Ok(msg) = self.receiver.try_recv() {
 			match msg {
-				MediaMessage::WorkFinished { url, priority } => {
+				MediaMessage::WorkFinished {
+					url,
+					priority,
+					relationship_priority,
+				} => {
 					self.loading_set.remove(&url);
 					if priority {
 						self.priority_active = false;
+					} else if relationship_priority {
+						self.relationship_priority_active = false;
 					} else {
 						self.general_active -= 1;
 					}
@@ -736,7 +768,7 @@ impl MediaPane {
 										texture: self.egui_ctx.load_texture(
 											&url,
 											color_image,
-											egui::TextureOptions::LINEAR,
+											IMAGE_TEXTURE_OPTIONS,
 										),
 									}
 								}
@@ -748,13 +780,17 @@ impl MediaPane {
 											.map(
 												|(index, (color_image, duration))| {
 													AnimatedFrame {
-											texture: self.egui_ctx.load_texture(
-												format!("{url}#frame-{index}"),
-												color_image,
-												egui::TextureOptions::LINEAR,
-											),
-											duration,
-										}
+														texture: self
+															.egui_ctx
+															.load_texture(
+																format!(
+																	"{url}#frame-{index}"
+																),
+																color_image,
+																IMAGE_TEXTURE_OPTIONS,
+															),
+														duration,
+													}
 												},
 											)
 											.collect(),
@@ -827,7 +863,7 @@ impl MediaPane {
 						let texture = self.egui_ctx.load_texture(
 							format!("{url}#frame-{frame_index}"),
 							color_image,
-							egui::TextureOptions::LINEAR,
+							IMAGE_TEXTURE_OPTIONS,
 						);
 						let entry =
 							self.cache.entry(url.clone()).or_insert_with(|| {
@@ -1228,11 +1264,39 @@ impl MediaPane {
 		cache_key: String,
 		priority: bool,
 	) {
-		self.enqueue_work(url, is_sample, cache_key, LoadKind::Image, priority);
+		self.enqueue_work(
+			url,
+			is_sample,
+			cache_key,
+			LoadKind::Image,
+			priority,
+			false,
+			false,
+		);
+	}
+
+	fn enqueue_related_full_media(&mut self, url: String) {
+		self.enqueue_work(
+			url.clone(),
+			false,
+			url,
+			LoadKind::Image,
+			false,
+			true,
+			true,
+		);
 	}
 
 	fn enqueue_playable(&mut self, url: String, priority: bool) {
-		self.enqueue_work(url, false, String::new(), LoadKind::Playable, priority);
+		self.enqueue_work(
+			url,
+			false,
+			String::new(),
+			LoadKind::Playable,
+			priority,
+			false,
+			false,
+		);
 	}
 
 	fn enqueue_work(
@@ -1242,12 +1306,16 @@ impl MediaPane {
 		cache_key: String,
 		kind: LoadKind,
 		priority: bool,
+		preserve_on_prefetch: bool,
+		relationship_priority: bool,
 	) {
 		if self.loading_set.contains(&url) || self.failures.contains_key(&url) {
 			return;
 		}
 		if let Some(work) = self.queued_work.get_mut(&url) {
 			work.priority |= priority;
+			work.preserve_on_prefetch |= preserve_on_prefetch;
+			work.relationship_priority |= relationship_priority;
 			return;
 		}
 		self.queued_work.insert(
@@ -1258,6 +1326,8 @@ impl MediaPane {
 				cache_key,
 				kind,
 				priority,
+				relationship_priority,
+				preserve_on_prefetch,
 			},
 		);
 	}
@@ -1281,8 +1351,12 @@ impl MediaPane {
 					kind: *kind,
 				};
 				for work in self.queued_work.values_mut() {
-					work.priority = item.full_url.as_ref() == Some(&work.url)
+					let is_current = item.full_url.as_ref() == Some(&work.url)
 						|| item.sample_url.as_ref() == Some(&work.url);
+					work.priority = is_current;
+					if is_current {
+						work.relationship_priority = false;
+					}
 				}
 				self.current_item = Some(item.clone());
 				if item.kind.is_playable() {
@@ -1323,7 +1397,7 @@ impl MediaPane {
 				log::debug!("Prefetch requested for {} items", urls.len());
 
 				// Active downloads finish; obsolete waiting downloads are discarded.
-				self.queued_work.clear();
+				self.queued_work.retain(|_, work| work.preserve_on_prefetch);
 
 				// Clear old pending items and reset
 				self.pending_samples.clear();
@@ -1346,16 +1420,19 @@ impl MediaPane {
 				}
 			}
 			Command::PrefetchRelatedMedia { urls } => {
-				for (sample_url, full_url, kind) in urls {
-					let item = MediaItem {
-						sample_url: sample_url.clone(),
-						full_url: full_url.clone(),
-						kind: *kind,
-					};
-					let cache_key = self.get_cache_key(&item);
-					if self.pending_set.insert(cache_key) {
-						self.pending_samples.push_back(item);
+				for (url, kind) in urls {
+					if kind.is_playable()
+						|| self.cache.contains_key(url)
+						|| self.loading_set.contains(url)
+						|| self.queued_work.contains_key(url)
+						|| self.failures.contains_key(url)
+					{
+						continue;
 					}
+					// Do not route relationship tiles through the normal speculative
+					// queue: a later browsing prefetch can replace that queue before
+					// the tile's full-resolution image has started.
+					self.enqueue_related_full_media(url.clone());
 				}
 			}
 			_ => {}
@@ -1424,6 +1501,14 @@ impl MediaPane {
 			None
 		};
 		self.media_for_urls(full_url, sample_url)
+	}
+
+	pub fn get_full_media_by_post(&self, post: &Post) -> Option<&LoadedMedia> {
+		post.file
+			.url
+			.as_deref()
+			.and_then(|url| self.cache.get(url))
+			.map(|(media, _)| media)
 	}
 
 	fn media_for_urls(
@@ -1631,6 +1716,49 @@ mod tests {
 		select(&mut media, "current");
 		assert!(!media.queued_work["previous"].priority);
 		assert!(media.queued_work["current"].priority);
+	}
+
+	#[test]
+	fn related_prefetch_queues_full_media_outside_the_regular_prefetch_queue() {
+		let mut media = MediaPane::new(&egui::Context::default());
+		media.pending_set.insert("related.jpg".into());
+		media.handle_command(&Command::PrefetchRelatedMedia {
+			urls: vec![("related.jpg".into(), MediaKind::Image)],
+		});
+		let work = media.queued_work.get("related.jpg").unwrap();
+		assert!(!work.is_sample);
+		assert_eq!(work.cache_key, "related.jpg");
+		assert!(!work.priority);
+		assert!(work.relationship_priority);
+		assert!(work.preserve_on_prefetch);
+		media.handle_command(&Command::PrefetchMedia { urls: Vec::new() });
+		assert!(media.queued_work.contains_key("related.jpg"));
+	}
+
+	#[tokio::test]
+	async fn related_prefetch_uses_a_dedicated_worker() {
+		let mut media = MediaPane::new(&egui::Context::default());
+		media.handle_command(&Command::PrefetchRelatedMedia {
+			urls: vec![("related".into(), MediaKind::Image)],
+		});
+		select(&mut media, "current");
+		media.dispatch_loads();
+
+		assert!(media.loading_set.contains("current"));
+		assert!(media.loading_set.contains("related"));
+		assert!(media.priority_active);
+		assert!(media.relationship_priority_active);
+		assert_eq!(media.general_active, 0);
+
+		tokio::time::timeout(Duration::from_secs(1), async {
+			while !media.loading_set.is_empty() || !media.queued_work.is_empty() {
+				tokio::task::yield_now().await;
+				media.poll();
+			}
+		})
+		.await
+		.expect("failed work must release the dedicated relationship worker");
+		assert!(!media.relationship_priority_active);
 	}
 
 	#[cfg(not(feature = "video"))]

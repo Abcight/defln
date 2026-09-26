@@ -33,7 +33,8 @@ For this reason, most keystrokes are located on the left side of the keyboard.
 | **Shift+Space** | Previous Image |
 | **Ctrl+Space** | Skip 10 Images |
 | **WASD** | Pan Image / Scroll |
-| **C** | Toggle Auto-play |
+| **Z / X** | With at most one child, open the parent / child directly. With multiple children, move the relationship-thumbnail selection left / right. |
+| **C** | Open the selected relationship thumbnail when navigating multiple children. |
 
 Hold **Shift** to open the island, use **WASD** to select a tile, and press
 **Space** to activate it. The **Links** submenu contains **Back**, **Parent**
