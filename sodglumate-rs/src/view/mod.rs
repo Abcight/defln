@@ -42,6 +42,11 @@ use modal::{ModalContent, ModalView};
 use navigation::IslandNavigationView;
 use top_bar::TopBarView;
 
+#[cfg(not(target_arch = "wasm32"))]
+const EMBEDDED_WINDOW_DECORATIONS: bool = true;
+#[cfg(target_arch = "wasm32")]
+const EMBEDDED_WINDOW_DECORATIONS: bool = false;
+
 /// Read-only access to operational application state during a UI pass.
 ///
 /// Views may combine data from any number of components, but can only affect
@@ -127,7 +132,9 @@ impl Views {
 			})
 			.inner;
 
-		Self::render_resize_handles(&mut ui);
+		if EMBEDDED_WINDOW_DECORATIONS {
+			Self::render_resize_handles(&mut ui);
+		}
 
 		view_output
 	}
@@ -262,7 +269,7 @@ impl Views {
 			&mut self.modal,
 			&mut output,
 			!modal_active,
-			true,
+			EMBEDDED_WINDOW_DECORATIONS,
 		);
 
 		// Central panel
