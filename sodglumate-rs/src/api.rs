@@ -112,7 +112,7 @@ impl E621Client {
 		}
 		let response = self
 			.client
-			.get(format!("https://e621.net/posts/{id}.json"))
+			.get(crate::platform::e621_post_url(id))
 			.send()
 			.await?
 			.error_for_status()?
@@ -128,7 +128,7 @@ impl E621Client {
 		limit: u32,
 		page: u32,
 	) -> anyhow::Result<Vec<Post>> {
-		let url = "https://e621.net/posts.json";
+		let url = crate::platform::e621_posts_url();
 		log::info!(
 			"Searching posts with tags: '{}', limit: {}, page: {}",
 			tags,
