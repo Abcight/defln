@@ -1345,6 +1345,19 @@ impl MediaPane {
 					}
 				}
 			}
+			Command::PrefetchRelatedMedia { urls } => {
+				for (sample_url, full_url, kind) in urls {
+					let item = MediaItem {
+						sample_url: sample_url.clone(),
+						full_url: full_url.clone(),
+						kind: *kind,
+					};
+					let cache_key = self.get_cache_key(&item);
+					if self.pending_set.insert(cache_key) {
+						self.pending_samples.push_back(item);
+					}
+				}
+			}
 			_ => {}
 		}
 

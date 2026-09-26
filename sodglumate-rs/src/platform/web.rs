@@ -56,12 +56,21 @@ pub(super) fn api_client() -> reqwest::Client {
 	reqwest::Client::new()
 }
 
+fn proxy_url(path: &str) -> String {
+	let origin = web_sys::window()
+		.expect("browser window is unavailable")
+		.location()
+		.origin()
+		.expect("browser origin is unavailable");
+	format!("{origin}{path}")
+}
+
 pub(super) fn e621_posts_url() -> String {
-	"/api/e621/posts".into()
+	proxy_url("/api/e621/posts")
 }
 
 pub(super) fn e621_post_url(id: u64) -> String {
-	format!("/api/e621/posts/{id}")
+	proxy_url(&format!("/api/e621/posts/{id}"))
 }
 
 pub(super) fn media_client() -> reqwest::Client {

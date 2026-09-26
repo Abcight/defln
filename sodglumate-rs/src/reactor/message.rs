@@ -41,6 +41,9 @@ pub enum Command {
 	PrefetchMedia {
 		urls: Vec<(Option<String>, Option<String>, MediaKind)>,
 	},
+	PrefetchRelatedMedia {
+		urls: Vec<(Option<String>, Option<String>, MediaKind)>,
+	},
 	ToggleBreathing,
 	CompleteBreathingPhase,
 	SetBreathingPhaseMultiplier {

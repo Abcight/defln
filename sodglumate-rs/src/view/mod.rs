@@ -33,6 +33,7 @@ mod content_overlay;
 mod media;
 mod modal;
 mod navigation;
+mod relationship_gallery;
 mod top_bar;
 
 use beat_overlay::BeatOverlayView;
@@ -41,6 +42,7 @@ use island::{IslandAction, IslandCtx, IslandWidget, ROOT_ISLAND};
 use media::MediaView;
 use modal::{ModalContent, ModalView};
 use navigation::IslandNavigationView;
+use relationship_gallery::RelationshipGalleryView;
 use top_bar::TopBarView;
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -75,6 +77,7 @@ pub struct Views {
 	media: MediaView,
 	modal: ModalView,
 	island_navigation: IslandNavigationView,
+	relationship_gallery: RelationshipGalleryView,
 	beat_overlay: BeatOverlayView,
 	content_overlay: ContentOverlayView,
 	last_screen_rect: Rect,
@@ -87,6 +90,7 @@ impl Views {
 			media: MediaView::new(),
 			modal: ModalView::new(),
 			island_navigation: IslandNavigationView::new(),
+			relationship_gallery: RelationshipGalleryView::new(),
 			beat_overlay: BeatOverlayView::new(),
 			content_overlay: ContentOverlayView,
 			last_screen_rect: Rect::ZERO,
@@ -254,13 +258,11 @@ impl Views {
 		}
 		let modal_active = !matches!(self.modal.modal, ModalContent::None);
 
-		// Handle input only when no modal is active
-		if !modal_active {
-			let is_typing = ui.memory(|m| m.focused().is_some());
-			if !is_typing {
-				self.island_navigation
-					.handle_keyboard_input(ui, &mut output);
-			}
+		let keyboard_input_enabled =
+			!modal_active && !ui.memory(|m| m.focused().is_some());
+		if keyboard_input_enabled {
+			self.island_navigation
+				.handle_keyboard_input(ui, &mut output);
 		}
 
 		// Top panel
@@ -300,6 +302,14 @@ impl Views {
 		}
 		self.content_overlay
 			.render_info_overlay(&mut ui, state.browser);
+
+		self.relationship_gallery.render(
+			&mut ui,
+			state.browser,
+			state.media,
+			keyboard_input_enabled && !self.island_navigation.island_ctx.active,
+			&mut output,
+		);
 
 		// Beat debug dot
 		if state.settings.beat_pulse_enabled() {

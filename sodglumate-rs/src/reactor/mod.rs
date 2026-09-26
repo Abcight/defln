@@ -150,9 +150,9 @@ impl Reactor {
 			Command::Navigate(_)
 			| Command::OpenLinkedPost { .. }
 			| Command::PrepareLinks { .. } => self.browser.handle(command),
-			Command::LoadMedia { .. } | Command::PrefetchMedia { .. } => {
-				self.media.handle_command(command)
-			}
+			Command::LoadMedia { .. }
+			| Command::PrefetchMedia { .. }
+			| Command::PrefetchRelatedMedia { .. } => self.media.handle_command(command),
 			Command::ToggleBreathing
 			| Command::CompleteBreathingPhase
 			| Command::SetBreathingPhaseMultiplier { .. }
