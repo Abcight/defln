@@ -1,11 +1,5 @@
 use crate::types::{BreathingPhaseMultipliers, BreathingStyle, ImageFillMode};
-#[cfg(not(target_arch = "wasm32"))]
-use directories::{BaseDirs, ProjectDirs};
 use serde::{Deserialize, Serialize};
-#[cfg(not(target_arch = "wasm32"))]
-use std::fs;
-#[cfg(not(target_arch = "wasm32"))]
-use std::path::PathBuf;
 
 const DEFAULT_SEARCH_QUERY: &str = "~gay ~male solo abs wolf order:score";
 
@@ -97,89 +91,11 @@ impl SavedSettings {
 	}
 }
 
-#[cfg(not(target_arch = "wasm32"))]
-pub fn get_config_dir() -> Option<PathBuf> {
-	if cfg!(target_os = "windows") {
-		ProjectDirs::from("", "", "sodglumate").map(|p| p.config_dir().to_path_buf())
-	} else {
-		BaseDirs::new().map(|b| b.home_dir().join(".sodglumate"))
-	}
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-pub fn load_settings() -> SavedSettings {
-	if let Some(dir) = get_config_dir() {
-		let path = dir.join("settings.toml");
-		if let Ok(content) = fs::read_to_string(&path) {
-			match toml::from_str::<SavedSettings>(&content) {
-				Ok(settings) => return settings.normalized(),
-				Err(e) => log::warn!("Failed to parse settings.toml: {}", e),
-			}
-		}
-	}
-	SavedSettings::default()
-}
-
-#[cfg(target_arch = "wasm32")]
-pub fn load_settings() -> SavedSettings {
-	let Some(storage) =
-		web_sys::window().and_then(|window| window.local_storage().ok().flatten())
-	else {
-		return SavedSettings::default();
-	};
-	match storage.get_item("sodglumate.settings") {
-		Ok(Some(value)) => match serde_json::from_str::<SavedSettings>(&value) {
-			Ok(settings) => settings.normalized(),
-			Err(error) => {
-				log::warn!("Failed to parse saved browser settings: {error}");
-				SavedSettings::default()
-			}
-		},
-		Ok(None) | Err(_) => SavedSettings::default(),
-	}
-}
-
 fn finite_clamped(value: f32, min: f32, max: f32, fallback: f32) -> f32 {
 	if value.is_finite() {
 		value.clamp(min, max)
 	} else {
 		fallback
-	}
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-pub fn save_settings(settings: &SavedSettings) {
-	if let Some(dir) = get_config_dir() {
-		if let Err(e) = fs::create_dir_all(&dir) {
-			log::warn!("Failed to create config directory: {}", e);
-			return;
-		}
-		let path = dir.join("settings.toml");
-		match toml::to_string(settings) {
-			Ok(content) => {
-				if let Err(e) = fs::write(&path, content) {
-					log::warn!("Failed to write settings.toml: {}", e);
-				}
-			}
-			Err(e) => log::warn!("Failed to serialize settings: {}", e),
-		}
-	}
-}
-
-#[cfg(target_arch = "wasm32")]
-pub fn save_settings(settings: &SavedSettings) {
-	let Some(storage) =
-		web_sys::window().and_then(|window| window.local_storage().ok().flatten())
-	else {
-		return;
-	};
-	match serde_json::to_string(settings) {
-		Ok(value) => {
-			if let Err(error) = storage.set_item("sodglumate.settings", &value) {
-				log::warn!("Failed to save browser settings: {error:?}");
-			}
-		}
-		Err(error) => log::warn!("Failed to serialize browser settings: {error}"),
 	}
 }
 

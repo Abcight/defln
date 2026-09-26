@@ -13,6 +13,8 @@ use std::io::{self, BufRead, Read, Seek, SeekFrom};
 use std::time::{Duration, Instant};
 use tokio::sync::mpsc;
 
+mod gif_loader;
+
 /// Number of background workers for general loading
 const NUM_WORKERS: usize = 4;
 const MAX_DOWNLOAD_BYTES: u64 = 25 * 1024 * 1024;
@@ -69,7 +71,7 @@ struct PlaybackTiming {
 }
 
 /// A unit of work sent to a loading worker
-struct LoadWork {
+pub(super) struct LoadWork {
 	url: String,
 	is_sample: bool,
 	cache_key: String,
@@ -217,16 +219,7 @@ impl MediaPane {
 		);
 
 		let (result_tx, result_rx) = mpsc::channel(100);
-		let http_client_builder =
-			reqwest::Client::builder().user_agent("Sodglumate/0.1 (by furikeno)");
-		#[cfg(not(target_arch = "wasm32"))]
-		let http_client_builder = http_client_builder
-			.connect_timeout(std::time::Duration::from_secs(10))
-			.timeout(std::time::Duration::from_secs(60));
-		let http_client = http_client_builder.build().unwrap_or_else(|error| {
-			log::error!("Failed to build media HTTP client: {}", error);
-			reqwest::Client::new()
-		});
+		let http_client = crate::platform::media_client();
 
 		Self {
 			cache: IndexMap::new(),
@@ -282,7 +275,7 @@ impl MediaPane {
 			let client = self.http_client.clone();
 			let sender = self.result_tx.clone();
 			let ctx = self.egui_ctx.clone();
-			crate::runtime::spawn(async move {
+			crate::platform::spawn(async move {
 				let url = work.url.clone();
 				Self::process_work(work, &client, &sender, &ctx).await;
 				let _ = sender
@@ -299,14 +292,8 @@ impl MediaPane {
 		result_tx: &mpsc::Sender<MediaMessage>,
 		ctx: &egui::Context,
 	) {
-		#[cfg(not(target_arch = "wasm32"))]
 		if matches!(work.kind, LoadKind::Playable) && Self::is_gif_url(&work.url) {
-			Self::stream_gif_work(&work.url, http_client, result_tx, ctx).await;
-			return;
-		}
-		#[cfg(target_arch = "wasm32")]
-		if matches!(work.kind, LoadKind::Playable) && Self::is_gif_url(&work.url) {
-			Self::load_gif_work(work, http_client, result_tx, ctx).await;
+			gif_loader::load(work, http_client, result_tx, ctx).await;
 			return;
 		}
 
@@ -315,7 +302,7 @@ impl MediaPane {
 	}
 
 	#[cfg(target_arch = "wasm32")]
-	async fn load_gif_work(
+	pub(super) async fn load_gif_work(
 		work: LoadWork,
 		http_client: &reqwest::Client,
 		result_tx: &mpsc::Sender<MediaMessage>,
@@ -483,7 +470,7 @@ impl MediaPane {
 	}
 
 	#[cfg(not(target_arch = "wasm32"))]
-	async fn stream_gif_work(
+	pub(super) async fn stream_gif_work(
 		url: &str,
 		http_client: &reqwest::Client,
 		result_tx: &mpsc::Sender<MediaMessage>,
