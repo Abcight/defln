@@ -1,4 +1,5 @@
 use crate::api::Post;
+use crate::platform::Instant;
 use crate::reactor::{Command, ComponentResponse, Event};
 use crate::types::{AnimatedFrame, LoadedMedia, MediaKind};
 use eframe::egui;
@@ -10,7 +11,7 @@ use std::collections::{HashSet, VecDeque};
 use std::io::Cursor;
 #[cfg(not(target_arch = "wasm32"))]
 use std::io::{self, BufRead, Read, Seek, SeekFrom};
-use std::time::{Duration, Instant};
+use std::time::Duration;
 use tokio::sync::mpsc;
 
 mod gif_loader;
@@ -757,7 +758,7 @@ impl MediaPane {
 												},
 											)
 											.collect(),
-										started_at: std::time::Instant::now(),
+										started_at: Instant::now(),
 										complete: true,
 									}
 								}
@@ -833,7 +834,7 @@ impl MediaPane {
 								(
 									LoadedMedia::AnimatedImage {
 										frames: Vec::new(),
-										started_at: std::time::Instant::now(),
+										started_at: Instant::now(),
 										complete: false,
 									},
 									CacheState::SampleOnly,
@@ -842,7 +843,7 @@ impl MediaPane {
 						if !matches!(entry.0, LoadedMedia::AnimatedImage { .. }) {
 							entry.0 = LoadedMedia::AnimatedImage {
 								frames: Vec::new(),
-								started_at: std::time::Instant::now(),
+								started_at: Instant::now(),
 								complete: false,
 							};
 						}

@@ -1,7 +1,8 @@
+use crate::platform::Instant;
 use crate::reactor::{Command, ComponentResponse, Event, Message};
 use crate::types::{BreathingPhase, BreathingPhaseMultipliers, BreathingStyle};
 use rand::Rng;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 pub struct BreathingState {
 	pub phase: BreathingPhase,

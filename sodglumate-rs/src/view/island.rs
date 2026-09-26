@@ -1,8 +1,9 @@
+use crate::platform::Instant;
 use crate::reactor::Command;
 use crate::types::{BreathingPhase, BreathingStyle, NavDirection};
 use eframe::egui;
 use std::sync::LazyLock;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 /// Action to perform when an island entry is selected
 #[derive(Clone, Copy)]

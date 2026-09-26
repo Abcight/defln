@@ -1,5 +1,5 @@
+use crate::platform::Instant;
 use crate::reactor::{Command, ComponentResponse};
-use std::time::Instant;
 
 /// Web builds do not provide system-audio capture. This preserves the
 /// application-facing beat API while the web UI omits audio controls.

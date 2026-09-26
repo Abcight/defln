@@ -1,8 +1,9 @@
 use crate::breathing::BreathingOverlay;
 use crate::config::SavedSettings;
+use crate::platform::Instant;
 use crate::reactor::{Command, ComponentResponse, Event, Message};
 use crate::types::{BreathingPhase, ImageFillMode, NavDirection};
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 pub struct SettingsManager {
 	auto_play: bool,

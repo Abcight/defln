@@ -1,5 +1,6 @@
+use crate::platform::Instant;
 use eframe::egui;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 /// Loaded media content
 pub enum LoadedMedia {

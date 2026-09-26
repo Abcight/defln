@@ -1,8 +1,8 @@
 use crate::api::{E621Client, Post};
+use crate::platform::Instant;
 use crate::reactor::{Command, ComponentResponse, Event, Message};
 use std::collections::VecDeque;
 use std::sync::Arc;
-use std::time::Instant;
 use tokio::sync::mpsc;
 
 /// Message from async tasks back to the component

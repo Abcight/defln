@@ -1,8 +1,9 @@
 use super::message::Message;
 use super::queue::MessageQueue;
+use crate::platform::Instant;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 struct ScheduledEvent {
 	emit_at: Instant,
