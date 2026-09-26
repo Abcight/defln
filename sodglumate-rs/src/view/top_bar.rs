@@ -68,8 +68,9 @@ impl TopBarView {
 						bottom: 8.0,
 					})
 					.show(ui, |ui| {
-						ui.with_layout(
-							egui::Layout::right_to_left(egui::Align::Center),
+						ui.allocate_ui_with_layout(
+							egui::vec2(ui.available_width(), ui.available_height()),
+							egui::Layout::right_to_left(egui::Align::Min),
 							|ui| {
 								ui.horizontal(|ui| {
 									let maximized = ui.input(|i| {
