@@ -5,6 +5,8 @@ use std::future::Future;
 use std::path::PathBuf;
 use std::time::Duration;
 
+pub(crate) use std::time::Instant;
+
 pub(super) fn spawn(future: impl Future<Output = ()> + Send + 'static) {
 	tokio::spawn(future);
 }

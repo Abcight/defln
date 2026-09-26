@@ -17,12 +17,13 @@ use crate::breathing::BreathingOverlay;
 use crate::browser::ContentBrowser;
 use crate::gateway::BooruGateway;
 use crate::media::MediaPane;
+use crate::platform::Instant;
 use crate::reactor::{Command, Event, ViewOutput};
 use crate::settings::SettingsManager;
 use crate::types::{BreathingPhase, BreathingStyle, ImageFillMode, NavDirection};
 use eframe::egui::{self, LayerId, Rect, ScrollArea, Ui};
 use egui_extras::{Column, TableBuilder};
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 pub mod island;
 pub mod text_utils;

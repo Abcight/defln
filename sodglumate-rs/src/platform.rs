@@ -8,6 +8,8 @@ mod implementation;
 use crate::config::SavedSettings;
 use std::future::Future;
 
+pub(crate) use implementation::Instant;
+
 #[cfg(not(target_arch = "wasm32"))]
 pub(crate) fn spawn(future: impl Future<Output = ()> + Send + 'static) {
 	implementation::spawn(future);
