@@ -37,16 +37,7 @@ For this reason, most keystrokes are located on the left side of the keyboard.
 | **C** | Open the selected relationship thumbnail when navigating multiple children. |
 
 Hold **Shift** to open the island, use **WASD** to select a tile, and press
-**Space** to activate it. The **Links** submenu contains **Back**, **Parent**
-when available, and **Child1**, **Child2**, etc., up to nine tiles total.
-Child tiles appear only after their post data confirms a non-deleted post with
-a media URL and a format supported by this build. Unavailable children are omitted.
-The focused post and the next 30 posts have their immediate parent and children
-prefetched into the session cache, using the same window as image prefetching.
-Revisiting a post reuses that metadata; this does not recursively fetch descendants.
-Opening a parent or child replaces the current post in its existing result slot;
-previous/next navigation still follows the surrounding search results. **Back**
-returns to the root island menu.
+**Space** to activate it.
 
 ### Links
 
@@ -64,7 +55,7 @@ The newest binaries are as follows:
 
 ## Issues & Feedback
 
-Please report any issues or feedback on the [Issues](https://github.com/abcight/sodglumate-rs/issues) page.
+Please report any issues or feedback on the [Issues](https://maws.gay/abcight/defln/issues) page.
 
 Alternatively, you can also contact me on Discord at `abcight`. Note that I am not always online, and may not accept your friend request.
 

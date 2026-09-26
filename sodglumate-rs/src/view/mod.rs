@@ -244,11 +244,17 @@ impl Views {
 		);
 		let media_url = state.media.current_url().map(str::to_owned);
 		if self.media.last_media_url != media_url {
+			let keep_transform = self
+				.media
+				.can_keep_transform_for(state.browser.current_post());
 			self.media.last_media_url = media_url;
 			self.media.image_load_time = Instant::now();
-			self.media.user_has_panned = false;
-			self.media.user_zoom = 1.0;
-			self.media.user_pan_offset = egui::Vec2::ZERO;
+			if !keep_transform {
+				self.media.user_has_panned = false;
+				self.media.user_zoom = 1.0;
+				self.media.user_pan_offset = egui::Vec2::ZERO;
+			}
+			self.media.remember_post(state.browser.current_post());
 		}
 		let (beat_at, beat_scale) = state.beat.latest_beat();
 		if beat_at > self.beat_overlay.last_beat_time && beat_scale > 0.0 {

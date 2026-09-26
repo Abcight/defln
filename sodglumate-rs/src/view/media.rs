@@ -1,9 +1,19 @@
 use super::*;
+
+#[derive(Clone)]
+struct DisplayedPost {
+	width: u64,
+	height: u64,
+	parent_id: Option<u64>,
+	children: Vec<u64>,
+}
+
 pub(super) struct MediaView {
 	gallery_transforms: std::collections::HashMap<u64, (f32, egui::Vec2)>,
 	pub(super) image_load_time: Instant,
 	pub(super) user_has_panned: bool,
 	pub(super) last_media_url: Option<String>,
+	last_post: Option<DisplayedPost>,
 	pub(super) gallery_anim_start_offset: f32,
 	pub(super) gallery_anim_offset: f32,
 	pub(super) gallery_anim_time: f32,
@@ -19,6 +29,7 @@ impl MediaView {
 			image_load_time: Instant::now(),
 			user_has_panned: false,
 			last_media_url: None,
+			last_post: None,
 			gallery_anim_start_offset: 0.0,
 			gallery_anim_offset: 0.0,
 			gallery_anim_time: 0.0,
@@ -26,6 +37,34 @@ impl MediaView {
 			user_zoom: 1.0,
 			user_pan_offset: egui::Vec2::ZERO,
 		}
+	}
+
+	pub(super) fn can_keep_transform_for(
+		&self,
+		post: Option<&crate::api::Post>,
+	) -> bool {
+		let Some(post) = post else {
+			return false;
+		};
+		let Some(previous) = &self.last_post else {
+			return false;
+		};
+
+		previous.width > 0
+			&& previous.height > 0
+			&& previous.width == post.file.width
+			&& previous.height == post.file.height
+			&& (previous.parent_id == Some(post.id)
+				|| previous.children.contains(&post.id))
+	}
+
+	pub(super) fn remember_post(&mut self, post: Option<&crate::api::Post>) {
+		self.last_post = post.map(|post| DisplayedPost {
+			width: post.file.width,
+			height: post.file.height,
+			parent_id: post.relationships.parent_id,
+			children: post.relationships.children.clone(),
+		});
 	}
 
 	fn gallery_fitted_width(
@@ -775,6 +814,53 @@ impl MediaView {
 mod tests {
 	use super::*;
 	use crate::{api::Post, types::LoadedMedia};
+
+	fn linked_post(id: u64, parent_id: Option<u64>, width: u64, height: u64) -> Post {
+		let mut post = Post {
+			id,
+			..Post::default()
+		};
+		post.file.width = width;
+		post.file.height = height;
+		post.relationships.parent_id = parent_id;
+		post
+	}
+
+	#[test]
+	fn linked_posts_with_equal_dimensions_keep_the_transform() {
+		let mut parent = linked_post(1, None, 1200, 800);
+		let child = linked_post(2, Some(1), 1200, 800);
+		let mut view = MediaView::new();
+		parent.relationships.children.push(child.id);
+
+		view.remember_post(Some(&child));
+
+		assert!(view.can_keep_transform_for(Some(&parent)));
+		view.remember_post(Some(&parent));
+		assert!(view.can_keep_transform_for(Some(&child)));
+	}
+
+	#[test]
+	fn linked_posts_with_different_dimensions_reset_the_transform() {
+		let parent = linked_post(1, None, 1200, 800);
+		let child = linked_post(2, Some(1), 800, 1200);
+		let mut view = MediaView::new();
+
+		view.remember_post(Some(&child));
+
+		assert!(!view.can_keep_transform_for(Some(&parent)));
+	}
+
+	#[test]
+	fn unrelated_posts_with_equal_dimensions_reset_the_transform() {
+		let first = linked_post(1, None, 1200, 800);
+		let second = linked_post(2, None, 1200, 800);
+		let mut view = MediaView::new();
+
+		view.remember_post(Some(&first));
+
+		assert!(!view.can_keep_transform_for(Some(&second)));
+	}
 
 	#[test]
 	fn gallery_gutters_do_not_collapse_while_a_linked_image_loads() {

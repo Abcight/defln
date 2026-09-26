@@ -53,7 +53,7 @@ impl Default for SavedSettings {
 			selected_audio_device: None,
 			beat_pulse_enabled: false,
 			beat_pulse_scale: 0.03,
-			image_fill_mode: ImageFillMode::Fit,
+			image_fill_mode: ImageFillMode::FitToGallery,
 		}
 	}
 }
@@ -102,6 +102,14 @@ fn finite_clamped(value: f32, min: f32, max: f32, fallback: f32) -> f32 {
 #[cfg(test)]
 mod tests {
 	use super::*;
+
+	#[test]
+	fn default_view_preferences_fit_the_gallery_without_beat_pulse() {
+		let settings = SavedSettings::default();
+
+		assert_eq!(settings.image_fill_mode, ImageFillMode::FitToGallery);
+		assert!(!settings.beat_pulse_enabled);
+	}
 
 	#[test]
 	fn normalized_settings_reject_invalid_numeric_values() {
