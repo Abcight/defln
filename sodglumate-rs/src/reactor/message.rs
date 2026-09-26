@@ -42,7 +42,7 @@ pub enum Command {
 		urls: Vec<(Option<String>, Option<String>, MediaKind)>,
 	},
 	PrefetchRelatedMedia {
-		urls: Vec<(Option<String>, Option<String>, MediaKind)>,
+		urls: Vec<(String, MediaKind)>,
 	},
 	ToggleBreathing,
 	CompleteBreathingPhase,

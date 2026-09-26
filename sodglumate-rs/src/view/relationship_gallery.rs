@@ -49,7 +49,7 @@ impl RelationshipGalleryView {
 		output.command(Command::PrefetchRelatedMedia {
 			urls: related
 				.iter()
-				.filter_map(|related| Self::media_urls(&related.post))
+				.filter_map(|related| Self::full_media_url(&related.post))
 				.collect(),
 		});
 
@@ -90,7 +90,7 @@ impl RelationshipGalleryView {
 						let painter = ui.painter();
 						painter.rect_filled(rect, 0.0, egui::Color32::from_gray(30));
 						if let Some(loaded) =
-							media.get_media_by_post(&related_post.post)
+							media.get_full_media_by_post(&related_post.post)
 						{
 							let texture = loaded.texture();
 							painter.image(
@@ -116,18 +116,6 @@ impl RelationshipGalleryView {
 			});
 	}
 
-	fn media_urls(
-		post: &crate::api::Post,
-	) -> Option<(Option<String>, Option<String>, MediaKind)> {
-		let kind = MediaKind::from_extension(&post.file.ext)?;
-		let sample_url = if post.sample.has {
-			post.sample.url.clone().or_else(|| post.preview.url.clone())
-		} else {
-			post.preview.url.clone()
-		};
-		Some((sample_url, post.file.url.clone(), kind))
-	}
-
 	fn direct_shortcut_targets(
 		post: &crate::api::Post,
 	) -> Option<(Option<u64>, Option<u64>)> {
@@ -137,6 +125,11 @@ impl RelationshipGalleryView {
 			_ => return None,
 		};
 		Some((post.relationships.parent_id, child_id))
+	}
+
+	fn full_media_url(post: &crate::api::Post) -> Option<(String, MediaKind)> {
+		let kind = MediaKind::from_extension(&post.file.ext)?;
+		Some((post.file.url.clone()?, kind))
 	}
 
 	fn move_selection(&mut self, related: &[RelatedPost], delta: isize) {
