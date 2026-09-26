@@ -103,10 +103,10 @@ impl TopBarView {
 								});
 
 								ui.with_layout(
-									egui::Layout::left_to_right(egui::Align::Center),
+									egui::Layout::left_to_right(egui::Align::Min),
 									|ui| {
 										ui.set_clip_rect(
-											ui.available_rect_before_wrap(),
+											ui.available_rect_before_wrap().expand(4.0),
 										);
 										self.render_inner(
 											ui, state, modal, output, enabled,
