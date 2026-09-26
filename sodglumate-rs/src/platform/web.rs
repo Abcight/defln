@@ -12,6 +12,14 @@ pub(super) fn api_client() -> reqwest::Client {
 		.expect("Failed to build reqwest client")
 }
 
+pub(super) fn e621_posts_url() -> String {
+	"/api/e621/posts".into()
+}
+
+pub(super) fn e621_post_url(id: u64) -> String {
+	format!("/api/e621/posts/{id}")
+}
+
 pub(super) fn media_client() -> reqwest::Client {
 	reqwest::Client::builder()
 		.user_agent("Sodglumate/0.1 (by furikeno)")
