@@ -52,6 +52,7 @@ pub enum Command {
 	AdjustAutoPlayDelay(i64),
 	AdvanceSlideshow,
 	ToggleCapByBreathing,
+	#[cfg(not(target_arch = "wasm32"))]
 	SetAudioDevice(Option<String>),
 	SetSearchPreferences {
 		query: String,
@@ -59,7 +60,9 @@ pub enum Command {
 		page_input: String,
 	},
 	SetAutoPanCycleDuration(f32),
+	#[cfg(not(target_arch = "wasm32"))]
 	SetBeatPulseEnabled(bool),
+	#[cfg(not(target_arch = "wasm32"))]
 	SetBeatPulseScale(f32),
 	SetImageFillMode(ImageFillMode),
 }
