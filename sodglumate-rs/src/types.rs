@@ -93,9 +93,9 @@ pub enum BreathingStyle {
 /// How to fill the image in the view
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub enum ImageFillMode {
-	#[default]
 	Cover,
 	Fit,
+	#[default]
 	FitToGallery,
 }
 
