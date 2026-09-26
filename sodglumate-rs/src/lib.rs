@@ -1,6 +1,9 @@
 mod api;
 #[cfg(not(target_arch = "wasm32"))]
 mod beat;
+#[cfg(target_arch = "wasm32")]
+#[path = "beat/web.rs"]
+mod beat;
 mod breathing;
 mod browser;
 mod config;

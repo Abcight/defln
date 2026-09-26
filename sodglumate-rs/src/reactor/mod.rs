@@ -17,7 +17,6 @@ pub use message::{Command, ComponentResponse, Event, Message, ViewOutput};
 pub use queue::MessageQueue;
 pub use scheduler::Scheduler;
 
-#[cfg(not(target_arch = "wasm32"))]
 use crate::beat::SystemBeat;
 use crate::breathing::BreathingOverlay;
 use crate::browser::ContentBrowser;
@@ -38,7 +37,6 @@ pub struct Reactor {
 	pub breathing: BreathingOverlay,
 	pub views: Views,
 	pub settings: SettingsManager,
-	#[cfg(not(target_arch = "wasm32"))]
 	pub beat: SystemBeat,
 }
 
@@ -61,7 +59,6 @@ impl Reactor {
 			),
 			views: Views::new(&settings_manager),
 			settings: settings_manager,
-			#[cfg(not(target_arch = "wasm32"))]
 			beat: SystemBeat::new(
 				settings.selected_audio_device,
 				settings.beat_pulse_enabled,
@@ -91,11 +88,9 @@ impl Reactor {
 		// Poll async components
 		let gateway_response = self.gateway.poll();
 		let media_response = self.media.poll();
-		#[cfg(not(target_arch = "wasm32"))]
 		let beat_response = self.beat.poll();
 		self.process_response(gateway_response);
 		self.process_response(media_response);
-		#[cfg(not(target_arch = "wasm32"))]
 		self.process_response(beat_response);
 
 		self.drain_queue();
@@ -109,7 +104,6 @@ impl Reactor {
 				media: &self.media,
 				breathing: &self.breathing,
 				settings: &self.settings,
-				#[cfg(not(target_arch = "wasm32"))]
 				beat: &self.beat,
 			},
 		);
@@ -172,17 +166,14 @@ impl Reactor {
 			| Command::SetImageFillMode(_) => {
 				self.settings.handle_command(command, &self.breathing)
 			}
-			#[cfg(not(target_arch = "wasm32"))]
 			Command::SetBeatPulseScale(_) => {
 				self.settings.handle_command(command, &self.breathing)
 			}
-			#[cfg(not(target_arch = "wasm32"))]
 			Command::SetBeatPulseEnabled(_) => {
 				self.beat.handle_command(command);
 				self.settings.handle_command(command, &self.breathing);
 				ComponentResponse::none()
 			}
-			#[cfg(not(target_arch = "wasm32"))]
 			Command::SetAudioDevice(_) => {
 				self.beat.handle_command(command);
 				ComponentResponse::none()
@@ -224,36 +215,9 @@ impl App for Reactor {
 			breathing_idle_multiplier: self.breathing.phase_multipliers().idle,
 			breathing_style: self.breathing.style(),
 			auto_pan_cycle_duration: self.settings.auto_pan_cycle_duration(),
-			selected_audio_device: {
-				#[cfg(not(target_arch = "wasm32"))]
-				{
-					self.beat.selected_device().clone()
-				}
-				#[cfg(target_arch = "wasm32")]
-				{
-					None
-				}
-			},
-			beat_pulse_enabled: {
-				#[cfg(not(target_arch = "wasm32"))]
-				{
-					self.settings.beat_pulse_enabled()
-				}
-				#[cfg(target_arch = "wasm32")]
-				{
-					false
-				}
-			},
-			beat_pulse_scale: {
-				#[cfg(not(target_arch = "wasm32"))]
-				{
-					self.settings.beat_pulse_scale()
-				}
-				#[cfg(target_arch = "wasm32")]
-				{
-					0.03
-				}
-			},
+			selected_audio_device: self.beat.selected_device().clone(),
+			beat_pulse_enabled: self.settings.beat_pulse_enabled(),
+			beat_pulse_scale: self.settings.beat_pulse_scale(),
 			image_fill_mode: self.settings.image_fill_mode(),
 		};
 		save_settings(&saved);
