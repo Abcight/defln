@@ -12,7 +12,6 @@
 //!
 //! Do not merge a view into a component as a convenience.
 
-#[cfg(not(target_arch = "wasm32"))]
 use crate::beat::SystemBeat;
 use crate::breathing::BreathingOverlay;
 use crate::browser::ContentBrowser;
@@ -28,7 +27,6 @@ use std::time::{Duration, Instant};
 pub mod island;
 pub mod text_utils;
 
-#[cfg(not(target_arch = "wasm32"))]
 mod beat_overlay;
 mod content_overlay;
 mod media;
@@ -36,7 +34,6 @@ mod modal;
 mod navigation;
 mod top_bar;
 
-#[cfg(not(target_arch = "wasm32"))]
 use beat_overlay::BeatOverlayView;
 use content_overlay::ContentOverlayView;
 use island::{IslandAction, IslandCtx, IslandWidget, ROOT_ISLAND};
@@ -55,7 +52,6 @@ pub struct ApplicationState<'a> {
 	pub media: &'a MediaPane,
 	pub breathing: &'a BreathingOverlay,
 	pub settings: &'a SettingsManager,
-	#[cfg(not(target_arch = "wasm32"))]
 	pub beat: &'a SystemBeat,
 }
 
@@ -73,7 +69,6 @@ pub struct Views {
 	media: MediaView,
 	modal: ModalView,
 	island_navigation: IslandNavigationView,
-	#[cfg(not(target_arch = "wasm32"))]
 	beat_overlay: BeatOverlayView,
 	content_overlay: ContentOverlayView,
 	last_screen_rect: Rect,
@@ -86,7 +81,6 @@ impl Views {
 			media: MediaView::new(),
 			modal: ModalView::new(),
 			island_navigation: IslandNavigationView::new(),
-			#[cfg(not(target_arch = "wasm32"))]
 			beat_overlay: BeatOverlayView::new(),
 			content_overlay: ContentOverlayView,
 			last_screen_rect: Rect::ZERO,
@@ -244,18 +238,12 @@ impl Views {
 			self.media.user_zoom = 1.0;
 			self.media.user_pan_offset = egui::Vec2::ZERO;
 		}
-		#[cfg(not(target_arch = "wasm32"))]
-		let beat_intensity = {
-			let (beat_at, beat_scale) = state.beat.latest_beat();
-			if beat_at > self.beat_overlay.last_beat_time && beat_scale > 0.0 {
-				self.beat_overlay.last_beat_time = beat_at;
-				self.beat_overlay.last_beat_scale = beat_scale;
-				self.beat_overlay.beat_intensity = beat_scale;
-			}
-			self.beat_overlay.beat_intensity
-		};
-		#[cfg(target_arch = "wasm32")]
-		let beat_intensity = 0.0;
+		let (beat_at, beat_scale) = state.beat.latest_beat();
+		if beat_at > self.beat_overlay.last_beat_time && beat_scale > 0.0 {
+			self.beat_overlay.last_beat_time = beat_at;
+			self.beat_overlay.last_beat_scale = beat_scale;
+			self.beat_overlay.beat_intensity = beat_scale;
+		}
 		let modal_active = !matches!(self.modal.modal, ModalContent::None);
 
 		// Handle input only when no modal is active
@@ -284,7 +272,7 @@ impl Views {
 			&mut ui,
 			state,
 			island_active,
-			beat_intensity,
+			self.beat_overlay.beat_intensity,
 			&mut output,
 			!modal_active,
 		);
@@ -305,15 +293,12 @@ impl Views {
 		self.content_overlay
 			.render_info_overlay(&mut ui, state.browser);
 
-		#[cfg(not(target_arch = "wasm32"))]
-		{
-			// Beat debug dot
-			if state.settings.beat_pulse_enabled() {
-				self.beat_overlay.render(&mut ui);
-			} else {
-				self.beat_overlay.beat_intensity = 0.0;
-				self.beat_overlay.last_beat_scale = 0.0;
-			}
+		// Beat debug dot
+		if state.settings.beat_pulse_enabled() {
+			self.beat_overlay.render(&mut ui);
+		} else {
+			self.beat_overlay.beat_intensity = 0.0;
+			self.beat_overlay.last_beat_scale = 0.0;
 		}
 
 		// Island navigation overlay
