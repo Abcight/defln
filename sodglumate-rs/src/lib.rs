@@ -9,11 +9,11 @@ mod browser;
 mod config;
 mod gateway;
 mod media;
+mod platform;
 mod reactor;
 #[cfg(test)]
 #[path = "../regressions/mod.rs"]
 mod regressions;
-mod runtime;
 mod settings;
 mod types;
 mod view;

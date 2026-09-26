@@ -168,7 +168,7 @@ impl BooruGateway {
 				let client = self.client.clone();
 				let sender = self.sender.clone();
 				let (post_id, generation) = (*post_id, *generation);
-				crate::runtime::spawn(async move {
+				crate::platform::spawn(async move {
 					let result = client
 						.get_post(post_id)
 						.await
@@ -194,7 +194,7 @@ impl BooruGateway {
 				let client = self.client.clone();
 				let sender = self.sender.clone();
 				let post_id = *post_id;
-				crate::runtime::spawn(async move {
+				crate::platform::spawn(async move {
 					let result = client
 						.get_post(post_id)
 						.await
@@ -281,7 +281,7 @@ impl BooruGateway {
 		let client = self.client.clone();
 		let sender = self.sender.clone();
 
-		crate::runtime::spawn(async move {
+		crate::platform::spawn(async move {
 			log::debug!("API request started: page={}", page);
 			match client.search_posts(&query, limit, page).await {
 				Ok(posts) => {

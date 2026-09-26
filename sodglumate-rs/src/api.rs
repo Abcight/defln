@@ -1,6 +1,4 @@
 use serde::{Deserialize, Serialize};
-#[cfg(not(target_arch = "wasm32"))]
-use std::time::Duration;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Post {
@@ -102,16 +100,9 @@ pub struct E621Client {
 
 impl E621Client {
 	pub fn new() -> Self {
-		let client_builder =
-			reqwest::Client::builder().user_agent("Sodglumate/0.1 (by furikeno)");
-		#[cfg(not(target_arch = "wasm32"))]
-		let client_builder = client_builder
-			.connect_timeout(Duration::from_secs(10))
-			.timeout(Duration::from_secs(30));
-		let client = client_builder
-			.build()
-			.expect("Failed to build reqwest client");
-		Self { client }
+		Self {
+			client: crate::platform::api_client(),
+		}
 	}
 
 	pub async fn get_post(&self, id: u64) -> anyhow::Result<Post> {
