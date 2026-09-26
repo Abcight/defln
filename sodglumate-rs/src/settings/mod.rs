@@ -156,10 +156,12 @@ impl SettingsManager {
 					finite_clamped(*duration, 10.0, 120.0, 10.0);
 				ComponentResponse::none()
 			}
+			#[cfg(not(target_arch = "wasm32"))]
 			Command::SetBeatPulseEnabled(enabled) => {
 				self.beat_pulse_enabled = *enabled;
 				ComponentResponse::none()
 			}
+			#[cfg(not(target_arch = "wasm32"))]
 			Command::SetBeatPulseScale(scale) => {
 				self.beat_pulse_scale = finite_clamped(*scale, 0.01, 0.15, 0.03);
 				ComponentResponse::none()

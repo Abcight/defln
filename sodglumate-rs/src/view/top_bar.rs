@@ -106,7 +106,8 @@ impl TopBarView {
 									egui::Layout::left_to_right(egui::Align::Min),
 									|ui| {
 										ui.set_clip_rect(
-											ui.available_rect_before_wrap().expand(4.0),
+											ui.available_rect_before_wrap()
+												.expand(4.0),
 										);
 										self.render_inner(
 											ui, state, modal, output, enabled,
@@ -134,6 +135,7 @@ impl TopBarView {
 	) {
 		let settings = state.settings;
 		let breathing = state.breathing;
+		#[cfg(not(target_arch = "wasm32"))]
 		let beat = state.beat;
 
 		if !enabled {
@@ -341,58 +343,65 @@ impl TopBarView {
 					}
 				});
 
-			ui.separator();
+			#[cfg(not(target_arch = "wasm32"))]
+			{
+				ui.separator();
 
-			ui.label("Audio:");
-			let selected_label = beat.selected_device_label();
-			egui::ComboBox::from_id_salt("audio_device")
-				.selected_text(selected_label)
-				.show_ui(ui, |ui| {
-					if ui
-						.selectable_label(beat.selected_device().is_none(), "Default")
-						.clicked()
-					{
-						output.command(Command::SetAudioDevice(None));
-					}
-					for device_name in beat.device_names() {
-						let is_selected = beat.selected_device().as_deref()
-							== Some(device_name.as_str());
-						if ui.selectable_label(is_selected, device_name).clicked() {
-							output.command(Command::SetAudioDevice(Some(
-								device_name.clone(),
-							)));
+				ui.label("Audio:");
+				let selected_label = beat.selected_device_label();
+				egui::ComboBox::from_id_salt("audio_device")
+					.selected_text(selected_label)
+					.show_ui(ui, |ui| {
+						if ui
+							.selectable_label(
+								beat.selected_device().is_none(),
+								"Default",
+							)
+							.clicked()
+						{
+							output.command(Command::SetAudioDevice(None));
 						}
-					}
-				});
-			let (audio_color, audio_status) = if !settings.beat_pulse_enabled() {
-				(
-					egui::Color32::GRAY,
-					"Audio capture is off. Enable Pulse to discover input devices.",
-				)
-			} else if beat.is_active() {
-				(egui::Color32::GREEN, "Audio capture is active.")
-			} else {
-				(egui::Color32::RED, "Audio input is unavailable.")
-			};
-			ui.label(egui::RichText::new("*").color(audio_color).size(10.0))
-				.on_hover_text(audio_status);
-
-			let mut beat_pulse_enabled = settings.beat_pulse_enabled();
-			if ui.checkbox(&mut beat_pulse_enabled, "Pulse").changed() {
-				output.command(Command::SetBeatPulseEnabled(beat_pulse_enabled));
-			}
-			if beat_pulse_enabled {
-				ui.label("Scale");
-				let mut beat_pulse_scale = settings.beat_pulse_scale();
-				if ui
-					.add(
-						egui::DragValue::new(&mut beat_pulse_scale)
-							.range(0.01..=0.15)
-							.speed(0.01),
+						for device_name in beat.device_names() {
+							let is_selected = beat.selected_device().as_deref()
+								== Some(device_name.as_str());
+							if ui.selectable_label(is_selected, device_name).clicked()
+							{
+								output.command(Command::SetAudioDevice(Some(
+									device_name.clone(),
+								)));
+							}
+						}
+					});
+				let (audio_color, audio_status) = if !settings.beat_pulse_enabled() {
+					(
+						egui::Color32::GRAY,
+						"Audio capture is off. Enable Pulse to discover input devices.",
 					)
-					.changed()
-				{
-					output.command(Command::SetBeatPulseScale(beat_pulse_scale));
+				} else if beat.is_active() {
+					(egui::Color32::GREEN, "Audio capture is active.")
+				} else {
+					(egui::Color32::RED, "Audio input is unavailable.")
+				};
+				ui.label(egui::RichText::new("*").color(audio_color).size(10.0))
+					.on_hover_text(audio_status);
+
+				let mut beat_pulse_enabled = settings.beat_pulse_enabled();
+				if ui.checkbox(&mut beat_pulse_enabled, "Pulse").changed() {
+					output.command(Command::SetBeatPulseEnabled(beat_pulse_enabled));
+				}
+				if beat_pulse_enabled {
+					ui.label("Scale");
+					let mut beat_pulse_scale = settings.beat_pulse_scale();
+					if ui
+						.add(
+							egui::DragValue::new(&mut beat_pulse_scale)
+								.range(0.01..=0.15)
+								.speed(0.01),
+						)
+						.changed()
+					{
+						output.command(Command::SetBeatPulseScale(beat_pulse_scale));
+					}
 				}
 			}
 		});

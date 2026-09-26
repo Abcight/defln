@@ -7,7 +7,9 @@ use egui_player_rs::VideoPainter;
 
 use indexmap::IndexMap;
 use std::collections::{HashSet, VecDeque};
-use std::io::{self, BufRead, Cursor, Read, Seek, SeekFrom};
+use std::io::Cursor;
+#[cfg(not(target_arch = "wasm32"))]
+use std::io::{self, BufRead, Read, Seek, SeekFrom};
 use std::time::{Duration, Instant};
 use tokio::sync::mpsc;
 
@@ -38,6 +40,7 @@ pub enum MediaMessage {
 		url: String,
 		result: Result<Vec<u8>, String>,
 	},
+	#[cfg(not(target_arch = "wasm32"))]
 	GifFrame {
 		url: String,
 		frame: Result<Option<(egui::ColorImage, Duration)>, String>,
@@ -53,7 +56,9 @@ enum LoadKind {
 
 #[cfg(feature = "video")]
 type VideoDebugState = (Option<String>, bool, Option<(u32, u32)>);
+#[cfg(not(target_arch = "wasm32"))]
 type GifStreamFrame = (Option<(egui::ColorImage, Duration)>, bool);
+#[cfg(not(target_arch = "wasm32"))]
 type GifStreamResult = Result<GifStreamFrame, String>;
 
 struct PlaybackTiming {
@@ -72,6 +77,7 @@ struct LoadWork {
 	priority: bool,
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 struct StreamingGifReader {
 	receiver: mpsc::Receiver<Result<Vec<u8>, String>>,
 	buffer: Vec<u8>,
@@ -79,6 +85,7 @@ struct StreamingGifReader {
 	finished: bool,
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 impl StreamingGifReader {
 	fn new(receiver: mpsc::Receiver<Result<Vec<u8>, String>>) -> Self {
 		Self {
@@ -111,6 +118,7 @@ impl StreamingGifReader {
 	}
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 impl Read for StreamingGifReader {
 	fn read(&mut self, buffer: &mut [u8]) -> io::Result<usize> {
 		if buffer.is_empty() {
@@ -127,6 +135,7 @@ impl Read for StreamingGifReader {
 	}
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 impl BufRead for StreamingGifReader {
 	fn fill_buf(&mut self) -> io::Result<&[u8]> {
 		while self.position >= self.buffer.len() && !self.finished {
@@ -140,6 +149,7 @@ impl BufRead for StreamingGifReader {
 	}
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 impl Seek for StreamingGifReader {
 	fn seek(&mut self, _position: SeekFrom) -> io::Result<u64> {
 		Err(io::Error::new(
@@ -207,15 +217,16 @@ impl MediaPane {
 		);
 
 		let (result_tx, result_rx) = mpsc::channel(100);
-		let http_client = reqwest::Client::builder()
-			.user_agent("Sodglumate/0.1 (by furikeno)")
+		let http_client_builder =
+			reqwest::Client::builder().user_agent("Sodglumate/0.1 (by furikeno)");
+		#[cfg(not(target_arch = "wasm32"))]
+		let http_client_builder = http_client_builder
 			.connect_timeout(std::time::Duration::from_secs(10))
-			.timeout(std::time::Duration::from_secs(60))
-			.build()
-			.unwrap_or_else(|error| {
-				log::error!("Failed to build media HTTP client: {}", error);
-				reqwest::Client::new()
-			});
+			.timeout(std::time::Duration::from_secs(60));
+		let http_client = http_client_builder.build().unwrap_or_else(|error| {
+			log::error!("Failed to build media HTTP client: {}", error);
+			reqwest::Client::new()
+		});
 
 		Self {
 			cache: IndexMap::new(),
@@ -271,7 +282,7 @@ impl MediaPane {
 			let client = self.http_client.clone();
 			let sender = self.result_tx.clone();
 			let ctx = self.egui_ctx.clone();
-			tokio::spawn(async move {
+			crate::runtime::spawn(async move {
 				let url = work.url.clone();
 				Self::process_work(work, &client, &sender, &ctx).await;
 				let _ = sender
@@ -288,13 +299,41 @@ impl MediaPane {
 		result_tx: &mpsc::Sender<MediaMessage>,
 		ctx: &egui::Context,
 	) {
+		#[cfg(not(target_arch = "wasm32"))]
 		if matches!(work.kind, LoadKind::Playable) && Self::is_gif_url(&work.url) {
 			Self::stream_gif_work(&work.url, http_client, result_tx, ctx).await;
+			return;
+		}
+		#[cfg(target_arch = "wasm32")]
+		if matches!(work.kind, LoadKind::Playable) && Self::is_gif_url(&work.url) {
+			Self::load_gif_work(work, http_client, result_tx, ctx).await;
 			return;
 		}
 
 		let result = Self::load_work(http_client, &work).await;
 		Self::emit_load_result(work, result, result_tx, ctx).await;
+	}
+
+	#[cfg(target_arch = "wasm32")]
+	async fn load_gif_work(
+		work: LoadWork,
+		http_client: &reqwest::Client,
+		result_tx: &mpsc::Sender<MediaMessage>,
+		ctx: &egui::Context,
+	) {
+		let result = Self::load_work(http_client, &work)
+			.await
+			.and_then(|bytes| Self::decode_media(&bytes))
+			.map_err(|error| error.to_string());
+		let _ = result_tx
+			.send(MediaMessage::ImageLoaded {
+				url: work.url,
+				is_sample: work.is_sample,
+				full_url: work.cache_key,
+				result,
+			})
+			.await;
+		ctx.request_repaint();
 	}
 
 	async fn emit_load_result(
@@ -333,6 +372,7 @@ impl MediaPane {
 		}
 	}
 
+	#[cfg(not(target_arch = "wasm32"))]
 	fn spawn_gif_decoder(
 		url: &str,
 	) -> (
@@ -415,6 +455,7 @@ impl MediaPane {
 		(chunk_tx, frame_rx)
 	}
 
+	#[cfg(not(target_arch = "wasm32"))]
 	async fn forward_gif_frames(
 		url: String,
 		mut frame_rx: mpsc::Receiver<GifStreamResult>,
@@ -441,6 +482,7 @@ impl MediaPane {
 		}
 	}
 
+	#[cfg(not(target_arch = "wasm32"))]
 	async fn stream_gif_work(
 		url: &str,
 		http_client: &reqwest::Client,
@@ -533,6 +575,7 @@ impl MediaPane {
 		let _ = frame_task.await;
 	}
 
+	#[cfg(not(target_arch = "wasm32"))]
 	async fn send_gif_error(
 		url: &str,
 		error: String,
@@ -645,6 +688,7 @@ impl MediaPane {
 		))
 	}
 
+	#[cfg(not(target_arch = "wasm32"))]
 	fn frame_duration(delay: image::Delay) -> Duration {
 		let (numerator, denominator) = delay.numer_denom_ms();
 		if numerator == 0 {
@@ -774,6 +818,7 @@ impl MediaPane {
 						}
 					}
 				}
+				#[cfg(not(target_arch = "wasm32"))]
 				MediaMessage::GifFrame {
 					url,
 					frame,

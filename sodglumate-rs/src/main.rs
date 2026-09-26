@@ -1,41 +1,10 @@
-#![windows_subsystem = "windows"]
+#![cfg_attr(target_os = "windows", windows_subsystem = "windows")]
 
-mod api;
-mod beat;
-mod breathing;
-mod browser;
-mod config;
-mod gateway;
-mod media;
-mod reactor;
-#[cfg(test)]
-#[path = "../regressions/mod.rs"]
-mod regressions;
-mod settings;
-mod types;
-mod view;
-
-use reactor::Reactor;
-
+#[cfg(not(target_arch = "wasm32"))]
 #[tokio::main]
 async fn main() -> eframe::Result<()> {
-	env_logger::Builder::from_env(
-		env_logger::Env::default().default_filter_or("info"),
-	)
-	.init();
-
-	let native_options = eframe::NativeOptions {
-		viewport: eframe::egui::ViewportBuilder::default()
-			.with_inner_size([1280.0, 720.0])
-			.with_min_inner_size([480.0, 360.0])
-			.with_decorations(false)
-			.with_drag_and_drop(true),
-		..Default::default()
-	};
-
-	eframe::run_native(
-		"Sodglumate",
-		native_options,
-		Box::new(|cc| Ok(Box::new(Reactor::new(&cc.egui_ctx)))),
-	)
+	sodglumate_rs::run_native()
 }
+
+#[cfg(target_arch = "wasm32")]
+fn main() {}
