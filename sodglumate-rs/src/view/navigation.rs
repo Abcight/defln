@@ -36,12 +36,6 @@ impl IslandNavigationView {
 
 		let space_pressed = ui.input(|i| i.key_pressed(egui::Key::Space));
 		let ctrl_pressed = ui.input(|i| i.modifiers.ctrl);
-		let c_pressed = ui.input(|i| i.key_pressed(egui::Key::C));
-
-		if c_pressed {
-			output.command(Command::ToggleAutoPlay);
-		}
-
 		if space_pressed {
 			if ctrl_pressed {
 				output.command(Command::Navigate(NavDirection::Skip(10)));
@@ -49,6 +43,92 @@ impl IslandNavigationView {
 				output.command(Command::Navigate(NavDirection::Next));
 			}
 		}
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::api::Post;
+	use crate::reactor::Message;
+
+	#[test]
+	fn shift_links_parent_emits_an_in_place_navigation_command() {
+		let ctx = egui::Context::default();
+		let mut navigation = IslandNavigationView::new();
+		let mut browser = ContentBrowser::new();
+		let mut post = Post {
+			id: 42,
+			..Post::default()
+		};
+		post.file.ext = "jpg".into();
+		post.file.url = Some("https://example.test/42.jpg".into());
+		post.relationships.parent_id = Some(17);
+		browser.observe(&Event::SearchCompleted {
+			posts: vec![post],
+			page: 1,
+			is_new: true,
+		});
+		let settings = SettingsManager::default();
+		let mut modal = ModalView::new();
+		modal.modal = ModalContent::None;
+		let mut messages = Vec::new();
+		for key in [
+			None,
+			Some(egui::Key::S),
+			Some(egui::Key::D),
+			Some(egui::Key::Space),
+			Some(egui::Key::D),
+			Some(egui::Key::Space),
+		] {
+			let modifiers = egui::Modifiers {
+				shift: true,
+				..Default::default()
+			};
+			let events = key
+				.into_iter()
+				.flat_map(|key| {
+					[true, false].map(|pressed| egui::Event::Key {
+						key,
+						physical_key: None,
+						pressed,
+						repeat: false,
+						modifiers,
+					})
+				})
+				.collect();
+			let _ = ctx.run(
+				egui::RawInput {
+					modifiers,
+					events,
+					..Default::default()
+				},
+				|ctx| {
+					egui::CentralPanel::default().show(ctx, |ui| {
+						let mut output = ViewOutput::default();
+						navigation.handle_keyboard_input(ui, &mut output);
+						navigation.render(
+							ui,
+							&settings,
+							&browser,
+							&mut modal,
+							&mut output,
+						);
+						messages.extend(output.into_messages());
+					});
+				},
+			);
+		}
+		assert!(matches!(
+			messages.as_slice(),
+			[
+				Message::Command(Command::PrepareLinks { source_id: 42 }),
+				Message::Command(Command::OpenLinkedPost {
+					source_id: 42,
+					target_id: 17
+				})
+			]
+		));
 	}
 }
 
@@ -130,93 +210,5 @@ impl IslandNavigationView {
 				}
 			}
 		}
-	}
-}
-
-#[cfg(test)]
-mod tests {
-	use super::*;
-	use crate::api::Post;
-	use crate::reactor::Message;
-
-	#[test]
-	fn shift_links_parent_emits_an_in_place_navigation_command() {
-		let ctx = egui::Context::default();
-		let mut navigation = IslandNavigationView::new();
-		let mut browser = ContentBrowser::new();
-		let mut post = Post {
-			id: 42,
-			..Post::default()
-		};
-		post.file.ext = "jpg".into();
-		post.file.url = Some("https://example.test/42.jpg".into());
-		post.relationships.parent_id = Some(17);
-		browser.observe(&Event::SearchCompleted {
-			posts: vec![post],
-			page: 1,
-			is_new: true,
-		});
-		let settings = SettingsManager::default();
-		let mut modal = ModalView::new();
-		modal.modal = ModalContent::None;
-		let mut messages = Vec::new();
-		// Root starts on Previous image. Move down, right to Links,
-		// open it, then move right from Back to Parent and confirm.
-		for key in [
-			None,
-			Some(egui::Key::S),
-			Some(egui::Key::D),
-			Some(egui::Key::Space),
-			Some(egui::Key::D),
-			Some(egui::Key::Space),
-		] {
-			let modifiers = egui::Modifiers {
-				shift: true,
-				..Default::default()
-			};
-			let events = key
-				.into_iter()
-				.flat_map(|key| {
-					[true, false].map(|pressed| egui::Event::Key {
-						key,
-						physical_key: None,
-						pressed,
-						repeat: false,
-						modifiers,
-					})
-				})
-				.collect();
-			let _ = ctx.run(
-				egui::RawInput {
-					modifiers,
-					events,
-					..Default::default()
-				},
-				|ctx| {
-					egui::CentralPanel::default().show(ctx, |ui| {
-						let mut output = ViewOutput::default();
-						navigation.handle_keyboard_input(ui, &mut output);
-						navigation.render(
-							ui,
-							&settings,
-							&browser,
-							&mut modal,
-							&mut output,
-						);
-						messages.extend(output.into_messages());
-					});
-				},
-			);
-		}
-		assert!(matches!(
-			messages.as_slice(),
-			[
-				Message::Command(Command::PrepareLinks { source_id: 42 }),
-				Message::Command(Command::OpenLinkedPost {
-					source_id: 42,
-					target_id: 17
-				})
-			]
-		));
 	}
 }

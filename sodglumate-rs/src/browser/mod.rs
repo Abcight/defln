@@ -298,14 +298,14 @@ impl ContentBrowser {
 			&& self.children_pending.front() == Some(&post_id)
 	}
 
+	pub fn validated_child_ids(&self) -> Vec<u64> {
+		self.validated_children.iter().map(|post| post.id).collect()
+	}
+
 	pub fn links_post(&self) -> Option<Post> {
 		let mut post = self.current_post()?.clone();
 		post.relationships.children = self.validated_child_ids();
 		Some(post)
-	}
-
-	pub fn validated_child_ids(&self) -> Vec<u64> {
-		self.validated_children.iter().map(|post| post.id).collect()
 	}
 
 	/// Whether the focused post has a related post that this build can display.
@@ -313,15 +313,27 @@ impl ContentBrowser {
 	/// Relationship IDs in the search response are only hints. The overlay must
 	/// not advertise them until their cached post data has passed validation.
 	pub fn has_valid_related_posts(&self) -> bool {
+		!self.related_posts().is_empty()
+	}
+
+	/// Related posts ready to display, ordered with the parent first.
+	pub fn related_posts(&self) -> Vec<RelatedPost> {
 		let Some(post) = self.current_post() else {
-			return false;
+			return Vec::new();
 		};
 
 		post.relationships
 			.parent_id
 			.into_iter()
 			.chain(post.relationships.children.iter().copied())
-			.any(|id| self.post_cache.get(&id).is_some_and(supported_link_media))
+			.filter_map(|id| {
+				self.post_cache
+					.get(&id)
+					.filter(|post| supported_link_media(post))
+					.cloned()
+					.map(|post| RelatedPost { post })
+			})
+			.collect()
 	}
 
 	#[cfg(test)]
@@ -455,6 +467,11 @@ fn preview_url(post: &Post) -> Option<String> {
 	}
 }
 
+#[derive(Clone, Debug)]
+pub struct RelatedPost {
+	pub post: Post,
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -488,6 +505,23 @@ mod tests {
 		));
 		browser.handle(&Command::Navigate(NavDirection::Next));
 		browser
+	}
+
+	#[test]
+	fn related_posts_put_the_parent_before_children() {
+		let mut browser = linked_browser();
+		browser.post_cache.insert(10, post(10, "jpg"));
+		browser.post_cache.insert(20, post(20, "jpg"));
+		browser.post_cache.insert(30, post(30, "jpg"));
+
+		let related = browser.related_posts();
+		assert_eq!(
+			related
+				.iter()
+				.map(|related| related.post.id)
+				.collect::<Vec<_>>(),
+			[10, 20, 30]
+		);
 	}
 
 	fn open_link(browser: &mut ContentBrowser, target_id: u64) {
@@ -745,11 +779,11 @@ mod tests {
 		child_response(&mut browser, 24, Err("HTTP 404".into()));
 		child_response(&mut browser, 25, Ok(Box::new(post(25, "gif"))));
 		child_response(&mut browser, 26, Ok(Box::new(post(26, "png"))));
-		assert_eq!(browser.validated_child_ids(), [25, 26]);
 		assert_eq!(
 			browser.links_post().unwrap().relationships.children,
 			[25, 26]
 		);
+		assert_eq!(browser.validated_child_ids(), [25, 26]);
 		child_response(&mut browser, 10, Ok(Box::new(post(10, "jpg"))));
 		assert!(!browser.checking_children());
 		assert_eq!(browser.current_post().unwrap().id, 2);
