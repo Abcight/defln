@@ -50,7 +50,7 @@ strip = true
 [package.metadata.packager]
 product-name = "Sodglumate"
 identifier = "com.abcight.sodglumate"
-icons = ["icon/sg-icon-placeholder.png"]
+icons = ["distribution/icon/sg-icon-placeholder.png"]
 license-file = "distribution/BINARY-LICENSE"
 formats = ["appimage", "nsis"]
-resources = ["distribution/license.html", "icon/LICENSE"]
+resources = ["distribution/license.html", "distribution/icon/LICENSE"]
