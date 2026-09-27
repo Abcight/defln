@@ -48,10 +48,10 @@ This project makes use of e621's API. For more information, see the [e621.net AP
 Pre-built binaries are available for download on the [Releases](https://github.com/abcight/sodglumate-rs/releases) page.
 
 The newest binaries are as follows:
-| Platform | Mirror |
-|---|---|
-| Windows x86_64 | [Download](https://github.com/Abcight/sodglumate-rs/releases/download/0.1.0/Sodglumate.0.1.0.Win64.x86_64.Bare.zip) |
-| Linux x86_64 | [Download](https://github.com/Abcight/sodglumate-rs/releases/download/0.1.0/Sodglumate.0.1.0.Linux.x86_64.Bare.zip) |
+| Platform | Type | Mirror |
+|---|---|---|
+| Windows x86_64 | Setup | [Download](https://git.abcight.com/abcight/defln/releases/download/sodglumate-0.2.0/sodglumate-rs_0.2.0_x64-setup.exe) |
+| Linux x86_64 | AppImage | [Download](https://git.abcight.com/abcight/defln/releases/download/sodglumate-0.2.0/sodglumate-rs_0.2.0_x86_64.AppImage) |
 
 ## Issues & Feedback
 
