@@ -4,6 +4,7 @@ mod beat;
 #[cfg(target_arch = "wasm32")]
 #[path = "beat/web.rs"]
 mod beat;
+mod booru;
 mod breathing;
 mod browser;
 mod config;

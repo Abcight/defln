@@ -10,6 +10,10 @@ A native media browser for [e621](https://e621.net).
 
 Sodglumate is a desktop application for browsing and viewing media from e621.
 
+It can also use the Rule34 or Gelbooru DAPI without changing the application's
+internal post model. Select the source from the top-bar dropdown, then press
+Search to query that source.
+
 Designed with mostly single-handed operation in mind.
 
 ### Features

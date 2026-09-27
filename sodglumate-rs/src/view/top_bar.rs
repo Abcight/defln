@@ -143,6 +143,33 @@ impl TopBarView {
 		}
 
 		ui.horizontal_wrapped(|ui| {
+			let source = state.gateway.source();
+			ui.label("Source:");
+			egui::ComboBox::from_id_salt("booru_source")
+				.selected_text(source.label())
+				.show_ui(ui, |ui| {
+					for candidate in crate::booru::BooruSource::ALL {
+						if ui
+							.selectable_label(candidate == source, candidate.label())
+							.clicked()
+						{
+							self.search_page_input = "1".to_owned();
+							output.command(Command::SetBooruSource(candidate));
+						}
+					}
+				});
+			if ui
+				.add_enabled(source.uses_dapi(), Button::new("⚙"))
+				.on_hover_text(if source.uses_dapi() {
+					"Configure API credentials"
+				} else {
+					"e621 does not use DAPI credentials"
+				})
+				.clicked()
+			{
+				modal.open_dapi_credentials(source, settings);
+			}
+			ui.separator();
 			ui.label("Query:");
 			let query_response = self.render_query_selector(ui);
 			let query = self.search_query.trim();

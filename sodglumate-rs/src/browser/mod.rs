@@ -147,6 +147,14 @@ impl ContentBrowser {
 
 	pub fn handle(&mut self, command: &Command) -> ComponentResponse {
 		match command {
+			Command::SetBooruSource(_) => {
+				self.posts.clear();
+				self.post_cache.clear();
+				self.current_index = 0;
+				self.current_page = 1;
+				self.cancel_link();
+				ComponentResponse::none()
+			}
 			Command::PrepareLinks { source_id } => {
 				let Some(post) = self.current_post() else {
 					return ComponentResponse::none();

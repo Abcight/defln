@@ -3,8 +3,38 @@ use serde::{Deserialize, Serialize};
 
 const DEFAULT_SEARCH_QUERY: &str = "~gay ~male solo abs wolf order:score";
 
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct DapiCredentials {
+	#[serde(default)]
+	pub user_id: String,
+	#[serde(default)]
+	pub api_key: String,
+}
+
+impl DapiCredentials {
+	pub fn normalized(mut self) -> Self {
+		self.user_id = self.user_id.trim().to_owned();
+		self.api_key = self.api_key.trim().to_owned();
+		self
+	}
+
+	pub fn is_complete(&self) -> bool {
+		!self.user_id.is_empty() && !self.api_key.is_empty()
+	}
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct BooruCredentials {
+	#[serde(default)]
+	pub rule34: DapiCredentials,
+	#[serde(default)]
+	pub gelbooru: DapiCredentials,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SavedSettings {
+	#[serde(default)]
+	pub booru_credentials: BooruCredentials,
 	pub search_query: String,
 	#[serde(default)]
 	pub search_query_presets: Vec<String>,
@@ -37,6 +67,7 @@ fn default_breathing_multiplier() -> f32 {
 impl Default for SavedSettings {
 	fn default() -> Self {
 		Self {
+			booru_credentials: BooruCredentials::default(),
 			search_query: DEFAULT_SEARCH_QUERY.to_owned(),
 			search_query_presets: vec![DEFAULT_SEARCH_QUERY.to_owned()],
 			search_page_input: "1".to_owned(),
@@ -60,6 +91,9 @@ impl Default for SavedSettings {
 
 impl SavedSettings {
 	pub fn normalized(mut self) -> Self {
+		self.booru_credentials.rule34 = self.booru_credentials.rule34.normalized();
+		self.booru_credentials.gelbooru =
+			self.booru_credentials.gelbooru.normalized();
 		self.auto_play_delay_secs =
 			finite_clamped(self.auto_play_delay_secs, 1.0, 60.0, 16.0);
 		self.auto_pan_cycle_duration =

@@ -50,7 +50,9 @@ impl Reactor {
 		let mut reactor = Self {
 			queue: MessageQueue::new(),
 			scheduler: Scheduler::new(),
-			gateway: BooruGateway::new(),
+			gateway: BooruGateway::with_credentials(
+				settings.booru_credentials.clone(),
+			),
 			browser: ContentBrowser::new(),
 			media: MediaPane::new(ctx),
 			breathing: BreathingOverlay::new(
@@ -119,7 +121,15 @@ impl Reactor {
 	fn drain_queue(&mut self) {
 		let mut iterations = 0;
 		while let Some(message) = self.queue.pop() {
-			log::trace!("Processing message: {:?}", message);
+			match &message {
+				Message::Command(Command::SetDapiCredentials { source, .. }) => {
+					log::trace!(
+						"Processing credential update for {}",
+						source.label()
+					);
+				}
+				_ => log::trace!("Processing message: {:?}", message),
+			}
 			let response = self.process_message(&message);
 			self.process_response(response);
 
@@ -140,6 +150,15 @@ impl Reactor {
 
 	fn dispatch(&mut self, command: &Command) -> ComponentResponse {
 		match command {
+			Command::SetBooruSource(_) => {
+				self.browser.handle(command);
+				self.gateway.handle_command(command)
+			}
+			Command::SetDapiCredentials { .. } => {
+				let response = self.gateway.handle_command(command);
+				self.settings.handle_command(command, &self.breathing);
+				response
+			}
 			Command::Search { .. } => {
 				self.browser.handle(command);
 				self.gateway.handle_command(command)
@@ -220,6 +239,7 @@ impl App for Reactor {
 			beat_pulse_enabled: self.settings.beat_pulse_enabled(),
 			beat_pulse_scale: self.settings.beat_pulse_scale(),
 			image_fill_mode: self.settings.image_fill_mode(),
+			booru_credentials: self.settings.booru_credentials().clone(),
 		};
 		save_settings(&saved);
 	}

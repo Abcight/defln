@@ -1,4 +1,5 @@
 use crate::api::Post;
+use crate::booru::BooruSource;
 use crate::types::{
 	BreathingPhase, BreathingStyle, ImageFillMode, MediaKind, NavDirection,
 };
@@ -13,6 +14,12 @@ pub enum Message {
 #[derive(Clone, Debug)]
 #[allow(dead_code)]
 pub enum Command {
+	SetBooruSource(BooruSource),
+	SetDapiCredentials {
+		source: BooruSource,
+		user_id: String,
+		api_key: String,
+	},
 	Search {
 		query: String,
 		page: u32,

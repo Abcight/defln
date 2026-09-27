@@ -4,6 +4,7 @@ pub(super) enum ModalContent {
 	None,
 	Hello,
 	BreathingDisclaimer,
+	DapiCredentials(crate::booru::BooruSource),
 }
 
 pub(super) struct ModalView {
@@ -12,6 +13,8 @@ pub(super) struct ModalView {
 	pub(super) modal: ModalContent,
 	pub(super) breathing_disclaimer_accepted: bool,
 	pub(super) breathing_disclaimer_checked: bool,
+	dapi_user_id: String,
+	dapi_api_key: String,
 }
 
 impl ModalView {
@@ -22,7 +25,20 @@ impl ModalView {
 			modal: ModalContent::Hello,
 			breathing_disclaimer_accepted: false,
 			breathing_disclaimer_checked: false,
+			dapi_user_id: String::new(),
+			dapi_api_key: String::new(),
 		}
+	}
+
+	pub(super) fn open_dapi_credentials(
+		&mut self,
+		source: crate::booru::BooruSource,
+		settings: &SettingsManager,
+	) {
+		let credentials = settings.dapi_credentials(source);
+		self.dapi_user_id = credentials.user_id;
+		self.dapi_api_key = credentials.api_key;
+		self.modal = ModalContent::DapiCredentials(source);
 	}
 
 	pub(super) fn render(&mut self, ui: &mut Ui, output: &mut ViewOutput) {
@@ -159,6 +175,47 @@ impl ModalView {
 										self.breathing_disclaimer_accepted = true;
 										self.modal = ModalContent::None;
 										output.command(Command::ToggleBreathing);
+									}
+								},
+							);
+						});
+					},
+					ModalContent::DapiCredentials(source) => {
+						ui.add_space(10.0);
+						ui.heading(format!("{} API credentials", source.label()));
+						ui.label("Credentials are saved in this app's local settings.");
+						ui.add_space(10.0);
+
+						ui.with_layout(egui::Layout::top_down(egui::Align::LEFT), |ui| {
+							ui.label("User ID");
+							ui.add(
+								egui::TextEdit::singleline(&mut self.dapi_user_id)
+									.desired_width(ui.available_width()),
+							);
+							ui.add_space(8.0);
+							ui.label("API key");
+							ui.add(
+								egui::TextEdit::singleline(&mut self.dapi_api_key)
+									.password(true)
+									.desired_width(ui.available_width()),
+							);
+						});
+
+						ui.add_space(12.0);
+						ui.horizontal(|ui| {
+							if ui.button("Cancel").clicked() {
+								self.modal = ModalContent::None;
+							}
+							ui.with_layout(
+								egui::Layout::right_to_left(egui::Align::Center),
+								|ui| {
+									if ui.button("Save").clicked() {
+										output.command(Command::SetDapiCredentials {
+											source: *source,
+											user_id: self.dapi_user_id.clone(),
+											api_key: self.dapi_api_key.clone(),
+										});
+										self.modal = ModalContent::None;
 									}
 								},
 							);

@@ -1,5 +1,6 @@
+use crate::booru::BooruSource;
 use crate::breathing::BreathingOverlay;
-use crate::config::SavedSettings;
+use crate::config::{BooruCredentials, DapiCredentials, SavedSettings};
 use crate::platform::Instant;
 use crate::reactor::{Command, ComponentResponse, Event, Message};
 use crate::types::{BreathingPhase, ImageFillMode, NavDirection};
@@ -18,6 +19,7 @@ pub struct SettingsManager {
 	beat_pulse_enabled: bool,
 	beat_pulse_scale: f32,
 	image_fill_mode: ImageFillMode,
+	booru_credentials: BooruCredentials,
 }
 
 impl SettingsManager {
@@ -40,6 +42,7 @@ impl SettingsManager {
 			beat_pulse_enabled: false,
 			beat_pulse_scale: 0.03,
 			image_fill_mode: ImageFillMode::default(),
+			booru_credentials: BooruCredentials::default(),
 		}
 	}
 
@@ -60,6 +63,7 @@ impl SettingsManager {
 			beat_pulse_enabled: saved.beat_pulse_enabled,
 			beat_pulse_scale: saved.beat_pulse_scale,
 			image_fill_mode: saved.image_fill_mode,
+			booru_credentials: saved.booru_credentials,
 		}
 	}
 
@@ -150,6 +154,27 @@ impl SettingsManager {
 				self.search_query_presets =
 					normalize_search_query_presets(presets.clone());
 				self.search_page_input = page_input.clone();
+				ComponentResponse::none()
+			}
+			Command::SetDapiCredentials {
+				source,
+				user_id,
+				api_key,
+			} => {
+				let credentials = DapiCredentials {
+					user_id: user_id.clone(),
+					api_key: api_key.clone(),
+				}
+				.normalized();
+				match source {
+					BooruSource::Rule34 => {
+						self.booru_credentials.rule34 = credentials
+					}
+					BooruSource::Gelbooru => {
+						self.booru_credentials.gelbooru = credentials
+					}
+					BooruSource::E621 => {}
+				}
 				ComponentResponse::none()
 			}
 			Command::SetAutoPanCycleDuration(duration) => {
@@ -244,6 +269,18 @@ impl SettingsManager {
 
 	pub fn image_fill_mode(&self) -> ImageFillMode {
 		self.image_fill_mode
+	}
+
+	pub fn dapi_credentials(&self, source: BooruSource) -> DapiCredentials {
+		match source {
+			BooruSource::Rule34 => self.booru_credentials.rule34.clone(),
+			BooruSource::Gelbooru => self.booru_credentials.gelbooru.clone(),
+			BooruSource::E621 => DapiCredentials::default(),
+		}
+	}
+
+	pub fn booru_credentials(&self) -> &BooruCredentials {
+		&self.booru_credentials
 	}
 }
 
