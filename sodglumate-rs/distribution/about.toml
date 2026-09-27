@@ -1,0 +1,25 @@
+accepted = [
+    "Apache-2.0",
+    "MIT",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "BSL-1.0",
+    "CDLA-Permissive-2.0",
+    "ISC",
+    "MPL-2.0",
+    "NCSA",
+    "OFL-1.1",
+    "Unicode-3.0",
+    "Ubuntu-font-1.0",
+    "Zlib",
+]
+
+private = { ignore = true }
+
+[epaint_default_fonts.clarify]
+license = "(MIT OR Apache-2.0) AND OFL-1.1 AND Ubuntu-font-1.0"
+
+[[epaint_default_fonts.clarify.files]]
+path = "fonts/UFL.txt"
+checksum = "2f0015108d68627bd788d313f529c21ff4da2c2c42a5e1f3883acc83480f9002"
+license = "Ubuntu-font-1.0"

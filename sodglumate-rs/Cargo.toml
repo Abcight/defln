@@ -2,6 +2,7 @@
 name = "sodglumate-rs"
 version = "0.2.0"
 edition = "2024"
+publish = false
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -45,3 +46,11 @@ lto = true
 codegen-units = 1
 panic = "abort"
 strip = true
+
+[package.metadata.packager]
+product-name = "Sodglumate"
+identifier = "com.abcight.sodglumate"
+icons = ["icon/sg-icon-placeholder.png"]
+license-file = "distribution/BINARY-LICENSE"
+formats = ["appimage", "nsis"]
+resources = ["distribution/license.html", "icon/LICENSE"]
