@@ -714,6 +714,26 @@ impl MediaPane {
 		}
 	}
 
+	fn validate_texture_size(&self, image: &egui::ColorImage) -> Result<(), String> {
+		let max_texture_side = self.egui_ctx.input(|input| input.max_texture_side);
+		if image.size[0] > max_texture_side || image.size[1] > max_texture_side {
+			return Err(format!(
+				"Image size {}x{} exceeds the maximum texture side of {}",
+				image.size[0], image.size[1], max_texture_side
+			));
+		}
+		Ok(())
+	}
+
+	fn validate_decoded_media(&self, media: &DecodedMedia) -> Result<(), String> {
+		match media {
+			DecodedMedia::Image(image) => self.validate_texture_size(image),
+			DecodedMedia::Animated(frames) => frames
+				.iter()
+				.try_for_each(|(image, _)| self.validate_texture_size(image)),
+		}
+	}
+
 	pub fn poll(&mut self) -> ComponentResponse {
 		#[cfg(feature = "video")]
 		self.poll_video_state();
@@ -743,6 +763,13 @@ impl MediaPane {
 				} => {
 					match result {
 						Ok(decoded_media) => {
+							if let Err(error) =
+								self.validate_decoded_media(&decoded_media)
+							{
+								log::error!("Image load failed: {} - {}", url, error);
+								self.record_failure(url, error);
+								continue;
+							}
 							// A late preview must not replace full content or a streaming GIF.
 							if is_sample
 								&& self.cache.get(&full_url).is_some_and(
@@ -849,6 +876,11 @@ impl MediaPane {
 					finished,
 				} => match frame {
 					Ok(Some((color_image, duration))) => {
+						if let Err(error) = self.validate_texture_size(&color_image) {
+							log::error!("GIF load failed: {} - {}", url, error);
+							self.record_failure(url, error);
+							continue;
+						}
 						self.note_decoder_ready(&url, "gif");
 						let frame_index = self
 							.cache
@@ -1589,6 +1621,34 @@ mod tests {
 			assert!(matches!(state, CacheState::Full));
 			assert_eq!(loaded.texture().size(), [2, 2]);
 		}
+	}
+
+	#[test]
+	fn images_taller_than_the_renderer_limit_are_rejected_without_panicking() {
+		let mut media = MediaPane::new(&egui::Context::default());
+		let max_texture_side = media.egui_ctx.input(|input| input.max_texture_side);
+		media
+			.result_tx
+			.try_send(MediaMessage::ImageLoaded {
+				url: "too-tall.jpg".into(),
+				is_sample: true,
+				full_url: "too-tall.jpg".into(),
+				result: Ok(DecodedMedia::Image(egui::ColorImage::new(
+					[1, max_texture_side + 1],
+					egui::Color32::WHITE,
+				))),
+			})
+			.unwrap();
+
+		media.poll();
+
+		assert!(media.cache.get("too-tall.jpg").is_none());
+		assert!(
+			media
+				.failures
+				.get("too-tall.jpg")
+				.is_some_and(|error| error.contains("maximum texture side"))
+		);
 	}
 
 	#[test]
