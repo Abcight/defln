@@ -225,15 +225,6 @@ impl MediaView {
 			}
 		};
 
-		#[cfg(feature = "video")]
-		if media.current_is_playable()
-			&& !matches!(image_fill_mode, ImageFillMode::FitToGallery)
-		{
-			Self::render_current_video(ui, media, None);
-			self.user_has_panned = user_panned;
-			return;
-		}
-
 		let gallery_fallback_media =
 			if matches!(image_fill_mode, ImageFillMode::FitToGallery)
 				&& media.get_current_media().is_none()
@@ -476,10 +467,6 @@ impl MediaView {
 						} else {
 							self.gallery_anim_offset = 0.0;
 						}
-						#[cfg(feature = "video")]
-						let gallery_settled = self.gallery_anim_time >= anim_duration
-							&& self.gallery_anim_offset.abs() < 0.001;
-
 						ui.centered_and_justified(|ui| {
 							let (rect, _response) = ui.allocate_exact_size(
 								available_size,
@@ -709,59 +696,10 @@ impl MediaView {
 									);
 								}
 							}
-
-							#[cfg(feature = "video")]
-							if media.current_is_playable() && gallery_settled {
-								let post_aspect =
-									browser.current_post().and_then(|post| {
-										(post.file.width > 0 && post.file.height > 0)
-											.then_some(
-												post.file.width as f32
-													/ post.file.height as f32,
-											)
-									});
-								let video_rect = media
-									.get_current_media()
-									.map(|preview| {
-										let size = preview.texture().size_vec2();
-										Self::contained_aspect_rect(
-											center_rect,
-											size.x / size.y.max(1.0),
-										)
-									})
-									.or_else(|| {
-										post_aspect.map(|aspect| {
-											Self::contained_aspect_rect(
-												center_rect,
-												aspect,
-											)
-										})
-									})
-									.or_else(|| {
-										media.current_video_size().map(
-											|(width, height)| {
-												Self::contained_aspect_rect(
-													center_rect,
-													width as f32
-														/ height.max(1) as f32,
-												)
-											},
-										)
-									})
-									.unwrap_or(center_rect);
-								Self::render_current_video(
-									ui,
-									media,
-									Some(video_rect),
-								);
-							}
 						});
 					}
 				}
 			}
-		} else if media.current_is_playable() {
-			#[cfg(feature = "video")]
-			Self::render_current_video(ui, media, None);
 		} else if media.is_loading() {
 			ui.centered_and_justified(|ui| {
 				ui.spinner();
@@ -769,44 +707,6 @@ impl MediaView {
 		}
 
 		self.user_has_panned = user_panned;
-	}
-
-	#[cfg(feature = "video")]
-	fn render_current_video(
-		ui: &mut egui::Ui,
-		media: &MediaPane,
-		target_rect: Option<egui::Rect>,
-	) {
-		let available_rect =
-			target_rect.unwrap_or_else(|| ui.available_rect_before_wrap());
-		if let Some(player) = media.current_video_player() {
-			let rect = target_rect.unwrap_or_else(|| {
-				let (width, height) = player.decoded_frame_size().unwrap_or((16, 9));
-				Self::contained_aspect_rect(
-					available_rect,
-					width as f32 / height.max(1) as f32,
-				)
-			});
-			ui.allocate_new_ui(egui::UiBuilder::new().max_rect(rect), |ui| {
-				player.in_sized(
-					ui,
-					rect.width().max(16.0),
-					Some(rect.height().max(16.0)),
-				);
-			});
-		}
-	}
-
-	#[cfg(feature = "video")]
-	fn contained_aspect_rect(space: egui::Rect, aspect: f32) -> egui::Rect {
-		let aspect = aspect.max(0.001);
-		let space_aspect = space.width() / space.height().max(1.0);
-		let size = if space_aspect > aspect {
-			eframe::egui::vec2(space.height() * aspect, space.height())
-		} else {
-			eframe::egui::vec2(space.width(), space.width() / aspect)
-		};
-		eframe::egui::Rect::from_center_size(space.center(), size)
 	}
 }
 

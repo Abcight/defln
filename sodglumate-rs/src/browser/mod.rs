@@ -454,9 +454,6 @@ fn supported_link_media(post: &Post) -> bool {
 			.as_deref()
 			.is_some_and(|url| !url.trim().is_empty())
 		&& kind.is_some()
-		&& (cfg!(feature = "video")
-			|| kind == Some(MediaKind::Image)
-			|| post.file.ext.eq_ignore_ascii_case("gif"))
 }
 
 fn preview_url(post: &Post) -> Option<String> {
@@ -847,11 +844,8 @@ mod tests {
 	}
 
 	#[test]
-	fn child_video_support_follows_the_build_feature() {
-		assert_eq!(
-			supported_link_media(&post(20, "mp4")),
-			cfg!(feature = "video")
-		);
+	fn child_media_support_excludes_videos() {
+		assert!(!supported_link_media(&post(20, "mp4")));
 		assert!(supported_link_media(&post(20, "gif")));
 	}
 
@@ -1022,7 +1016,7 @@ mod tests {
 			true,
 		));
 
-		assert_eq!(browser.posts_len(), 2);
+		assert_eq!(browser.posts_len(), 1);
 		assert_eq!(browser.current_post().map(|post| post.id), Some(1));
 	}
 
@@ -1043,7 +1037,7 @@ mod tests {
 		assert_eq!(MediaKind::from_extension("JPG"), Some(MediaKind::Image));
 		assert_eq!(MediaKind::from_extension("gif"), Some(MediaKind::Playable));
 		assert_eq!(MediaKind::from_extension("swf"), None);
-		assert_eq!(MediaKind::from_extension("mp4"), Some(MediaKind::Playable));
+		assert_eq!(MediaKind::from_extension("mp4"), None);
 	}
 
 	#[test]

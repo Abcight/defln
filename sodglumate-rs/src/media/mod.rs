@@ -3,8 +3,6 @@ use crate::platform::Instant;
 use crate::reactor::{Command, ComponentResponse, Event};
 use crate::types::{AnimatedFrame, LoadedMedia, MediaKind};
 use eframe::egui;
-#[cfg(feature = "video")]
-use egui_player_rs::VideoPainter;
 
 use indexmap::IndexMap;
 use std::collections::{HashSet, VecDeque};
@@ -60,8 +58,6 @@ enum LoadKind {
 	Playable,
 }
 
-#[cfg(feature = "video")]
-type VideoDebugState = (Option<String>, bool, Option<(u32, u32)>);
 #[cfg(not(target_arch = "wasm32"))]
 type GifStreamFrame = (Option<(egui::ColorImage, Duration)>, bool);
 #[cfg(not(target_arch = "wasm32"))]
@@ -191,12 +187,6 @@ pub struct MediaPane {
 
 	// Current item being displayed
 	current_item: Option<MediaItem>,
-	#[cfg(feature = "video")]
-	video_player: Option<VideoPainter>,
-	#[cfg(feature = "video")]
-	video_url: Option<String>,
-	#[cfg(feature = "video")]
-	last_video_debug_state: Option<VideoDebugState>,
 	playback_timing: Option<PlaybackTiming>,
 
 	// Pending queues for tiered loading
@@ -234,12 +224,6 @@ impl MediaPane {
 			failures: IndexMap::new(),
 			pending_set: HashSet::new(),
 			current_item: None,
-			#[cfg(feature = "video")]
-			video_player: None,
-			#[cfg(feature = "video")]
-			video_url: None,
-			#[cfg(feature = "video")]
-			last_video_debug_state: None,
 			playback_timing: None,
 			pending_samples: VecDeque::new(),
 			pending_full: VecDeque::new(),
@@ -735,9 +719,6 @@ impl MediaPane {
 	}
 
 	pub fn poll(&mut self) -> ComponentResponse {
-		#[cfg(feature = "video")]
-		self.poll_video_state();
-
 		// Process completed loads
 		while let Ok(msg) = self.receiver.try_recv() {
 			match msg {
@@ -1035,8 +1016,7 @@ impl MediaPane {
 				}
 			}
 
-			// Playable media is rendered by the active VideoPainter; only stills
-			// need their full-resolution bytes in the image cache.
+			// GIFs stream into the image cache; still images load in full.
 			if !current.kind.is_playable() {
 				if !has_full
 					&& let Some(ref full_url) = current.full_url
@@ -1117,35 +1097,6 @@ impl MediaPane {
 			.unwrap_or_default()
 	}
 
-	#[cfg(feature = "video")]
-	fn start_video(&mut self, url: &str) {
-		if self.video_url.as_deref() == Some(url) && self.video_player.is_some() {
-			if let Some(player) = &self.video_player {
-				player.set_playback(true);
-			}
-			return;
-		}
-
-		#[cfg(feature = "video")]
-		self.stop_video();
-		log::info!("Starting streaming player: url={}", url);
-		let player = VideoPainter::new();
-		player.set_video_source_url(url.to_owned());
-		player.set_playback(true);
-		self.video_player = Some(player);
-		self.video_url = Some(url.to_owned());
-	}
-
-	#[cfg(feature = "video")]
-	fn stop_video(&mut self) {
-		if let Some(player) = &self.video_player {
-			player.deactivate();
-		}
-		self.video_player = None;
-		self.video_url = None;
-		self.last_video_debug_state = None;
-	}
-
 	fn note_decoder_ready(&mut self, url: &str, backend: &str) {
 		if let Some(timing) = &mut self.playback_timing
 			&& timing.url == url
@@ -1194,28 +1145,6 @@ impl MediaPane {
 				self.note_painted(&url, "gif");
 			}
 		}
-		#[cfg(feature = "video")]
-		if !Self::is_gif_url(&url)
-			&& self
-				.video_player
-				.as_ref()
-				.is_some_and(VideoPainter::has_decoded_frames)
-		{
-			self.note_decoder_ready(&url, "video");
-			self.note_painted(&url, "video");
-		}
-	}
-
-	pub fn current_is_playable(&self) -> bool {
-		self.current_item.as_ref().is_some_and(|item| {
-			item.kind.is_playable()
-				&& !item.full_url.as_deref().is_some_and(Self::is_gif_url)
-		})
-	}
-
-	#[cfg(feature = "video")]
-	pub fn current_video_player(&self) -> Option<&VideoPainter> {
-		self.video_player.as_ref()
 	}
 
 	pub fn needs_painted_notification(&self) -> bool {
@@ -1229,63 +1158,8 @@ impl MediaPane {
 			self.get_current_media()
 				.is_some_and(LoadedMedia::is_animated)
 		} else {
-			#[cfg(feature = "video")]
-			{
-				self.video_player
-					.as_ref()
-					.is_some_and(VideoPainter::has_decoded_frames)
-			}
-			#[cfg(not(feature = "video"))]
-			{
-				false
-			}
+			false
 		}
-	}
-
-	#[cfg(feature = "video")]
-	fn poll_video_state(&mut self) {
-		let Some(player) = &self.video_player else {
-			return;
-		};
-		let observation = (
-			player.status_message(),
-			player.has_decoded_frames(),
-			player.decoded_frame_size(),
-			player.playback(),
-			player.current_time_seconds(),
-		);
-		self.log_video_debug_state(
-			observation.0,
-			observation.1,
-			observation.2,
-			observation.3,
-			observation.4,
-		);
-	}
-
-	#[cfg(feature = "video")]
-	fn log_video_debug_state(
-		&mut self,
-		status: Option<String>,
-		has_frames: bool,
-		frame_size: Option<(u32, u32)>,
-		playback: bool,
-		time: f64,
-	) {
-		let state = (status, has_frames, frame_size);
-		if self.last_video_debug_state.as_ref() == Some(&state) {
-			return;
-		}
-		log::info!(
-			"Video player state: url={:?} status={:?} has_frames={} frame_size={:?} playback={} time={:.3}",
-			self.video_url,
-			state.0,
-			state.1,
-			state.2,
-			playback,
-			time
-		);
-		self.last_video_debug_state = Some(state);
 	}
 
 	/// Queue a load, keeping selected media ahead of speculative downloads.
@@ -1400,19 +1274,8 @@ impl MediaPane {
 							painted_logged: false,
 						});
 						log::info!("Playback timing: attempted start url={}", url);
-						if Self::is_gif_url(url) {
-							// GIFs are decoded while their response is still downloading;
-							// the preview remains visible until the first full frame arrives.
-							#[cfg(feature = "video")]
-							self.stop_video();
-						} else {
-							#[cfg(feature = "video")]
-							self.start_video(url);
-						}
 					}
 				} else {
-					#[cfg(feature = "video")]
-					self.stop_video();
 					self.playback_timing = None;
 				}
 				if let Some(url) = &item.sample_url {
@@ -1560,13 +1423,6 @@ impl MediaPane {
 			.and_then(|i| i.full_url.as_deref().or(i.sample_url.as_deref()))
 	}
 
-	#[cfg(feature = "video")]
-	pub fn current_video_size(&self) -> Option<(u32, u32)> {
-		self.video_player
-			.as_ref()
-			.and_then(VideoPainter::decoded_frame_size)
-	}
-
 	pub fn is_loading(&self) -> bool {
 		!self.loading_set.is_empty()
 	}
@@ -1574,10 +1430,6 @@ impl MediaPane {
 	pub fn current_error(&self) -> Option<&str> {
 		if self.get_current_media().is_some() {
 			return None;
-		}
-		#[cfg(not(feature = "video"))]
-		if self.current_is_playable() {
-			return Some("Video playback is disabled in this build.");
 		}
 		let item = self.current_item.as_ref()?;
 		item.full_url
@@ -1819,27 +1671,6 @@ mod tests {
 		.await
 		.expect("failed work must release the dedicated relationship worker");
 		assert!(!media.relationship_priority_active);
-	}
-
-	#[cfg(not(feature = "video"))]
-	#[tokio::test]
-	async fn disabled_video_reports_unavailable_but_gifs_remain_supported() {
-		let mut media = MediaPane::new(&eframe::egui::Context::default());
-		for (url, expected_error) in [
-			(
-				"https://cdn.example/post.mp4",
-				Some("Video playback is disabled in this build."),
-			),
-			("https://cdn.example/post.gif", None),
-		] {
-			media.handle_command(&crate::reactor::Command::LoadMedia {
-				sample_url: None,
-				full_url: Some(url.to_owned()),
-				kind: crate::types::MediaKind::Playable,
-			});
-			assert_eq!(media.current_error(), expected_error);
-			assert!(!media.needs_painted_notification());
-		}
 	}
 
 	#[test]

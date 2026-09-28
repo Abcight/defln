@@ -72,7 +72,7 @@ impl MediaKind {
 	pub fn from_extension(extension: &str) -> Option<Self> {
 		match extension.to_ascii_lowercase().as_str() {
 			"jpg" | "jpeg" | "png" | "webp" => Some(Self::Image),
-			"gif" | "mp4" | "webm" | "m3u8" => Some(Self::Playable),
+			"gif" => Some(Self::Playable),
 			_ => None,
 		}
 	}
