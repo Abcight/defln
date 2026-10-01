@@ -7,13 +7,9 @@
 use super::{Command, Message, Reactor};
 use crate::types::NavDirection;
 use eframe::{App, Frame, egui};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::path::{Component, Path, PathBuf};
-#[cfg(target_os = "linux")]
-use std::process::Command as ProcessCommand;
-use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
-
-const SNAPSHOT_INTERVAL: Duration = Duration::from_secs(1);
+use std::time::{Duration, Instant};
 
 pub fn run_native() -> eframe::Result<()> {
 	let live_perf = match LivePerfConfig::from_args(std::env::args().skip(1)) {
@@ -212,16 +208,6 @@ impl ScenarioEvent {
 			ScenarioCommand::Finish => None,
 		}
 	}
-
-	fn name(&self) -> &'static str {
-		match &self.command {
-			ScenarioCommand::Search { .. } => "search",
-			ScenarioCommand::Next => "next",
-			ScenarioCommand::Previous => "previous",
-			ScenarioCommand::Skip { .. } => "skip",
-			ScenarioCommand::Finish => "finish",
-		}
-	}
 }
 
 #[derive(Debug, Deserialize)]
@@ -248,25 +234,6 @@ pub struct LivePerfHarness {
 	scenario: Scenario,
 	started_at: Instant,
 	next_event: usize,
-	next_snapshot_at: Duration,
-	last_cpu_sample: Option<(Instant, u64)>,
-	clock_ticks_per_second: Option<u64>,
-}
-
-#[derive(Serialize)]
-struct ObservationRecord<'a> {
-	kind: &'static str,
-	scenario: &'a str,
-	wall_time_unix_ms: u128,
-	elapsed_ms: u128,
-	event: Option<&'static str>,
-	post_count: usize,
-	current_post_id: Option<u64>,
-	gateway_loading: bool,
-	media_loading: bool,
-	rss_kb: Option<u64>,
-	process_cpu_ms: Option<u64>,
-	interval_cpu_percent: Option<f64>,
 }
 
 impl LivePerfHarness {
@@ -279,9 +246,6 @@ impl LivePerfHarness {
 			scenario: config.scenario,
 			started_at: Instant::now(),
 			next_event: 0,
-			next_snapshot_at: Duration::ZERO,
-			last_cpu_sample: None,
-			clock_ticks_per_second: clock_ticks_per_second(),
 		}
 	}
 
@@ -297,12 +261,7 @@ impl LivePerfHarness {
 			} else {
 				finished = true;
 			}
-			self.write_record("event", Some(event.name()), elapsed, reactor);
 			self.next_event += 1;
-		}
-		if elapsed >= self.next_snapshot_at {
-			self.write_record("snapshot", None, elapsed, reactor);
-			self.next_snapshot_at = elapsed + SNAPSHOT_INTERVAL;
 		}
 		finished
 	}
@@ -314,48 +273,7 @@ impl LivePerfHarness {
 			.events
 			.get(self.next_event)
 			.map(|event| Duration::from_millis(event.at_ms));
-		let next = next_event
-			.map(|event| event.min(self.next_snapshot_at))
-			.unwrap_or(self.next_snapshot_at);
-		next.saturating_sub(elapsed).min(SNAPSHOT_INTERVAL)
-	}
-
-	fn write_record(
-		&mut self,
-		kind: &'static str,
-		event: Option<&'static str>,
-		elapsed: Duration,
-		reactor: &Reactor,
-	) {
-		let (rss_kb, process_cpu_ms) = process_metrics(self.clock_ticks_per_second);
-		let interval_cpu_percent = process_cpu_ms.and_then(|cpu_ms| {
-			let now = Instant::now();
-			let previous = self.last_cpu_sample.replace((now, cpu_ms))?;
-			let wall_ms = now.duration_since(previous.0).as_secs_f64() * 1000.0;
-			(wall_ms > 0.0)
-				.then(|| (cpu_ms.saturating_sub(previous.1) as f64 / wall_ms) * 100.0)
-		});
-		let record = ObservationRecord {
-			kind,
-			scenario: self.scenario.name(),
-			wall_time_unix_ms: SystemTime::now()
-				.duration_since(UNIX_EPOCH)
-				.unwrap_or_default()
-				.as_millis(),
-			elapsed_ms: elapsed.as_millis(),
-			event,
-			post_count: reactor.browser.posts_len(),
-			current_post_id: reactor.browser.current_post().map(|post| post.id),
-			gateway_loading: reactor.gateway.is_loading(),
-			media_loading: reactor.media.is_loading(),
-			rss_kb,
-			process_cpu_ms,
-			interval_cpu_percent,
-		};
-		let Ok(json) = serde_json::to_string(&record) else {
-			return;
-		};
-		log::info!("PERF {json}");
+		next_event.unwrap_or(Duration::ZERO).saturating_sub(elapsed)
 	}
 }
 
@@ -391,58 +309,4 @@ impl App for LivePerfApp {
 	fn save(&mut self, storage: &mut dyn eframe::Storage) {
 		self.reactor.save(storage);
 	}
-}
-
-#[cfg(target_os = "linux")]
-fn clock_ticks_per_second() -> Option<u64> {
-	ProcessCommand::new("getconf")
-		.arg("CLK_TCK")
-		.output()
-		.ok()
-		.filter(|output| output.status.success())
-		.and_then(|output| String::from_utf8(output.stdout).ok())
-		.and_then(|output| output.trim().parse().ok())
-}
-
-#[cfg(not(target_os = "linux"))]
-fn clock_ticks_per_second() -> Option<u64> {
-	None
-}
-
-#[cfg(target_os = "linux")]
-fn process_metrics(
-	clock_ticks_per_second: Option<u64>,
-) -> (Option<u64>, Option<u64>) {
-	let rss_kb =
-		std::fs::read_to_string("/proc/self/status")
-			.ok()
-			.and_then(|status| {
-				status.lines().find_map(|line| {
-					line.strip_prefix("VmRSS:")
-						.and_then(|value| value.split_whitespace().next())
-						.and_then(|value| value.parse().ok())
-				})
-			});
-	let cpu_ticks =
-		std::fs::read_to_string("/proc/self/stat")
-			.ok()
-			.and_then(|stat| {
-				let (_, fields) = stat.rsplit_once(')')?;
-				let fields: Vec<_> = fields.split_whitespace().collect();
-				Some(
-					fields.get(11)?.parse::<u64>().ok()?
-						+ fields.get(12)?.parse::<u64>().ok()?,
-				)
-			});
-	let cpu_ms = clock_ticks_per_second
-		.zip(cpu_ticks)
-		.map(|(ticks_per_second, ticks)| ticks * 1_000 / ticks_per_second);
-	(rss_kb, cpu_ms)
-}
-
-#[cfg(not(target_os = "linux"))]
-fn process_metrics(
-	_clock_ticks_per_second: Option<u64>,
-) -> (Option<u64>, Option<u64>) {
-	(None, None)
 }

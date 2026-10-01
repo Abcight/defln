@@ -46,6 +46,11 @@ codegen-units = 1
 panic = "abort"
 strip = true
 
+[profile.perf]
+inherits = "release"
+debug = true
+strip = false
+
 [package.metadata.packager]
 product-name = "Sodglumate"
 identifier = "com.abcight.sodglumate"

@@ -1,3 +1,5 @@
 /target
+perf.data
+perf.data.old
 .cargo
 /distribution/license.html
