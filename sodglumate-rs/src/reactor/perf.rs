@@ -127,7 +127,7 @@ impl Scenario {
 		path.push("src/testing/performance");
 		path.push(name);
 		if path.extension().is_none() {
-			path.set_extension("json");
+			path.set_extension("toml");
 		}
 		Some(path)
 	}
@@ -137,14 +137,14 @@ impl Scenario {
 	}
 
 	fn from_file(path: &Path) -> Result<Self, String> {
-		let json =
+		let toml =
 			std::fs::read_to_string(path).map_err(|error| error.to_string())?;
-		Self::from_json(&json)
+		Self::from_toml(&toml)
 	}
 
-	pub(crate) fn from_json(json: &str) -> Result<Self, String> {
+	pub(crate) fn from_toml(toml: &str) -> Result<Self, String> {
 		let scenario: Self =
-			serde_json::from_str(json).map_err(|error| error.to_string())?;
+			toml::from_str(toml).map_err(|error| error.to_string())?;
 		scenario.validate()?;
 		Ok(scenario)
 	}

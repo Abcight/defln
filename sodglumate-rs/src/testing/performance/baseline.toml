@@ -1,0 +1,28 @@
+name = "baseline"
+
+events = [
+	# Give the initial result up to three seconds, then reject several quickly.
+	{ at_ms = 1000, command = { type = "search", query = "male gay order:score wolf abs", page = 1 } },
+	{ at_ms = 4000, command = { type = "next" } },
+	{ at_ms = 4300, command = { type = "next" } },
+	{ at_ms = 4600, command = { type = "next" } },
+	{ at_ms = 4900, command = { type = "next" } },
+
+	# Jump past a run of uninteresting results, then inspect a couple more.
+	{ at_ms = 7800, command = { type = "skip", count = 10 } },
+	{ at_ms = 8100, command = { type = "next" } },
+	{ at_ms = 8400, command = { type = "next" } },
+	{ at_ms = 11100, command = { type = "previous" } },
+
+	# Another short browse burst, including a large skip and a backtrack.
+	{ at_ms = 13800, command = { type = "next" } },
+	{ at_ms = 14100, command = { type = "next" } },
+	{ at_ms = 14400, command = { type = "skip", count = 10 } },
+	{ at_ms = 17100, command = { type = "previous" } },
+	{ at_ms = 19800, command = { type = "next" } },
+	{ at_ms = 20100, command = { type = "next" } },
+	{ at_ms = 22800, command = { type = "skip", count = 10 } },
+	{ at_ms = 23100, command = { type = "next" } },
+	{ at_ms = 25800, command = { type = "previous" } },
+	{ at_ms = 28500, command = { type = "finish" } },
+]

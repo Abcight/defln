@@ -1,8 +1,8 @@
-LIVE_SCENARIOS := $(basename $(notdir $(wildcard src/testing/performance/*.json)))
+LIVE_SCENARIOS := $(basename $(notdir $(wildcard src/testing/performance/*.toml)))
 SCENARIO ?= $(or $(filter $(LIVE_SCENARIOS),$(MAKECMDGOALS)),animated-high-res)
 LIVE_BIN := target/perf/sodglumate-rs
 
-.PHONY: run debug live perf perf-setup perf-sysctl build-win64 build-linux64 build-wasm licenses publish $(LIVE_SCENARIOS)
+.PHONY: run debug live live-perf perf-setup perf-sysctl build-win64 build-linux64 build-wasm licenses publish $(LIVE_SCENARIOS)
 
 setup:
 	sudo apt-get update
@@ -30,11 +30,10 @@ $(LIVE_SCENARIOS):
 live-perf:
 	RUSTFLAGS='-C force-frame-pointers=y' cargo build --profile perf --features live-perf
 	perf record --call-graph dwarf -g $(LIVE_BIN) --live-perf $(SCENARIO)
-	hotspot perf.data
 
 perf-setup:
 	sudo apt-get update
-	sudo apt-get install -y linux-tools-common linux-tools-generic linux-tools-$(shell uname -r) hotspot
+	sudo apt-get install -y linux-tools-common linux-tools-generic linux-tools-$(shell uname -r)
 
 perf-sysctl:
 	sudo sysctl -w kernel.perf_event_paranoid=-1

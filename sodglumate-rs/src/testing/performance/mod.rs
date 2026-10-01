@@ -2,22 +2,22 @@ use crate::reactor::perf::Scenario;
 
 #[test]
 fn checked_in_scenarios_are_valid() {
-	for json in [
-		include_str!("baseline.json"),
-		include_str!("animated-high-res.json"),
+	for toml in [
+		include_str!("baseline.toml"),
+		include_str!("animated-high-res.toml"),
 	] {
-		Scenario::from_json(json)
+		Scenario::from_toml(toml)
 			.expect("checked-in performance scenario must be valid");
 	}
 }
 
 #[test]
 fn scenarios_require_a_final_finish_event() {
-	let error = Scenario::from_json(
-		r#"{
-  "name": "incomplete",
-  "events": [{ "at_ms": 0, "command": { "type": "next" } }]
-}"#,
+	let error = Scenario::from_toml(
+		r#"
+name = "incomplete"
+events = [{ at_ms = 0, command = { type = "next" } }]
+"#,
 	)
 	.expect_err("a scenario without finish must be rejected");
 	assert!(error.contains("final event"));
