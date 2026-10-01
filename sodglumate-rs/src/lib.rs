@@ -11,16 +11,21 @@ mod gateway;
 mod media;
 mod platform;
 mod reactor;
-#[cfg(test)]
-#[path = "../regressions/mod.rs"]
-mod regressions;
 mod settings;
+#[cfg(test)]
+mod testing;
 mod types;
 mod view;
 
+#[cfg(any(target_arch = "wasm32", not(feature = "live-perf")))]
 use reactor::Reactor;
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(all(not(target_arch = "wasm32"), feature = "live-perf"))]
+pub fn run_native() -> eframe::Result<()> {
+	reactor::perf::run_native()
+}
+
+#[cfg(all(not(target_arch = "wasm32"), not(feature = "live-perf")))]
 pub fn run_native() -> eframe::Result<()> {
 	env_logger::Builder::from_env(
 		env_logger::Env::default().default_filter_or("info"),

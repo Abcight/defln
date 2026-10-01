@@ -10,6 +10,8 @@
 //! reactor applies after rendering.
 
 pub mod message;
+#[cfg(all(not(target_arch = "wasm32"), feature = "live-perf"))]
+pub(crate) mod perf;
 pub mod queue;
 pub mod scheduler;
 

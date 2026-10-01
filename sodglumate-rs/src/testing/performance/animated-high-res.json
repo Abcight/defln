@@ -1,0 +1,17 @@
+{
+  "name": "animated-high-res",
+  "events": [
+    {
+      "at_ms": 1000,
+      "command": {
+        "type": "search",
+        "query": "male gay animated high_res order:score",
+        "page": 1
+      }
+    },
+    { "at_ms": 15000, "command": { "type": "next" } },
+    { "at_ms": 25000, "command": { "type": "skip", "count": 10 } },
+    { "at_ms": 35000, "command": { "type": "next" } },
+    { "at_ms": 50000, "command": { "type": "finish" } }
+  ]
+}
