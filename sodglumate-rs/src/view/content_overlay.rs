@@ -277,7 +277,12 @@ impl ContentOverlayView {
 		}
 	}
 
-	pub(super) fn render_info_overlay(&self, ui: &mut Ui, browser: &ContentBrowser) {
+	pub(super) fn render_info_overlay(
+		&self,
+		ui: &mut Ui,
+		browser: &ContentBrowser,
+		metadata: &crate::metadata::PostMetadataStore,
+	) {
 		if browser.is_empty() {
 			return;
 		}
@@ -344,7 +349,7 @@ impl ContentOverlayView {
 						add_text_line(ui, "Copyright:", &copyright_str);
 					}
 
-					if browser.has_valid_related_posts() {
+					if browser.has_valid_related_posts(metadata) {
 						add_text_line(ui, "Has related posts:", "Yes");
 					}
 				});

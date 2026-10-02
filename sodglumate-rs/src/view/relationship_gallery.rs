@@ -19,6 +19,7 @@ impl RelationshipGalleryView {
 		&mut self,
 		ui: &mut Ui,
 		browser: &ContentBrowser,
+		metadata: &crate::metadata::PostMetadataStore,
 		media: &MediaPane,
 		keyboard_enabled: bool,
 		output: &mut ViewOutput,
@@ -29,11 +30,20 @@ impl RelationshipGalleryView {
 			return;
 		};
 		let source_id = source.id;
-		let direct_shortcuts = Self::direct_shortcut_targets(source);
-		let related = browser.related_posts();
+		let pool_shortcuts = browser.pool_navigation_targets(metadata);
+		let direct_shortcuts = browser.direct_navigation_targets(metadata);
+		let related = browser.related_posts(metadata);
 		if related.is_empty() {
 			self.source_id = Some(source_id);
 			self.selected_post_id = None;
+			if keyboard_enabled && let Some((previous_id, next_id)) = pool_shortcuts {
+				if ui.input(|input| input.key_pressed(egui::Key::Z)) {
+					Self::open_direct_target(source_id, previous_id, output);
+				}
+				if ui.input(|input| input.key_pressed(egui::Key::X)) {
+					Self::open_direct_target(source_id, next_id, output);
+				}
+			}
 			return;
 		}
 
@@ -54,7 +64,14 @@ impl RelationshipGalleryView {
 		});
 
 		if keyboard_enabled {
-			if let Some((parent_id, child_id)) = direct_shortcuts {
+			if let Some((previous_id, next_id)) = pool_shortcuts {
+				if ui.input(|input| input.key_pressed(egui::Key::Z)) {
+					Self::open_direct_target(source_id, previous_id, output);
+				}
+				if ui.input(|input| input.key_pressed(egui::Key::X)) {
+					Self::open_direct_target(source_id, next_id, output);
+				}
+			} else if let Some((parent_id, child_id)) = direct_shortcuts {
 				if ui.input(|input| input.key_pressed(egui::Key::Z)) {
 					Self::open_target(source_id, parent_id, &related, output);
 				}
@@ -116,17 +133,6 @@ impl RelationshipGalleryView {
 			});
 	}
 
-	fn direct_shortcut_targets(
-		post: &crate::api::Post,
-	) -> Option<(Option<u64>, Option<u64>)> {
-		let child_id = match post.relationships.children.as_slice() {
-			[] => None,
-			[id] => Some(*id),
-			_ => return None,
-		};
-		Some((post.relationships.parent_id, child_id))
-	}
-
 	fn full_media_url(post: &crate::api::Post) -> Option<(String, MediaKind)> {
 		let kind = MediaKind::from_extension(&post.file.ext)?;
 		Some((post.file.url.clone()?, kind))
@@ -160,6 +166,19 @@ impl RelationshipGalleryView {
 			return;
 		};
 		if related.iter().any(|post| post.post.id == target_id) {
+			output.command(Command::OpenLinkedPost {
+				source_id,
+				target_id,
+			});
+		}
+	}
+
+	fn open_direct_target(
+		source_id: u64,
+		target_id: Option<u64>,
+		output: &mut ViewOutput,
+	) {
+		if let Some(target_id) = target_id {
 			output.command(Command::OpenLinkedPost {
 				source_id,
 				target_id,
@@ -222,32 +241,15 @@ mod tests {
 	}
 
 	#[test]
-	fn direct_shortcuts_are_reserved_for_one_parent_and_one_child() {
-		let mut post = Post::default();
-		post.relationships.parent_id = Some(10);
-		post.relationships.children = vec![20];
-		assert_eq!(
-			RelationshipGalleryView::direct_shortcut_targets(&post),
-			Some((Some(10), Some(20)))
-		);
-
-		post.relationships.children.clear();
-		assert_eq!(
-			RelationshipGalleryView::direct_shortcut_targets(&post),
-			Some((Some(10), None))
-		);
-
-		post.relationships.parent_id = None;
-		post.relationships.children = vec![20];
-		assert_eq!(
-			RelationshipGalleryView::direct_shortcut_targets(&post),
-			Some((None, Some(20)))
-		);
-
-		post.relationships.children.push(30);
-		assert_eq!(
-			RelationshipGalleryView::direct_shortcut_targets(&post),
-			None
-		);
+	fn direct_targets_are_opened_without_waiting_for_a_thumbnail() {
+		let mut output = ViewOutput::default();
+		RelationshipGalleryView::open_direct_target(7, Some(20), &mut output);
+		assert!(matches!(
+			output.into_messages().next(),
+			Some(Message::Command(Command::OpenLinkedPost {
+				source_id: 7,
+				target_id: 20
+			}))
+		));
 	}
 }

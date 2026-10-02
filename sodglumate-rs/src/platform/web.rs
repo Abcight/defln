@@ -73,6 +73,10 @@ pub(super) fn e621_post_url(id: u64) -> String {
 	proxy_url(&format!("/api/e621/posts/{id}"))
 }
 
+pub(super) fn e621_pool_url(id: u64) -> String {
+	proxy_url(&format!("/api/e621/pools/{id}"))
+}
+
 pub(super) fn media_client() -> reqwest::Client {
 	reqwest::Client::new()
 }

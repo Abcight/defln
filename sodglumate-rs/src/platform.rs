@@ -32,6 +32,10 @@ pub(crate) fn e621_post_url(id: u64) -> String {
 	implementation::e621_post_url(id)
 }
 
+pub(crate) fn e621_pool_url(id: u64) -> String {
+	implementation::e621_pool_url(id)
+}
+
 pub(crate) fn media_client() -> reqwest::Client {
 	implementation::media_client()
 }

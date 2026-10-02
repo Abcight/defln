@@ -17,6 +17,7 @@ use crate::breathing::BreathingOverlay;
 use crate::browser::ContentBrowser;
 use crate::gateway::BooruGateway;
 use crate::media::MediaPane;
+use crate::metadata::PostMetadataStore;
 use crate::platform::Instant;
 use crate::reactor::{Command, Event, ViewOutput};
 use crate::settings::SettingsManager;
@@ -57,6 +58,7 @@ const EMBEDDED_WINDOW_DECORATIONS: bool = false;
 pub struct ApplicationState<'a> {
 	pub gateway: &'a BooruGateway,
 	pub browser: &'a ContentBrowser,
+	pub metadata: &'a PostMetadataStore,
 	pub media: &'a MediaPane,
 	pub breathing: &'a BreathingOverlay,
 	pub settings: &'a SettingsManager,
@@ -306,12 +308,16 @@ impl Views {
 					.render_immersive_breathing_overlay(&mut ui, state.breathing);
 			}
 		}
-		self.content_overlay
-			.render_info_overlay(&mut ui, state.browser);
+		self.content_overlay.render_info_overlay(
+			&mut ui,
+			state.browser,
+			state.metadata,
+		);
 
 		self.relationship_gallery.render(
 			&mut ui,
 			state.browser,
+			state.metadata,
 			state.media,
 			keyboard_input_enabled && !self.island_navigation.island_ctx.active,
 			&mut output,
@@ -330,6 +336,7 @@ impl Views {
 			&mut ui,
 			state.settings,
 			state.browser,
+			state.metadata,
 			&mut self.modal,
 			&mut output,
 		);

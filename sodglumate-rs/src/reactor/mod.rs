@@ -25,6 +25,7 @@ use crate::browser::ContentBrowser;
 use crate::config::SavedSettings;
 use crate::gateway::BooruGateway;
 use crate::media::MediaPane;
+use crate::metadata::PostMetadataStore;
 use crate::platform::{load_settings, save_settings};
 use crate::settings::SettingsManager;
 use crate::view::{ApplicationState, View, Views};
@@ -36,6 +37,7 @@ pub struct Reactor {
 
 	pub gateway: BooruGateway,
 	pub browser: ContentBrowser,
+	pub metadata: PostMetadataStore,
 	pub media: MediaPane,
 	pub breathing: BreathingOverlay,
 	pub views: Views,
@@ -54,6 +56,7 @@ impl Reactor {
 			scheduler: Scheduler::new(),
 			gateway: BooruGateway::new(),
 			browser: ContentBrowser::new(),
+			metadata: PostMetadataStore::new(),
 			media: MediaPane::new(ctx),
 			breathing: BreathingOverlay::new(
 				false, // Breathing always starts off
@@ -104,6 +107,7 @@ impl Reactor {
 			&ApplicationState {
 				gateway: &self.gateway,
 				browser: &self.browser,
+				metadata: &self.metadata,
 				media: &self.media,
 				breathing: &self.breathing,
 				settings: &self.settings,
@@ -143,15 +147,17 @@ impl Reactor {
 	fn dispatch(&mut self, command: &Command) -> ComponentResponse {
 		match command {
 			Command::Search { .. } => {
-				self.browser.handle(command);
+				self.browser.handle(command, &self.metadata);
 				self.gateway.handle_command(command)
 			}
 			Command::FetchLinkedPost { .. }
 			| Command::FetchLinkCandidate { .. }
+			| Command::FetchPool { .. }
 			| Command::FetchNextPage => self.gateway.handle_command(command),
+			Command::EnsureMetadata { .. } => self.metadata.handle(command),
 			Command::Navigate(_)
 			| Command::OpenLinkedPost { .. }
-			| Command::PrepareLinks { .. } => self.browser.handle(command),
+			| Command::PrepareLinks { .. } => self.browser.handle(command, &self.metadata),
 			Command::LoadMedia { .. }
 			| Command::PrefetchMedia { .. }
 			| Command::PrefetchRelatedMedia { .. } => self.media.handle_command(command),
@@ -188,7 +194,14 @@ impl Reactor {
 		match event {
 			Event::SearchCompleted { .. }
 			| Event::LinkedPostLoaded { .. }
-			| Event::LinkCandidateLoaded { .. } => self.browser.observe(event),
+			| Event::LinkCandidateLoaded { .. }
+			| Event::PoolLoaded { .. } => {
+				let mut response = self.metadata.observe(event);
+				let browser_response = self.browser.observe(event);
+				response.messages.extend(browser_response.messages);
+				response.scheduled.extend(browser_response.scheduled);
+				response
+			}
 			Event::Navigated | Event::BreathingPhaseStarted(_) => {
 				self.settings.observe(event, &self.breathing)
 			}

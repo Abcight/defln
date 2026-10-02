@@ -6,6 +6,7 @@ struct DisplayedPost {
 	height: u64,
 	parent_id: Option<u64>,
 	children: Vec<u64>,
+	pools: Vec<u64>,
 }
 
 pub(super) struct MediaView {
@@ -55,7 +56,11 @@ impl MediaView {
 			&& previous.width == post.file.width
 			&& previous.height == post.file.height
 			&& (previous.parent_id == Some(post.id)
-				|| previous.children.contains(&post.id))
+				|| previous.children.contains(&post.id)
+				|| previous
+					.pools
+					.iter()
+					.any(|pool_id| post.pools.contains(pool_id)))
 	}
 
 	pub(super) fn remember_post(&mut self, post: Option<&crate::api::Post>) {
@@ -64,6 +69,7 @@ impl MediaView {
 			height: post.file.height,
 			parent_id: post.relationships.parent_id,
 			children: post.relationships.children.clone(),
+			pools: post.pools.clone(),
 		});
 	}
 
@@ -760,6 +766,19 @@ mod tests {
 		view.remember_post(Some(&first));
 
 		assert!(!view.can_keep_transform_for(Some(&second)));
+	}
+
+	#[test]
+	fn posts_in_the_same_pool_keep_the_transform() {
+		let mut first = linked_post(1, None, 1200, 800);
+		let mut second = linked_post(2, None, 1200, 800);
+		first.pools = vec![42];
+		second.pools = vec![42];
+		let mut view = MediaView::new();
+
+		view.remember_post(Some(&first));
+
+		assert!(view.can_keep_transform_for(Some(&second)));
 	}
 
 	#[test]

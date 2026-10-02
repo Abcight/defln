@@ -1,4 +1,4 @@
-use crate::api::Post;
+use crate::api::{Pool, Post};
 use crate::types::{
 	BreathingPhase, BreathingStyle, ImageFillMode, MediaKind, NavDirection,
 };
@@ -21,9 +21,11 @@ pub enum Command {
 	PrepareLinks {
 		source_id: u64,
 	},
+	EnsureMetadata {
+		post_ids: Vec<u64>,
+	},
 	FetchLinkCandidate {
 		post_id: u64,
-		generation: u64,
 	},
 	OpenLinkedPost {
 		source_id: u64,
@@ -31,6 +33,9 @@ pub enum Command {
 	},
 	FetchLinkedPost {
 		post_id: u64,
+	},
+	FetchPool {
+		pool_id: u64,
 	},
 	Navigate(NavDirection),
 	LoadMedia {
@@ -72,12 +77,15 @@ pub enum Command {
 pub enum Event {
 	LinkCandidateLoaded {
 		post_id: u64,
-		generation: u64,
 		result: Result<Box<Post>, String>,
 	},
 	LinkedPostLoaded {
 		post_id: u64,
 		result: Result<Box<Post>, String>,
+	},
+	PoolLoaded {
+		pool_id: u64,
+		result: Result<Box<Pool>, String>,
 	},
 	SearchCompleted {
 		posts: Vec<Post>,

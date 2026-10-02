@@ -1,4 +1,4 @@
-use crate::api::{E621Client, Post};
+use crate::api::{E621Client, Pool, Post};
 use crate::platform::Instant;
 use crate::reactor::{Command, ComponentResponse, Event, Message};
 use std::collections::VecDeque;
@@ -9,12 +9,15 @@ use tokio::sync::mpsc;
 pub enum GatewayMessage {
 	LinkCandidate {
 		post_id: u64,
-		generation: u64,
 		result: Result<Box<Post>, String>,
 	},
 	LinkedPost {
 		post_id: u64,
 		result: Result<Box<Post>, String>,
+	},
+	Pool {
+		pool_id: u64,
+		result: Result<Box<Pool>, String>,
 	},
 	SearchComplete {
 		posts: Vec<Post>,
@@ -86,21 +89,20 @@ impl BooruGateway {
 		let mut messages = Vec::new();
 		while let Ok(msg) = self.receiver.try_recv() {
 			match msg {
-				GatewayMessage::LinkCandidate {
-					post_id,
-					generation,
-					result,
-				} => messages.push(Message::Event(Event::LinkCandidateLoaded {
-					post_id,
-					generation,
-					result,
-				})),
+				GatewayMessage::LinkCandidate { post_id, result } => {
+					messages.push(Message::Event(Event::LinkCandidateLoaded {
+						post_id,
+						result,
+					}))
+				}
 				GatewayMessage::LinkedPost { post_id, result } => {
 					messages.push(Message::Event(Event::LinkedPostLoaded {
 						post_id,
 						result,
 					}));
 				}
+				GatewayMessage::Pool { pool_id, result } => messages
+					.push(Message::Event(Event::PoolLoaded { pool_id, result })),
 				GatewayMessage::SearchComplete {
 					posts,
 					page,
@@ -154,10 +156,7 @@ impl BooruGateway {
 
 	pub fn handle_command(&mut self, command: &Command) -> ComponentResponse {
 		match command {
-			Command::FetchLinkCandidate {
-				post_id,
-				generation,
-			} => {
+			Command::FetchLinkCandidate { post_id } => {
 				if !self.can_request() {
 					return ComponentResponse::schedule_command(
 						command.clone(),
@@ -167,7 +166,7 @@ impl BooruGateway {
 				self.record_request();
 				let client = self.client.clone();
 				let sender = self.sender.clone();
-				let (post_id, generation) = (*post_id, *generation);
+				let post_id = *post_id;
 				crate::platform::spawn(async move {
 					let result = client
 						.get_post(post_id)
@@ -175,11 +174,7 @@ impl BooruGateway {
 						.map(Box::new)
 						.map_err(|error| error.to_string());
 					let _ = sender
-						.send(GatewayMessage::LinkCandidate {
-							post_id,
-							generation,
-							result,
-						})
+						.send(GatewayMessage::LinkCandidate { post_id, result })
 						.await;
 				});
 			}
@@ -203,6 +198,27 @@ impl BooruGateway {
 					let _ = sender
 						.send(GatewayMessage::LinkedPost { post_id, result })
 						.await;
+				});
+			}
+			Command::FetchPool { pool_id } => {
+				if !self.can_request() {
+					return ComponentResponse::schedule_command(
+						command.clone(),
+						std::time::Duration::from_secs(1),
+					);
+				}
+				self.record_request();
+				let client = self.client.clone();
+				let sender = self.sender.clone();
+				let pool_id = *pool_id;
+				crate::platform::spawn(async move {
+					let result = client
+						.get_pool(pool_id)
+						.await
+						.map(Box::new)
+						.map_err(|error| error.to_string());
+					let _ =
+						sender.send(GatewayMessage::Pool { pool_id, result }).await;
 				});
 			}
 			Command::Search { query, page } => {

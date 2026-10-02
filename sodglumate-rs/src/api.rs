@@ -89,6 +89,11 @@ pub struct Relationships {
 	pub children: Vec<u64>,
 }
 
+#[derive(Debug, Clone, Deserialize)]
+pub struct Pool {
+	pub post_ids: Vec<u64>,
+}
+
 #[derive(Debug, Deserialize)]
 pub struct PostsResponse {
 	pub posts: Vec<Post>,
@@ -120,6 +125,18 @@ impl E621Client {
 			.await?;
 		anyhow::ensure!(response.post.id == id, "Server returned a different post");
 		Ok(response.post)
+	}
+
+	pub async fn get_pool(&self, id: u64) -> anyhow::Result<Pool> {
+		let response = self
+			.client
+			.get(crate::platform::e621_pool_url(id))
+			.send()
+			.await?
+			.error_for_status()?
+			.json::<Pool>()
+			.await?;
+		Ok(response)
 	}
 
 	pub async fn search_posts(

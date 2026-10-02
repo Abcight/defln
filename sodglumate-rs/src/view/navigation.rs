@@ -70,6 +70,7 @@ mod tests {
 			is_new: true,
 		});
 		let settings = SettingsManager::default();
+		let metadata = crate::metadata::PostMetadataStore::new();
 		let mut modal = ModalView::new();
 		modal.modal = ModalContent::None;
 		let mut messages = Vec::new();
@@ -111,6 +112,7 @@ mod tests {
 							ui,
 							&settings,
 							&browser,
+							&metadata,
 							&mut modal,
 							&mut output,
 						);
@@ -138,6 +140,7 @@ impl IslandNavigationView {
 		ui: &mut Ui,
 		settings: &SettingsManager,
 		browser: &ContentBrowser,
+		metadata: &crate::metadata::PostMetadataStore,
 		modal: &mut ModalView,
 		output: &mut ViewOutput,
 	) {
@@ -146,14 +149,18 @@ impl IslandNavigationView {
 		}
 
 		let post_id = browser.current_post().map(|post| post.id);
-		let children = browser.validated_child_ids();
+		let children = browser
+			.links_post(metadata)
+			.map(|post| post.relationships.children)
+			.unwrap_or_default();
 		if self.links_open
 			&& self.island_ctx.active
 			&& (post_id != self.links_post_id || children != self.links_children)
 		{
 			let selected = self.island_ctx.selected;
-			self.island_ctx
-				.replace_current(island::links_island(browser.links_post().as_ref()));
+			self.island_ctx.replace_current(island::links_island(
+				browser.links_post(metadata).as_ref(),
+			));
 			if post_id == self.links_post_id
 				&& children.len() >= self.links_children.len()
 			{
@@ -176,8 +183,9 @@ impl IslandNavigationView {
 					self.links_open = false;
 				}
 				IslandAction::Links => {
-					self.island_ctx
-						.push(island::links_island(browser.links_post().as_ref()));
+					self.island_ctx.push(island::links_island(
+						browser.links_post(metadata).as_ref(),
+					));
 					self.links_open = true;
 					self.links_post_id = post_id;
 					self.links_children = children.clone();

@@ -9,6 +9,7 @@ mod browser;
 mod config;
 mod gateway;
 mod media;
+mod metadata;
 mod platform;
 mod reactor;
 mod settings;

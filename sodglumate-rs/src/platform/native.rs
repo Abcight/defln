@@ -28,6 +28,10 @@ pub(super) fn e621_post_url(id: u64) -> String {
 	format!("https://e621.net/posts/{id}.json")
 }
 
+pub(super) fn e621_pool_url(id: u64) -> String {
+	format!("https://e621.net/pools/{id}.json")
+}
+
 pub(super) fn media_client() -> reqwest::Client {
 	reqwest::Client::builder()
 		.user_agent("Sodglumate/0.1 (by furikeno)")
