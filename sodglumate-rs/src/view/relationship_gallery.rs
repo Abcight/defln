@@ -50,16 +50,18 @@ impl RelationshipGalleryView {
 		if self.source_id != Some(source_id)
 			|| !related
 				.iter()
-				.any(|post| Some(post.post.id) == self.selected_post_id)
+				.any(|post| Some(post.id) == self.selected_post_id)
 		{
 			self.source_id = Some(source_id);
-			self.selected_post_id = Some(related[0].post.id);
+			self.selected_post_id = Some(related[0].id);
 		}
 
 		output.command(Command::PrefetchRelatedMedia {
 			urls: related
 				.iter()
-				.filter_map(|related| Self::full_media_url(&related.post))
+				.filter_map(|related| {
+					related.post.as_ref().and_then(Self::full_media_url)
+				})
 				.collect(),
 		});
 
@@ -106,8 +108,10 @@ impl RelationshipGalleryView {
 						);
 						let painter = ui.painter();
 						painter.rect_filled(rect, 0.0, egui::Color32::from_gray(30));
-						if let Some(loaded) =
-							media.get_full_media_by_post(&related_post.post)
+						if let Some(loaded) = related_post
+							.post
+							.as_ref()
+							.and_then(|post| media.get_full_media_by_post(post))
 						{
 							let texture = loaded.texture();
 							painter.image(
@@ -118,7 +122,7 @@ impl RelationshipGalleryView {
 							);
 						}
 						let stroke = if direct_shortcuts.is_none()
-							&& self.selected_post_id == Some(related_post.post.id)
+							&& self.selected_post_id == Some(related_post.id)
 						{
 							egui::Stroke::new(3.0, egui::Color32::WHITE)
 						} else {
@@ -141,10 +145,10 @@ impl RelationshipGalleryView {
 	fn move_selection(&mut self, related: &[RelatedPost], delta: isize) {
 		let selected = related
 			.iter()
-			.position(|post| Some(post.post.id) == self.selected_post_id)
+			.position(|post| Some(post.id) == self.selected_post_id)
 			.unwrap_or(0) as isize;
 		let next = (selected + delta).clamp(0, related.len() as isize - 1) as usize;
-		self.selected_post_id = Some(related[next].post.id);
+		self.selected_post_id = Some(related[next].id);
 	}
 
 	fn open_selected(
@@ -165,7 +169,7 @@ impl RelationshipGalleryView {
 		let Some(target_id) = target_id else {
 			return;
 		};
-		if related.iter().any(|post| post.post.id == target_id) {
+		if related.iter().any(|post| post.id == target_id) {
 			output.command(Command::OpenLinkedPost {
 				source_id,
 				target_id,
@@ -212,10 +216,11 @@ mod tests {
 
 	fn related(id: u64) -> RelatedPost {
 		RelatedPost {
-			post: Post {
+			id,
+			post: Some(Post {
 				id,
 				..Post::default()
-			},
+			}),
 		}
 	}
 

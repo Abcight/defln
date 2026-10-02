@@ -167,15 +167,29 @@ impl ContentBrowser {
 	}
 
 	pub fn related_posts(&self, metadata: &PostMetadataStore) -> Vec<RelatedPost> {
-		self.current_post()
-			.map(|post| {
-				metadata
-					.related_posts(post)
-					.into_iter()
-					.map(|post| RelatedPost { post })
-					.collect()
+		let Some(post) = self.current_post() else {
+			return Vec::new();
+		};
+		if let Some((previous, next)) = metadata.pool_neighbors(post) {
+			return previous
+				.into_iter()
+				.chain(next)
+				.map(|id| RelatedPost {
+					id,
+					post: metadata
+						.post(id)
+						.and_then(|post| supported_media(post).then(|| post.clone())),
+				})
+				.collect();
+		}
+		metadata
+			.related_posts(post)
+			.into_iter()
+			.map(|post| RelatedPost {
+				id: post.id,
+				post: Some(post),
 			})
-			.unwrap_or_default()
+			.collect()
 	}
 	pub fn has_valid_related_posts(&self, metadata: &PostMetadataStore) -> bool {
 		!self.related_posts(metadata).is_empty()
@@ -253,7 +267,8 @@ impl Default for ContentBrowser {
 
 #[derive(Clone, Debug)]
 pub struct RelatedPost {
-	pub post: Post,
+	pub id: u64,
+	pub post: Option<Post>,
 }
 
 fn supported_media(post: &Post) -> bool {
@@ -269,6 +284,7 @@ fn supported_media(post: &Post) -> bool {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use crate::api::Pool;
 
 	fn post(id: u64) -> Post {
 		let mut post = Post {
@@ -299,5 +315,31 @@ mod tests {
 			[Message::Command(Command::EnsureMetadata { post_ids })]
 				if post_ids == &[1, 2]
 		));
+	}
+
+	#[test]
+	fn known_pool_neighbors_are_visible_before_their_post_metadata_arrives() {
+		let event = Event::SearchCompleted {
+			posts: vec![post(2)],
+			page: 1,
+			is_new: true,
+		};
+		let mut browser = ContentBrowser::new();
+		let mut metadata = PostMetadataStore::new();
+		metadata.observe(&event);
+		browser.observe(&event);
+		metadata.observe(&Event::PoolLoaded {
+			pool_id: 99,
+			result: Ok(Box::new(Pool {
+				post_ids: vec![1, 2, 3],
+			})),
+		});
+
+		let related = browser.related_posts(&metadata);
+		assert_eq!(
+			related.iter().map(|post| post.id).collect::<Vec<_>>(),
+			[1, 3]
+		);
+		assert!(related.iter().all(|post| post.post.is_none()));
 	}
 }
